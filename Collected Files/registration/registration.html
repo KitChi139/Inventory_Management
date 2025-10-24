@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registration Form</title>
+  <link rel="stylesheet" href="registration.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="header">
+    <div class="header-content">
+      <img src="photo.png">
+      <h1>Generic Hospital</h1>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="title-section">
+      <h2>Registration Form</h2>
+      <p>Enter your details to Register</p>
+    </div>
+
+    <div class="form-box">
+      <div class="button-group">
+        <button id="employeeBtn" class="active">Employee</button>
+        <button id="supplierBtn">Supplier</button>
+      </div>
+
+      <form id="registrationForm">
+        <div class="form-row">
+          <div class="input-group">
+            <label id="label1">Full Name:</label>
+            <input type="text" required>
+          </div>
+          <div class="input-group">
+            <label id="label2">Employee Number:</label>
+            <input type="text" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="input-group">
+            <label>Contact Number:</label>
+            <input type="text" required>
+          </div>
+          <div class="input-group">
+            <label>Email:</label>
+            <input type="email" required>
+          </div>
+        </div>
+
+        <div class="input-group full-width">
+          <label>Password:</label>
+          <input type="password" required>
+        </div>
+
+        <div class="input-group full-width">
+          <label>Confirm Password:</label>
+          <input type="password" required>
+        </div>
+
+        <div class="submit-container">
+          <button type="submit" class="submit-btn">Submit</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="popup" class="popup">
+      <div class="popup-content">
+        <p>You have successfully registered!</p>
+        <button id="okBtn">OK</button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const form = document.getElementById('registrationForm');
+    const employeeBtn = document.getElementById('employeeBtn');
+    const supplierBtn = document.getElementById('supplierBtn');
+    const popup = document.getElementById('popup');
+    const okBtn = document.getElementById('okBtn');
+    const label1 = document.getElementById('label1');
+    const label2 = document.getElementById('label2');
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      popup.style.display = 'flex';
+      form.reset();
+    });
+
+    okBtn.addEventListener('click', function() {
+      popup.style.display = 'none';
+    });
+
+    employeeBtn.addEventListener('click', () => {
+      employeeBtn.classList.add('active');
+      supplierBtn.classList.remove('active');
+      label1.textContent = 'Full Name:';
+      label2.textContent = 'Employee Number:';
+    });
+
+    supplierBtn.addEventListener('click', () => {
+      supplierBtn.classList.add('active');
+      employeeBtn.classList.remove('active');
+      label1.textContent = 'Company Name:';
+      label2.textContent = 'Company Number:';
+    });
+  </script>
+</body>
+</html>
