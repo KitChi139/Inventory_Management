@@ -24,6 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
       // $checkstmt = $connection ->prepare("SELECT empID, empName, empNum FROM employee WHERE empID = ?");
       // $checkstmt
+      
       $connection -> begin_transaction();
       if ($userType === 'employee') { // Employee
 
@@ -122,7 +123,6 @@ $success = $success ?? false;
 <body>
   <header class="header">
     <div class="header-content">
-      <img src="photo.png">
       <h1>Generic Hospital</h1>
     </div>
   </header>
