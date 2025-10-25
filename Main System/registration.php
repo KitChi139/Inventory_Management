@@ -172,7 +172,9 @@ $success = $success ?? false;
           <label>Confirm Password:</label>
           <input type="password" required>
         </div>
-
+        <div class="forgot-link">
+          <a href="login.php">Already have an account? Log-in Now.</a>
+        </div>
         <div class="submit-container">
           <button type="submit" class="submit-btn">Submit</button>
         </div>

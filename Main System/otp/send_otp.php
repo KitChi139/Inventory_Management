@@ -73,7 +73,6 @@ try {
             <h2>Your One-Time Password</h2>
             <p>Use this code to verify your account:</p>
             <div style='font-size: 24px; font-weight: bold; color: #007bff;'>$otp</div>
-            <p>This code will expire after 5 minutes.</p>
         </div>";
 
     $mail->send();

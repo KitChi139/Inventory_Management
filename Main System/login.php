@@ -66,6 +66,7 @@ if (isset($_SESSION['popupMessage'])) {
   />
 
   <style>
+    
     * {
       margin: 0;
       padding: 0;
@@ -74,11 +75,38 @@ if (isset($_SESSION['popupMessage'])) {
     }
 
     body {
-      background-color: #f2f6fb;
+      background-color: #d9d9d9;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
+    }
+    .header {
+      background-color: #4f9cf9;
+      padding: 15px 40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: fixed;  
+      top: 0;           
+      left: 0;
+      width: 100%;     
+      z-index: 1000;    
+    }
+
+    .header-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .header h1 {
+      color: black;
+      font-size: 28px;
+      font-weight: 600;
+      text-align: center;
+      flex: 1;
     }
 
     .container {
@@ -193,6 +221,12 @@ if (isset($_SESSION['popupMessage'])) {
 </head>
 
 <body>
+    <header class="header">
+    <div class="header-content">
+      <img src="photo.png">
+      <h1>Generic Hospital</h1>
+    </div>
+  </header>
   <div class="container">
     <h2>Sign in to your Account</h2>
     <p class="subtitle">Enter your details to access the portal</p>
@@ -211,6 +245,9 @@ if (isset($_SESSION['popupMessage'])) {
       </div>
       <div class="forgot-link">
         <a href="otp/otp.php">Forgot Password?</a>
+      </div>
+      <div class="forgot-link">
+        <a href="registration.php">Don't have an account?</a>
       </div>
       <button type="submit" class="btn">Login</button>
     </form>
