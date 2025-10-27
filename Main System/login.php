@@ -34,6 +34,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                   exit();
                 } elseif ($user['roleName'] === 'Supplier') {
                   $_SESSION['popupMessage'] = "You have successfully logged in to the Supplier Portal!";
+                } elseif ($user['roleName'] === 'Admin') {
+                  $_SESSION['popupMessage'] = "You have successfully logged in to the Admin Portal!";
+                  header("Location:admin.php");
                 }
               }
                 
@@ -254,12 +257,7 @@ if (isset($_SESSION['popupMessage'])) {
         <input type="password" name="password" id="password"/>
         <i class="fa-solid fa-eye toggle-password" id="togglePassword"></i>
       </div>
-      <div class="forgot-link">
-        <a href="otp/otp.php">Forgot Password?</a>
-      </div>
-      <div class="forgot-link">
-        <a href="registration.php">Don't have an account?</a>
-      </div>
+
       <button type="submit" class="btn">Login</button>
     </form>
     <?php if (!empty($error)): ?>
