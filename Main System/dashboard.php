@@ -43,6 +43,7 @@ if (isset($_SESSION['popupMessage'])) {
       <li><i class="fa-solid fa-clock-rotate-left"></i><span>Transactions</span></li>
       <li><i class="fa-solid fa-users"></i><span>Users</span></li>
       <li><i class="fa-solid fa-gear"></i><span>Settings</span></li>
+      <li id="admin"><i class="fa-solid fa-user-shield"></i><span>User Manangement</span></li>
       <li class="logout"><a href="logout.php"><i class="fa-solid fa-sign-out"></i><span>Log-Out</span></a></li>
     </ul>
   </div>
@@ -146,6 +147,9 @@ if (isset($_SESSION['popupMessage'])) {
       //Navigation
       $("#inventory").click(function(){
         window.location.href = "Inventory.php";
+      });
+      $("#admin").click(function() {
+        window.location.href = "admin.php";
       });
     });
   </script>
