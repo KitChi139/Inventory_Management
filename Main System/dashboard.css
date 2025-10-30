@@ -315,3 +315,13 @@ body {
     min-height: 300px;
   }
 }
+
+.menu li a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: inherit;          /* makes link use the same color as li */
+  text-decoration: none;   /* removes underline */
+  width: 100%;
+  height: 100%;
+}

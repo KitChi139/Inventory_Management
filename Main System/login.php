@@ -13,7 +13,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = trim($_POST['password']);
 
     $stmt = $connection -> prepare("SELECT u.*, ur.roleName 
-                                    FROM users AS U 
+                                    FROM users AS u
                                     JOIN userroles AS ur on u.roleID = ur.roleID 
                                     WHERE username = ? ");
     $stmt -> bind_param("s", $username);
@@ -30,8 +30,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if (!isset($_SESSION['popupMessage'])) {
               if ($user['roleName'] === 'Employee') {
                   $_SESSION['popupMessage'] = "You have successfully logged in to the Inventory Management!";
+                  header("Location: dashboard.php");
+                  exit();
                 } elseif ($user['roleName'] === 'Supplier') {
                   $_SESSION['popupMessage'] = "You have successfully logged in to the Supplier Portal!";
+                } elseif ($user['roleName'] === 'Admin') {
+                  $_SESSION['popupMessage'] = "You have successfully logged in to the Admin Portal!";
+                  header("Location:admin.php");
                 }
               }
                 
@@ -192,30 +197,40 @@ if (isset($_SESSION['popupMessage'])) {
     }
 
     .popup {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.4);
-  justify-content: center;
-  align-items: center;
-}
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.4);
+      justify-content: center;
+      align-items: center;
+    }
 
-.popup-content {
-  background-color: #f3f6fa;
-  padding: 30px 50px;
-  border-radius: 10px;
-  text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
+    .popup-content {
+      background-color: #f3f6fa;
+      padding: 30px 50px;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
 
-.popup-content p {
-  color: #043873;
-  font-size: 16px;
-  margin-bottom: 15px;
-}
+    .popup-content p {
+      color: #043873;
+      font-size: 16px;
+      margin-bottom: 15px;
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-35%);
+      color: #001f3f;
+      font-size: 16px;
+      cursor: pointer;
+    }
 
   </style>
 </head>
@@ -223,7 +238,6 @@ if (isset($_SESSION['popupMessage'])) {
 <body>
     <header class="header">
     <div class="header-content">
-      <img src="photo.png">
       <h1>Generic Hospital</h1>
     </div>
   </header>
@@ -240,15 +254,10 @@ if (isset($_SESSION['popupMessage'])) {
 
       <div class="input-group">
         <label>Password</label>
-        <input type="password" name="password"/>
-        <i class="fa-solid fa-lock icon"></i>
+        <input type="password" name="password" id="password"/>
+        <i class="fa-solid fa-eye toggle-password" id="togglePassword"></i>
       </div>
-      <div class="forgot-link">
-        <a href="otp/otp.php">Forgot Password?</a>
-      </div>
-      <div class="forgot-link">
-        <a href="registration.php">Don't have an account?</a>
-      </div>
+
       <button type="submit" class="btn">Login</button>
     </form>
     <?php if (!empty($error)): ?>
@@ -275,6 +284,18 @@ if (isset($_SESSION['popupMessage'])) {
 
     okBtn.addEventListener('click', () => {
       popup.style.display = 'none'; // close when OK is clicked
+    });
+
+    const togglePassword = document.getElementById("togglePassword");
+    const passwordInput = document.getElementById("password");
+
+    togglePassword.addEventListener("click", () => {
+      const isPassword = passwordInput.getAttribute("type") === "password";
+      passwordInput.setAttribute("type", isPassword ? "text" : "password");
+
+      // Toggle the eye / eye-slash icon
+      togglePassword.classList.toggle("fa-eye");
+      togglePassword.classList.toggle("fa-eye-slash");
     });
   </script>
   

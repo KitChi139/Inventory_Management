@@ -1,3 +1,18 @@
+<?php
+session_start();
+
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
+    header("Location: login.php");
+    exit();  
+}
+
+$popupMessage = '';
+if (isset($_SESSION['popupMessage'])) {
+    $popupMessage = $_SESSION['popupMessage'];
+    unset($_SESSION['popupMessage']);
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -28,6 +43,7 @@
       <li><i class="fa-solid fa-clock-rotate-left"></i><span>Transactions</span></li>
       <li><i class="fa-solid fa-users"></i><span>Users</span></li>
       <li><i class="fa-solid fa-gear"></i><span>Settings</span></li>
+      <li class="logout"><a href="logout.php"><i class="fa-solid fa-sign-out"></i><span>Log-Out</span></a></li>
     </ul>
   </div>
 

@@ -188,3 +188,17 @@ body {
 .popup-content button:hover {
   background-color: #072c59;
 }
+
+.error-message {
+  color: #fff;
+  background-color: #e74c3c;
+  padding: 10px;
+  border-radius: 5px;
+  margin: 10px 0;
+  text-align: center;
+  opacity: 1;
+  transition: opacity 0.5s ease;
+}
+.error-message.hide {
+  opacity: 0;
+}
