@@ -1,10 +1,10 @@
 <?php
 session_start();
 
-if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
-    header("Location: login.php");
-    exit();  
-}
+// if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
+//     header("Location: login.php");
+//     exit();  
+// }
 
 $popupMessage = '';
 if (isset($_SESSION['popupMessage'])) {
@@ -35,7 +35,7 @@ if (isset($_SESSION['popupMessage'])) {
     <h3 class="title">Navigation</h3>
     <ul class="menu">
       <li class="active"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></li>
-      <li><i class="fa-solid fa-boxes-stacked"></i><span>Inventory</span></li>
+      <li id="inventory"><i class="fa-solid fa-boxes-stacked"></i><span>Inventory</span></li>
       <li><i class="fa-solid fa-triangle-exclamation"></i><span>Low Stock</span></li>
       <li><i class="fa-solid fa-file-pen"></i><span>Requests</span></li>
       <li><i class="fa-solid fa-truck"></i><span>Suppliers</span></li>
@@ -141,6 +141,11 @@ if (isset($_SESSION['popupMessage'])) {
     $(document).ready(function () {
       $(".toggle").click(function () {
         $(".sidebar").toggleClass("hide");
+      });
+      
+      //Navigation
+      $("#inventory").click(function(){
+        window.location.href = "Inventory.php";
       });
     });
   </script>

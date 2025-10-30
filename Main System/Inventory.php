@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inventory — Dashboard</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <link rel="stylesheet" href="inventory.css" />
+</head>
+<body>
+
+  <aside class="sidebar" aria-label="Primary">
+    <div class="profile">
+      <div class="icon" aria-hidden="true"><i class="fa-solid fa-user"></i></div>
+      <button class="toggle" aria-expanded="true" aria-label="Toggle navigation"><i class="fa-solid fa-bars"></i></button>
+    </div>
+
+    <h3 class="title">Navigation</h3>
+
+    <nav>
+      <ul class="menu">
+        <li id="dashboard"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></li>
+        <li class="active"><i class="fa-solid fa-boxes-stacked"></i><span>Inventory</span></li>
+        <li><i class="fa-solid fa-triangle-exclamation"></i><span>Low Stock</span></li>
+        <li><i class="fa-solid fa-file-pen"></i><span>Requests</span></li>
+        <li><i class="fa-solid fa-truck"></i><span>Suppliers</span></li>
+        <li><i class="fa-solid fa-file-lines"></i><span>Reports</span></li>
+        <li><i class="fa-solid fa-clock-rotate-left"></i><span>Transactions</span></li>
+        <li><i class="fa-solid fa-users"></i><span>Users</span></li>
+        <li><i class="fa-solid fa-gear"></i><span>Settings</span></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="top-left">
+        <h2>Inventory</h2>
+      </div>
+
+      <div class="top-right">
+        <button class="icon-btn" title="Notifications" aria-label="Notifications"><i class="fa-solid fa-bell bell"></i></button>
+        <a href="#" class="btn add-item"><i class="fa-solid fa-plus"></i> Add Item</a>
+      </div>
+    </header>
+
+    <section class="cards">
+  <div class="card">
+    <h4>Total Items In Stock</h4>
+    <p></p>
+  </div>
+  <div class="card red">
+    <h4>Low Stock Alerts</h4>
+    <p></p>
+  </div>
+  <div class="card yellow">
+    <h4>Pending Requests</h4>
+    <p></p>
+  </div>
+  <div class="card">
+    <h4>Total Value of Inventory</h4>
+    <p></p>
+  </div>
+    </section>
+
+    <section class="content-grid">
+  <div class="table-panel box">
+    <div class="panel-top">
+      <h4>Inventory List</h4>
+
+      <div class="table-controls">
+        <label for="table-search" class="sr-only">Search inventory</label>
+        <input id="table-search" type="search" placeholder="Search items..." aria-label="Search items" />
+        <button class="filter-btn" title="Filter" aria-label="Open filters"><i class="fa-solid fa-filter"></i></button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="inventory-table" role="table" aria-label="Inventory table">
+        <thead>
+          <tr>
+            <th scope="col">Item</th>
+            <th scope="col">Category</th>
+            <th scope="col">Current Stock</th>
+            <th scope="col">Status</th>
+            <th scope="col">Min / Max</th>
+            <th scope="col">Request</th>
+            <th scope="col">Action</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><button class="btn small">Select</button></td>
+            <td>
+              <div class="action-wrap">
+                <button class="icon-more" title="More" aria-haspopup="true" aria-expanded="false"><i class="fa-solid fa-ellipsis"></i></button>
+                <div class="more-menu" role="menu" aria-hidden="true">
+                  <button class="menu-item" role="menuitem">Edit</button>
+                  <button class="menu-item danger" role="menuitem">Delete</button>
+                </div>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><button class="btn small">Select</button></td>
+            <td>
+              <div class="action-wrap">
+                <button class="icon-more" title="More" aria-haspopup="true" aria-expanded="false"><i class="fa-solid fa-ellipsis"></i></button>
+                <div class="more-menu" role="menu" aria-hidden="true">
+                  <button class="menu-item" role="menuitem">Edit</button>
+                  <button class="menu-item danger" role="menuitem">Delete</button>
+                </div>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><button class="btn small">Select</button></td>
+            <td>
+              <div class="action-wrap">
+                <button class="icon-more" title="More" aria-haspopup="true" aria-expanded="false"><i class="fa-solid fa-ellipsis"></i></button>
+                <div class="more-menu" role="menu" aria-hidden="true">
+                  <button class="menu-item" role="menuitem">Edit</button>
+                  <button class="menu-item danger" role="menuitem">Delete</button>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <aside class="quick-request box" aria-label="Quick request panel">
+    <h4>Quick Request</h4>
+    <p>Request this item for your department</p>
+
+    <div class="qr-field">
+      <div class="qr-row"><strong>Items:</strong> <span></span></div>
+      <div class="qr-row"><strong>Available:</strong> <span></span></div>
+      <div class="qr-row"><strong>Location:</strong> <span></span></div>
+    </div>
+
+    <div class="qr-actions">
+      <button class="btn">+ Request Item</button>
+    </div>
+  </aside>
+</section>
+
+  </main>
+
+  <script>
+    $(document).ready(function () {
+      const $sidebar = $(".sidebar");
+      const $toggle = $(".toggle");
+
+      $toggle.on("click", function () {
+        const isHidden = $sidebar.toggleClass("hide").hasClass("hide");
+        $(this).attr("aria-expanded", String(!isHidden));
+      });
+
+      // Action menu (UI-only)
+      function closeAllMenus() {
+        $(".more-menu").attr("aria-hidden", "true").hide();
+        $(".icon-more").attr("aria-expanded", "false");
+      }
+
+      // open/close per row, using delegation
+      $(document).on("click", ".icon-more", function (e) {
+        e.stopPropagation();
+        const $btn = $(this);
+        const $menu = $btn.siblings(".more-menu");
+
+        // close other menus
+        $(".more-menu").not($menu).hide().attr("aria-hidden", "true");
+        $(".icon-more").not($btn).attr("aria-expanded", "false");
+
+        // toggle this menu
+        if ($menu.is(":visible")) {
+          $menu.hide().attr("aria-hidden", "true");
+          $btn.attr("aria-expanded", "false");
+        } else {
+          // position logic (keeps it in view if needed)
+          $menu.show().attr("aria-hidden", "false");
+          $btn.attr("aria-expanded", "true");
+        }
+      });
+
+      // Clicking a menu-item is UI-only: keep menus open or close depending on UX you want.
+      $(document).on("click", ".more-menu .menu-item", function (e) {
+        e.stopPropagation();
+        // UI-only: briefly highlight the pressed option then close menu
+        const $it = $(this);
+        $it.addClass("pressed");
+        setTimeout(() => {
+          $it.removeClass("pressed");
+          closeAllMenus();
+        }, 180);
+      });
+
+      // close menus on outside click
+      $(document).on("click", function () {
+        closeAllMenus();
+      });
+
+      // close on Esc
+      $(document).on("keydown", function (e) {
+        if (e.key === "Escape") closeAllMenus();
+      });
+
+      //Navigation
+      $("#dashboard").click(function() {
+        window.location.href = "dashboard.php";
+      });
+    });
+  </script>
+
+</body>
+</html>
