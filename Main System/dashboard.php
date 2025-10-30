@@ -73,16 +73,16 @@ $pending_requests = $conn->query("SELECT COUNT(*) AS total FROM requests WHERE s
     </div>
     <h3 class="title">Navigation</h3>
     <ul class="menu">
-        <li class="active"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></li>
-        <li id="inventory"><i class="fa-solid fa-boxes-stacked"></i><span>Inventory</span></li>
-        <li><i class="fa-solid fa-triangle-exclamation"></i><span>Low Stock</span></li>
-        <li><i class="fa-solid fa-file-pen"></i><span>Requests</span></li>
-        <li><i class="fa-solid fa-truck"></i><span>Suppliers</span></li>
-        <li><i class="fa-solid fa-file-lines"></i><span>Reports</span></li>
-        <li><i class="fa-solid fa-clock-rotate-left"></i><span>Transactions</span></li>
-        <li><i class="fa-solid fa-users"></i><span>Users</span></li>
-        <li><i class="fa-solid fa-gear"></i><span>Settings</span></li>
-        <li class="logout"><a href="logout.php"><i class="fa-solid fa-sign-out"></i><span>Log-Out</span></a></li>
+
+      <li class="active"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></li>
+      <li id="inventory"><i class="fa-solid fa-boxes-stacked"></i><span>Inventory</span></li>
+      <li><i class="fa-solid fa-triangle-exclamation"></i><span>Low Stock</span></li>
+      <li><i class="fa-solid fa-file-pen"></i><span>Requests</span></li>
+      <li><i class="fa-solid fa-truck"></i><span>Suppliers</span></li>
+      <li><i class="fa-solid fa-file-lines"></i><span>Reports</span></li>
+      <li><i class="fa-solid fa-clock-rotate-left"></i><span>Transactions</span></li>
+      <li><i class="fa-solid fa-users"></i><span>Users</span></li>
+      <li><i class="fa-solid fa-gear"></i><span>Settings</span></li>
     </ul>
 </div>
 
@@ -186,6 +186,5 @@ $(function(){
     $("#inventory").click(()=>window.location.href="inventory.php");
 });
 </script>
-
 </body>
 </html>

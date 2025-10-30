@@ -1,0 +1,179 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f5f8ff;
+  color: #333;
+  display: flex;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 240px;
+  background: #043873;
+  color: white;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.sidebar.hide {
+  width: 70px;
+}
+
+.profile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px;
+}
+
+.icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: white;
+  color: #043873;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  transition: opacity 0.3s;
+}
+
+.sidebar.hide .icon {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.toggle {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.title {
+  text-align: center;
+  font-size: 13px;
+  color: #e6e6e6;
+  margin-bottom: 10px;
+}
+
+.menu {
+  list-style: none;
+  padding: 0;
+}
+
+.menu li {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.menu li i {
+  font-size: 18px;
+  margin-right: 15px;
+}
+
+.menu li:hover,
+.menu li.active {
+  background: #4f9cf9;
+  border-radius: 10px;
+}
+
+.sidebar.hide .title,
+.sidebar.hide li span {
+  display: none;
+}
+
+.sidebar.hide li {
+  justify-content: center;
+}
+
+.sidebar.hide li i {
+  margin: 0;
+}
+
+/* MAIN */
+.main {
+  flex-grow: 1;
+  margin-left: 240px;
+  padding: 30px;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.sidebar.hide ~ .main {
+  margin-left: 70px;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.topbar h2 {
+  color: #043873;
+  font-weight: 600;
+}
+
+.bell {
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/* DASHBOARD CARDS */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  border-top: 4px solid #043873;
+}
+
+.card.red { border-top-color: #ff4d4f; }
+.card.yellow { border-top-color: #ffb100; }
+
+.card h4 {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.card p {
+  font-size: 22px;
+  font-weight: bold;
+  color: #043873;
+}
+
+
+
+
+.menu li a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: inherit;          /* makes link use the same color as li */
+  text-decoration: none;   /* removes underline */
+  width: 100%;
+  height: 100%;
+}

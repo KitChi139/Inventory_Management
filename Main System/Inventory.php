@@ -168,7 +168,72 @@ $pending_requests = $conn->query("SELECT COUNT(*) AS total FROM requests WHERE s
 </tbody>
 
 
+<<<<<<< HEAD
         </table>
+=======
+    <section class="content-grid">
+  <div class="table-panel box">
+    <div class="panel-top">
+      <h4>Inventory List</h4>
+
+<<<<<<< HEAD
+  <section class="cards">
+    <div class="card">
+      <h4>Total Items In Stock</h4>
+      <p><?php echo $total_items; ?></p>
+    </div>
+    <div class="card red">
+      <h4>Low Stock Alerts</h4>
+      <p><?php echo $low_stock; ?></p>
+    </div>
+    <div class="card yellow">
+      <h4>Pending Requests</h4>
+      <p>0</p>
+    </div>
+    <div class="card blue">
+      <h4>Total Value of Inventory</h4>
+      <p>₱<?php echo number_format($total_value, 2); ?></p>
+    </div>
+  </section>
+
+<<<<<<< HEAD
+    <nav>
+      <ul class="menu">
+        <li id="dashboard"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></li>
+        <li class="active"><i class="fa-solid fa-boxes-stacked"></i><span>Inventory</span></li>
+        <li><i class="fa-solid fa-triangle-exclamation"></i><span>Low Stock</span></li>
+        <li><i class="fa-solid fa-file-pen"></i><span>Requests</span></li>
+        <li><i class="fa-solid fa-truck"></i><span>Suppliers</span></li>
+        <li><i class="fa-solid fa-file-lines"></i><span>Reports</span></li>
+        <li><i class="fa-solid fa-clock-rotate-left"></i><span>Transactions</span></li>
+        <li><i class="fa-solid fa-users"></i><span>Users</span></li>
+        <li><i class="fa-solid fa-gear"></i><span>Settings</span></li>
+        <li id="admin"><i class="fa-solid fa-user-shield"></i><span>User Manangement</span></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="top-left">
+        <h2>Inventory</h2>
+=======
+  <section class="content-grid">
+    <div class="table-panel box">
+      <div class="panel-top">
+        <h4>Inventory List</h4>
+        <div class="table-controls">
+          <input id="table-search" type="search" placeholder="Search items..." />
+          <button class="filter-btn"><i class="fa-solid fa-filter"></i></button>
+        </div>
+>>>>>>> ba000c78567f7917deccc56c69b3b10a5cf210b4
+=======
+      <div class="table-controls">
+        <label for="table-search" class="sr-only">Search inventory</label>
+        <input id="table-search" type="search" placeholder="Search items..." aria-label="Search items" />
+        <button class="filter-btn" title="Filter" aria-label="Open filters"><i class="fa-solid fa-filter"></i></button>
+>>>>>>> parent of ba000c7 (updated dashboard and inventory)
+>>>>>>> fd05e8422b26d34bd41ce34072e92c1863a82698
       </div>
     </div>
 
@@ -252,6 +317,7 @@ $(function () {
   const modalAdd = $("#addItemModal");
   const modalEdit = $("#editItemModal");
 
+
   // Sidebar toggle
   $(".toggle").click(() => $(".sidebar").toggleClass("hide"));
 
@@ -296,6 +362,8 @@ $(function () {
         appendRow(res.item);
         $("#addItemForm")[0].reset();
         modalAdd.hide();
+
+
       }
       alert(res.message);
     });

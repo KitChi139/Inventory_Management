@@ -4,7 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Dashboard</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="admin.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 </head>
 <body>
 
@@ -12,6 +14,28 @@
 
   <a href="logout.php"><i class="fa-solid fa-sign-out"></i><span>Log-Out</span></a>
   </header>
+  
+  <div class="sidebar">
+    <div class="profile">
+      <div class="icon"><i class="fa-solid fa-user"></i></div>
+      <button class="toggle"><i class="fa-solid fa-bars"></i></button>
+    </div>
+
+    <h3 class="title">Navigation</h3>
+    <ul class="menu">
+      <li><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></li>
+      <li id="inventory"><i class="fa-solid fa-boxes-stacked"></i><span>Inventory</span></li>
+      <li><i class="fa-solid fa-triangle-exclamation"></i><span>Low Stock</span></li>
+      <li><i class="fa-solid fa-file-pen"></i><span>Requests</span></li>
+      <li><i class="fa-solid fa-truck"></i><span>Suppliers</span></li>
+      <li><i class="fa-solid fa-file-lines"></i><span>Reports</span></li>
+      <li><i class="fa-solid fa-clock-rotate-left"></i><span>Transactions</span></li>
+      <li><i class="fa-solid fa-users"></i><span>Users</span></li>
+      <li><i class="fa-solid fa-gear"></i><span>Settings</span></li>
+      <li class="active"><i class="fa-solid fa-user-shield"></i><span>Admin</span></li>
+      <li class="logout"><a href="logout.php"><i class="fa-solid fa-sign-out"></i><span>Log-Out</span></a></li>
+    </ul>
+  </div>
 
   <div class="container">
     <div class="container-header">
@@ -344,6 +368,17 @@
     // (optional) you can pre-populate the list here if you want; currently starts empty
     // Example:
     // accountsTbody.appendChild(createRow({name:'Sample User', empNumber:'001', contact:'0917', email:'sample@example.com', role:'Employee'}));
+  
+    $(document).ready(function () {
+      $(".toggle").click(function () {
+        $(".sidebar").toggleClass("hide");
+      });
+      
+      //Navigation
+      $("#inventory").click(function(){
+        window.location.href = "Inventory.php";
+      });
+    });
   </script>
 
 </body>
