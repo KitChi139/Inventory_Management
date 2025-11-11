@@ -19,7 +19,7 @@
     padding: 0; }
 body {
   font-family: 'Segoe UI', sans-serif;
-  background-color: var(--bg);
+  background-color: #f5f8ff;
   color: #333;
   display: flex;
 }
@@ -35,19 +35,20 @@ body {
 
 /* SIDEBAR */
 .sidebar {
-  width: var(--sidebar-width);
-  background: var(--primary);
+  width: 240px;
+  background: #043873;
   color: white;
   height: 100vh;
   display: flex;
   flex-direction: column;
   position: fixed;
-  transition: width 0.25s ease;
+  transition: all 0.3s ease;
   overflow: hidden;
-  padding-bottom: 20px;
 }
 
-.sidebar.hide { width: var(--sidebar-collapsed); }
+.sidebar.hide {
+  width: 70px;
+}
 
 .profile {
   display: flex;
@@ -57,59 +58,74 @@ body {
 }
 
 .icon {
-  width: 40px; 
-  height: 40px; 
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background: white; 
-  color: var(--primary);
-  display: flex; 
-  align-items: center; 
+  background: white;
+  color: #043873;
+  display: flex;
+  align-items: center;
   justify-content: center;
-  font-size: 20px; 
+  font-size: 20px;
   transition: opacity 0.3s;
 }
-.sidebar.hide .icon { 
-    opacity: 0; 
-    pointer-events: none; 
+
+.sidebar.hide .icon {
+  opacity: 0;
+  pointer-events: none;
 }
 
-.toggle { 
-    background: none; 
-    border: none; 
-    color: white; 
-    font-size: 22px; 
-    cursor: pointer; 
+.toggle {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 22px;
+  cursor: pointer;
 }
 
-.title { 
-    text-align: center; 
-    font-size: 13px; 
-    color: #e6e6e6; 
-    margin-bottom: 10px; 
+.title {
+  text-align: center;
+  font-size: 13px;
+  color: #e6e6e6;
+  margin-bottom: 10px;
 }
 
-.menu { 
-    list-style: none; 
-    padding: 0; 
-    margin-top: 6px; 
+.menu {
+  list-style: none;
+  padding: 0;
 }
+
 .menu li {
-  display: flex; 
+  display: flex;
   align-items: center;
-  padding: 12px 20px; 
-  cursor: pointer; 
+  padding: 12px 20px;
+  cursor: pointer;
   transition: background 0.3s;
 }
-.menu li i { font-size: 18px; 
-    margin-right: 15px; 
-    width: 22px; 
-    text-align: center; }
-.menu li:hover, .menu li.active { background: var(--accent); 
-    border-radius: 10px; }
 
-.sidebar.hide .title, .sidebar.hide li span { display: none; }
-.sidebar.hide li { justify-content: center; }
-.sidebar.hide li i { margin: 0; }
+.menu li i {
+  font-size: 18px;
+  margin-right: 15px;
+}
+
+.menu li:hover,
+.menu li.active {
+  background: #4f9cf9;
+  border-radius: 10px;
+}
+
+.sidebar.hide .title,
+.sidebar.hide li span {
+  display: none;
+}
+
+.sidebar.hide li {
+  justify-content: center;
+}
+
+.sidebar.hide li i {
+  margin: 0;
+}
 
 /* MAIN */
 .main {

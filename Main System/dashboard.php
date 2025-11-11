@@ -26,26 +26,28 @@ if (isset($_SESSION['popupMessage'])) {
 </head>
 <body>
 
-  <div class="sidebar">
+  <aside class="sidebar" aria-label="Primary">
     <div class="profile">
       <div class="icon"><i class="fa-solid fa-user"></i></div>
       <button class="toggle"><i class="fa-solid fa-bars"></i></button>
     </div>
 
     <h3 class="title">Navigation</h3>
+
+    <nav>
     <ul class="menu">
       <li class="active"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></li>
       <li id="inventory"><i class="fa-solid fa-boxes-stacked"></i><span>Inventory</span></li>
       <li><i class="fa-solid fa-triangle-exclamation"></i><span>Low Stock</span></li>
-      <li><i class="fa-solid fa-file-pen"></i><span>Requests</span></li>
-      <li><i class="fa-solid fa-truck"></i><span>Suppliers</span></li>
+      <li id="request"><i class="fa-solid fa-file-pen"></i><span>Requests</span></li>
+      <li id="nav-suppliers"><i class="fa-solid fa-truck"></i><span>Suppliers</span></li>
       <li><i class="fa-solid fa-file-lines"></i><span>Reports</span></li>
-      <li><i class="fa-solid fa-clock-rotate-left"></i><span>Transactions</span></li>
       <li><i class="fa-solid fa-users"></i><span>Users</span></li>
       <li><i class="fa-solid fa-gear"></i><span>Settings</span></li>
-      <li class="logout"><a href="logout.php"><i class="fa-solid fa-sign-out"></i><span>Log-Out</span></a></li>
+      <li id="logout"><i class="fa-solid fa-sign-out"></i><span>Log-Out</span></li>
     </ul>
-  </div>
+  </nav>
+  </aside>
 
   <div class="main">
     <div class="topbar">
@@ -71,6 +73,7 @@ if (isset($_SESSION['popupMessage'])) {
         <p>₱50,150</p>
       </div>
     </div>
+    
 
 <div class="dashboard-grid">
   <div class="box stock-status">
@@ -136,7 +139,7 @@ if (isset($_SESSION['popupMessage'])) {
     <a href="#" class="btn"><i class="fa-solid fa-chart-bar"></i> Generate Reports</a>
   </div>
 </div>
-
+</div>
   <script>
     $(document).ready(function () {
       $(".toggle").click(function () {
@@ -144,10 +147,18 @@ if (isset($_SESSION['popupMessage'])) {
       });
       
       //Navigation
-      $("#inventory").click(function(){
-        window.location.href = "Inventory.php";
+      $("#inventory").click(function(){ window.location.href = "Inventory.php";});
+      $("#nav-suppliers").click(function(){ window.location.href ="suppliers.php"; });
+      $("#request").click(function(){ window.location.href = "request_list.php"; });
+
+
+      //Logout
+      $("#logout").click(function(){
+        window.location.href = "logout.php";
       });
     });
+
+    
   </script>
 
 </body>

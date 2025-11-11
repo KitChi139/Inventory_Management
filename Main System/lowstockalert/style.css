@@ -1,0 +1,288 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f5f8ff;
+  color: #333;
+  display: flex;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 240px;
+  background: #043873;
+  color: white;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.sidebar.hide {
+  width: 70px;
+}
+
+.profile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px;
+}
+
+.icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: white;
+  color: #043873;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  transition: opacity 0.3s;
+}
+
+.sidebar.hide .icon {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.toggle {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.title {
+  text-align: center;
+  font-size: 13px;
+  color: #e6e6e6;
+  margin-bottom: 10px;
+}
+
+.menu {
+  list-style: none;
+  padding: 0;
+}
+
+.menu li {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.menu li i {
+  font-size: 18px;
+  margin-right: 15px;
+}
+
+.menu li:hover,
+.menu li.active {
+  background: #4f9cf9;
+  border-radius: 10px;
+}
+
+.sidebar.hide .title,
+.sidebar.hide li span {
+  display: none;
+}
+
+.sidebar.hide li {
+  justify-content: center;
+}
+
+.sidebar.hide li i {
+  margin: 0;
+}
+
+/* MAIN SECTION */
+.main {
+  flex-grow: 1;
+  margin-left: 240px;
+  padding: 30px;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.sidebar.hide ~ .main {
+  margin-left: 70px;
+}
+
+/* TOPBAR */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.topbar h2 {
+  color: #043873;
+  font-weight: 600;
+}
+
+.bell {
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/* CONTENT AREA */
+.content-area {
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  min-height: 500px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.alert-summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 30px;
+  margin-bottom: 30px; /* Added space below the alert summary */
+}
+
+.alert-box {
+  background-color: #f3f6f9;
+  padding: 20px;
+  border-radius: 12px;
+  width: 30%;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+.alert-box h3 {
+  color: #043873;
+  font-weight: 600;
+}
+
+.alert-box p {
+  color: #999;
+}
+
+.high {
+  border-top: 5px solid #ff7f7f;
+}
+
+.medium {
+  border-top: 5px solid #f9e68f;
+}
+
+.total {
+  border-top: 5px solid #4f9cf9;
+}
+
+.alert-details {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.alert-item {
+  background: #f3f6f9;
+  padding: 20px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+.alert-item h4 {
+  font-size: 18px;
+  color: #043873;
+}
+
+.alert-item p {
+  color: #666;
+}
+
+.out-of-stock {
+  color: #ff0000;
+}
+
+.expired {
+  color: #ff9900;
+}
+
+.low-stock {
+  color: #ffcc00;
+}
+
+button {
+  background: #043873;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+button:hover {
+  background: #4f9cf9;
+}
+
+/* Medium Priority Section */
+.medium-alerts {
+  background-color: #f0f0f0;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px; /* Added space below the medium priority alerts */
+}
+
+.medium-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px; /* Added space below the header */
+}
+
+.medium-header h3 {
+  color: #043873;
+}
+
+.search-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.search-bar {
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  width: 200px;
+}
+
+.filter-icon {
+  font-size: 18px;
+  color: #999;
+  cursor: pointer;
+}
+
+.medium-alert-list {
+  margin-top: 20px;
+}
+
+.medium-alert-list .alert-item.empty {
+  height: 50px;
+  background-color: #e0e0e0;
+  margin-bottom: 10px;
+  border-radius: 8px;
+}
