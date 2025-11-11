@@ -177,9 +177,10 @@ body {
   box-shadow: var(--card-shadow); 
   border-top: 4px solid var(--primary);
 }
-.card.red { border-top-color: var(--danger); }
+.card.blue { border-top-color: var(--accent); }
 .card.yellow { border-top-color: var(--warning); }
-.card h4 { font-size:13px; color:#666; margin-bottom:6px; }
+.card.green {border-top-color: rgb(73, 190, 73)}
+.card h3 { font-size:13px; color:#666; margin-bottom:6px; }
 .card p { font-size:20px; font-weight:700; color:var(--primary); }
 
 
@@ -191,7 +192,7 @@ body {
 }
 
 #search {
-  width: 100%;
+  width: 98.6%;
   padding: 10px;
   margin-bottom: 15px;
   border: 1px solid #d3d3d3;

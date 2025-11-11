@@ -21,7 +21,7 @@
       <ul class="menu">
         <li id="dashboard"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></li>
         <li id="inventory"><i class="fa-solid fa-boxes-stacked"></i><span>Inventory</span></li>
-        <li><i class="fa-solid fa-triangle-exclamation"></i><span>Low Stock</span></li>
+        <li id="low-stock"><i class="fa-solid fa-triangle-exclamation"></i><span>Low Stock</span></li>
         <li class="active"><i class="fa-solid fa-file-pen"></i><span>Requests</span></li>
         <li id="nav-suppliers"><i class="fa-solid fa-truck"></i><span>Suppliers</span></li>
         <li><i class="fa-solid fa-file-lines"></i><span>Reports</span></li>
@@ -42,35 +42,32 @@
     </div>
   </header>
 
-    <div class="stats">
-      <div class="card blue">Total Requests
-        <h3>
+    <div class="cards">
+      <div class="card blue"><h3>Total Requests</h3>
           <?php 
             $sql = "SELECT COUNT(*) AS total FROM requests";
             $res = $conn->query($sql);
             echo $res->fetch_assoc()['total'];
           ?>
-        </h3>
       </div>
-      <div class="card yellow">Pending
-        <h3>
+      <div class="card yellow"><h3>Pending</h3>
+        
           <?php 
             $sql = "SELECT COUNT(*) AS total FROM requests WHERE status='Pending'";
             $res = $conn->query($sql);
             echo $res->fetch_assoc()['total'];
           ?>
-        </h3>
       </div>
-      <div class="card green">Approved
-        <h3>
+      <div class="card green"><h3>Approved</h3>
+        
           <?php 
             $sql = "SELECT COUNT(*) AS total FROM requests WHERE status='Approved'";
             $res = $conn->query($sql);
             echo $res->fetch_assoc()['total'];
           ?>
-        </h3>
       </div>
     </div>
+    <br>
 
     <div class="table-section">
       <input type="text" id="search" placeholder="Search requests...">
@@ -129,6 +126,7 @@ $(function () {
   $("#dashboard").click(function(){ window.location.href = "dashboard.php"; });
   $("#nav-suppliers").click(function(){ window.location.href = "suppliers.php"; });
   $("#inventory").click(function(){ window.location.href = "inventory.php"; });
+  $("#low-stock").click(function(){ window.location.href = "lowstock.html"; });
 
  //Logout
       $("#logout").click(function(){

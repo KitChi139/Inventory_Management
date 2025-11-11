@@ -38,7 +38,7 @@ if (isset($_SESSION['popupMessage'])) {
     <ul class="menu">
       <li class="active"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></li>
       <li id="inventory"><i class="fa-solid fa-boxes-stacked"></i><span>Inventory</span></li>
-      <li><i class="fa-solid fa-triangle-exclamation"></i><span>Low Stock</span></li>
+      <li id="low-stock"><i class="fa-solid fa-triangle-exclamation"></i><span>Low Stock</span></li>
       <li id="request"><i class="fa-solid fa-file-pen"></i><span>Requests</span></li>
       <li id="nav-suppliers"><i class="fa-solid fa-truck"></i><span>Suppliers</span></li>
       <li><i class="fa-solid fa-file-lines"></i><span>Reports</span></li>
@@ -150,6 +150,7 @@ if (isset($_SESSION['popupMessage'])) {
       $("#inventory").click(function(){ window.location.href = "Inventory.php";});
       $("#nav-suppliers").click(function(){ window.location.href ="suppliers.php"; });
       $("#request").click(function(){ window.location.href = "request_list.php"; });
+      $("#low-stock").click(function(){ window.location.href = "lowstock.html"; });
 
 
       //Logout
