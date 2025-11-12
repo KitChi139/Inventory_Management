@@ -10,11 +10,12 @@ $sql = "
     i.Status,
     i.ExpirationDate,
     p.ProductName,
-    p.Unit,
+    u.UnitName,
     c.Category_Name
   FROM inventory i
   JOIN products p ON p.ProductID = i.ProductID
-  LEFT JOIN categories c ON c.Category_ID = p.Category_ID
+  JOIN units u ON u.UnitID = p.UnitID
+  LEFT JOIN categories c ON c.CategoryID = p.CategoryID
   WHERE i.Quantity <= 5
   ORDER BY i.Quantity ASC
 ";

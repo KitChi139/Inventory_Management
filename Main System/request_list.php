@@ -218,7 +218,7 @@
       $sql = "SELECT r.request_id, p.ProductName, r.quantity, r.requester, r.status, r.request_date, s.supplier_name
               FROM requests r
               JOIN products p ON r.ProductID = p.ProductID
-              LEFT JOIN suppliers s ON s.supplier_id = p.Category_ID
+              LEFT JOIN suppliers s ON s.supplier_id = p.CategoryID
               ORDER BY r.request_date DESC";
       $result = $conn->query($sql);
       if ($result->num_rows > 0) {

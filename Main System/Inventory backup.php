@@ -63,6 +63,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
       $conn->begin_transaction();
 
+    //   // Find/create category
+    //   $stmt = $conn->prepare("SELECT Category_ID, Category FROM categories WHERE Category_Name = ?");
+    //   $stmt->bind_param('s', $category);
+    //   $stmt->execute();
+    //   $stmt->bind_result($catId);
+    //   $exists = $stmt->fetch();
+    //   $stmt->close();
+    //   if (!$exists) {
+    //     $stmt = $conn->prepare("INSERT INTO categories (Category_Name) VALUES (?)");
+    //     $stmt->bind_param('s', $category);
+    //     $stmt->execute();
+    //     $catId = $stmt->insert_id;
+    //     $stmt->close();
+    //   }
+
+    // // Find or create unit
+    // $stmt = $conn->prepare("SELECT Unit_ID FROM unit WHERE Unit = ?");
+    // $stmt->bind_param('s', $unit);
+    // $stmt->execute();
+    // $stmt->bind_result($unitId);
+    // $exists = $stmt->fetch();
+    // $stmt->close();
+    // if (!$exists) {
+    //     $stmt = $conn->prepare("INSERT INTO unit (Unit) VALUES (?)");
+    //     $stmt->bind_param('s', $unit);
+    //     $stmt->execute();
+    //     $unitId = $stmt->insert_id;
+    //     $stmt->close();
+    // }
+
+    //   // Find/create product (by name + category)
+    //   $stmt = $conn->prepare("SELECT ProductID, Unit FROM products WHERE ProductName = ? AND Category_ID = ?");
+    //   $stmt->bind_param('si', $name, $catId);
+    //   $stmt->execute();
+    //   $stmt->bind_result($productId, $existingUnit);
+    //   $pExists = $stmt->fetch();
+    //   $stmt->close();
+
+    //   if (!$pExists) {
+    //     $stmt = $conn->prepare("INSERT INTO products (ProductName, Category_ID, Unit) VALUES (?, ?, ?)");
+    //     $stmt->bind_param('sis', $name, $catId, $unit);
+    //     $stmt->execute();
+    //     $productId = $stmt->insert_id;
+    //     $stmt->close();
+    //   } else if ($unit !== '' && $unit !== $existingUnit) {
+    //     $stmt = $conn->prepare("UPDATE products SET Unit = ? WHERE ProductID = ?");
+    //     $stmt->bind_param('si', $unit, $productId);
+    //     $stmt->execute();
+    //     $stmt->close();
+    //   }
+
       // Insert inventory (SKU optional -> NULLIF to avoid UNIQUE '' issue)
 
       $status = ($quantity === 0) ? 'Out of Stock' : (($quantity < 10) ? 'Low Stock' : 'In Stock');
@@ -344,15 +395,8 @@ try {
         <table class="inventory-table" role="table" aria-label="Inventory table">
           <thead>
             <tr>
-              <th>Item</th>
-              <th>Category</th>
-              <th>Current Stock</th>
-              <th>Status</th>
-              <th>Expiration Date</th>
-              <th>Batch Number</th>
-              <th>SKU</th><th>Unit</th>
-              <th>Request</th>
-              <th>Action</th>
+              <th>Item</th><th>Category</th><th>Current Stock</th><th>Status</th>
+              <th>Expiration Date</th><th>Batch Number</th><th>SKU</th><th>Unit</th><th>Request</th><th>Action</th>
             </tr>
           </thead>
           <tbody>
