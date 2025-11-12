@@ -2,36 +2,6 @@
 session_start();
 require 'db_connect.php';
 
-if (isset($_POST['fetch_product']) && $_POST['fetch_product'] == 1) {
-    $productID = (int)$_POST['product_id'];
-
-    $stmt = $conn->prepare("
-        SELECT 
-        p.ProductName AS product_name,
-        p.ProductID AS product_id,
-        p.CategoryID AS category_ID,
-        c.Category_Name AS category, 
-        p.UnitID as unit_ID,
-        u.UnitName AS unit
-        FROM products p
-        JOIN categories c ON p.CategoryID = c.CategoryID
-        JOIN units u ON p.UnitID = u.UnitID
-        WHERE p.ProductID = ?
-    ");
-    $stmt->bind_param("i", $productID);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $data = $result->fetch_assoc() ?: [
-      'product_name' => '',
-      'product_id' => '',
-      'category_id' => '',
-      'category'=>'',
-      'unit_id' => '',
-      'unit'=>''];
-
-    echo json_encode($data);
-    exit; // important to stop the rest of the page
-}
 // ---------- HELPERS ----------
 function flash($type, $msg) {
   $_SESSION['flash'][] = ['type'=>$type, 'msg'=>$msg];
@@ -45,14 +15,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   try {
     if ($action === 'add_item') {
       // Inputs
-      $productID       = trim($_POST['item_name'] ?? '');
-      // $productID  = trim($_POST['product_id'] ?? '');
+      $name       = trim($_POST['item_name'] ?? '');
       $category   = trim($_POST['category'] ?? '');
-      $catid      = trim($_POST['category_id'] ?? '');
       $unit       = trim($_POST['unit'] ?? '');
-      $unitId       = trim($_POST['unit_id'] ?? '');
       $sku        = trim($_POST['sku'] ?? '');
-      $Batchnum     = trim($_POST['Batchnum'] ?? '');
       $quantity   = isset($_POST['quantity']) ? (int)$_POST['quantity'] : 0;
       $expiration = $_POST['expiration'] ?? null;
       if ($expiration === '') $expiration = null;
@@ -63,81 +29,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
       $conn->begin_transaction();
 
-    //   // Find/create category
-    //   $stmt = $conn->prepare("SELECT Category_ID, Category FROM categories WHERE Category_Name = ?");
-    //   $stmt->bind_param('s', $category);
-    //   $stmt->execute();
-    //   $stmt->bind_result($catId);
-    //   $exists = $stmt->fetch();
-    //   $stmt->close();
-    //   if (!$exists) {
-    //     $stmt = $conn->prepare("INSERT INTO categories (Category_Name) VALUES (?)");
-    //     $stmt->bind_param('s', $category);
-    //     $stmt->execute();
-    //     $catId = $stmt->insert_id;
-    //     $stmt->close();
-    //   }
-
-    // // Find or create unit
-    // $stmt = $conn->prepare("SELECT Unit_ID FROM unit WHERE Unit = ?");
-    // $stmt->bind_param('s', $unit);
-    // $stmt->execute();
-    // $stmt->bind_result($unitId);
-    // $exists = $stmt->fetch();
-    // $stmt->close();
-    // if (!$exists) {
-    //     $stmt = $conn->prepare("INSERT INTO unit (Unit) VALUES (?)");
-    //     $stmt->bind_param('s', $unit);
-    //     $stmt->execute();
-    //     $unitId = $stmt->insert_id;
-    //     $stmt->close();
-    // }
-
-    //   // Find/create product (by name + category)
-    //   $stmt = $conn->prepare("SELECT ProductID, Unit FROM products WHERE ProductName = ? AND Category_ID = ?");
-    //   $stmt->bind_param('si', $name, $catId);
-    //   $stmt->execute();
-    //   $stmt->bind_result($productId, $existingUnit);
-    //   $pExists = $stmt->fetch();
-    //   $stmt->close();
-
-    //   if (!$pExists) {
-    //     $stmt = $conn->prepare("INSERT INTO products (ProductName, Category_ID, Unit) VALUES (?, ?, ?)");
-    //     $stmt->bind_param('sis', $name, $catId, $unit);
-    //     $stmt->execute();
-    //     $productId = $stmt->insert_id;
-    //     $stmt->close();
-    //   } else if ($unit !== '' && $unit !== $existingUnit) {
-    //     $stmt = $conn->prepare("UPDATE products SET Unit = ? WHERE ProductID = ?");
-    //     $stmt->bind_param('si', $unit, $productId);
-    //     $stmt->execute();
-    //     $stmt->close();
-    //   }
-
-      // Insert inventory (SKU optional -> NULLIF to avoid UNIQUE '' issue)
-
-      $status = ($quantity === 0) ? 'Out of Stock' : (($quantity < 10) ? 'Low Stock' : 'In Stock');
-      $stmt = $conn->prepare("
-        INSERT INTO inventory (ProductID, SKU, BatchNum, Quantity, ExpirationDate, Status)
-        VALUES (?, NULLIF(?, ''), ?, ?, ?, ?)
-      ");
-      $stmt->bind_param('ississ', $productID, $sku, $Batchnum, $quantity, $expiration, $status);
+      // Find/create category
+      $stmt = $conn->prepare("SELECT Category_ID FROM categories WHERE Category_Name = ?");
+      $stmt->bind_param('s', $category);
       $stmt->execute();
+      $stmt->bind_result($catId);
+      $exists = $stmt->fetch();
+      $stmt->close();
+      if (!$exists) {
+        $stmt = $conn->prepare("INSERT INTO categories (Category_Name) VALUES (?)");
+        $stmt->bind_param('s', $category);
+        $stmt->execute();
+        $catId = $stmt->insert_id;
+        $stmt->close();
+      }
+
+      // Find/create product (by name + category)
+      $stmt = $conn->prepare("SELECT ProductID, Unit FROM products WHERE ProductName = ? AND Category_ID = ?");
+      $stmt->bind_param('si', $name, $catId);
+      $stmt->execute();
+      $stmt->bind_result($productId, $existingUnit);
+      $pExists = $stmt->fetch();
       $stmt->close();
 
-//       $stmt = $conn->prepare("
-//         SELECT Min_stock, Max_stock FROM inventory i
-//         WHERE ProductID = ?
-//       ");
-//       $stmt->bind_param('i', $productId);
-//       $stmt->execute();
-//       $result = $stmt->get_result();
-//       $data = $results->fetch_assoc();
-//       $stmt->close();
-//       $minstock = $data['Min_stock'];
-//       $maxstock = $data['Max_stock'];
+      if (!$pExists) {
+        $stmt = $conn->prepare("INSERT INTO products (ProductName, Category_ID, Unit) VALUES (?, ?, ?)");
+        $stmt->bind_param('sis', $name, $catId, $unit);
+        $stmt->execute();
+        $productId = $stmt->insert_id;
+        $stmt->close();
+      } else if ($unit !== '' && $unit !== $existingUnit) {
+        $stmt = $conn->prepare("UPDATE products SET Unit = ? WHERE ProductID = ?");
+        $stmt->bind_param('si', $unit, $productId);
+        $stmt->execute();
+        $stmt->close();
+      }
 
-//       // $status = ($quantity === 0) ? 'Out of Stock' : (($quantity < $minstock) ? 'Low Stock' : 'In Stock');
+      // Insert inventory (SKU optional -> NULLIF to avoid UNIQUE '' issue)
+      $status = ($quantity === 0) ? 'Out of Stock' : (($quantity < 5) ? 'Low Stock' : 'In Stock');
+      $stmt = $conn->prepare("
+        INSERT INTO inventory (ProductID, SKU, Quantity, ExpirationDate, Status)
+        VALUES (?, NULLIF(?, ''), ?, ?, ?)
+      ");
+      $stmt->bind_param('isiss', $productId, $sku, $quantity, $expiration, $status);
+      $stmt->execute();
+      $stmt->close();
 
       $conn->commit();
       flash('success', 'Item added successfully.');
@@ -236,17 +172,15 @@ try {
       i.InventoryID,
       i.ProductID,
       i.SKU,
-      i.BatchNum,
       i.Quantity,
       i.ExpirationDate,
       i.Status AS InventoryStatus,
       p.ProductName,
-      u.UnitName,
+      p.Unit,
       c.Category_Name
     FROM inventory i
     JOIN products p ON p.ProductID = i.ProductID
-    LEFT JOIN categories c ON c.CategoryID = p.CategoryID
-    LEFT JOIN units u ON u.UnitID = p.UnitID
+    LEFT JOIN categories c ON c.Category_ID = p.Category_ID
     ORDER BY p.ProductName
   ";
   $res = $conn->query($sql);
@@ -300,7 +234,7 @@ try {
 .modal { position:fixed; inset:0; display:none; background:rgba(0,0,0,.35); align-items:center; justify-content:center; z-index:1000; }
 .modal .modal-content { background:#fff; width:min(560px, 92vw); border-radius:12px; padding:16px; }
 .modal label { display:block; font-size:.9rem; margin-top:8px; }
-.modal input[type="text"], .modal input[type="number"], .modal input[type="date"], .modal select { width:100%; padding:8px; border:1px solid #ddd; border-radius:8px; }
+.modal input[type="text"], .modal input[type="number"], .modal input[type="date"] { width:100%; padding:8px; border:1px solid #ddd; border-radius:8px; }
 .filter-dropdown { position:absolute; background:#fff; border:1px solid #eee; border-radius:10px; padding:10px; right:0; top:44px; width:260px; box-shadow:0 8px 26px rgba(0,0,0,.15);}
 .hidden { display:none; } .search-wrapper { display:flex; gap:8px; align-items:center; position:relative; }
 .search-wrapper input[type="search"] { padding:8px 10px; border:1px solid #ddd; border-radius:8px; min-width:260px; }
@@ -402,7 +336,7 @@ try {
           <thead>
             <tr>
               <th>Item</th><th>Category</th><th>Current Stock</th><th>Status</th>
-              <th>Expiration Date</th><th>Batch Number</th><th>SKU</th><th>Unit</th><th>Request</th><th>Action</th>
+              <th>Expiration Date</th><th>SKU</th><th>Unit</th><th>Request</th><th>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -413,9 +347,8 @@ try {
               <td><?= (int)$item['Quantity'] ?></td>
               <td class="<?= $item['status_class'] ?>"><?= htmlspecialchars($item['status']) ?></td>
               <td class="expiration"><?= !empty($item['ExpirationDate']) ? htmlspecialchars($item['ExpirationDate']) : '--' ?></td>
-              <td><?= htmlspecialchars($item['BatchNum'] ?? '-') ?></td>
               <td><?= htmlspecialchars($item['SKU'] ?? '-') ?></td>
-              <td><?= htmlspecialchars($item['UnitName'] ?? '-') ?></td>
+              <td><?= htmlspecialchars($item['Unit'] ?? '-') ?></td>
               <td>
                 <button class="btn small select-btn"
                         data-productid="<?= (int)$item['ProductID'] ?>"
@@ -475,31 +408,17 @@ try {
   <div class="modal" id="addItemModal" style="display:none;">
     <div class="modal-content">
       <span class="close" role="button" aria-label="Close">&times;</span>
-      <h3>Product Information</h3>
+      <h3>Add New Item</h3>
       <form method="post">
         <input type="hidden" name="action" value="add_item">
-        <label>Select Product</label>
-        <select name="item_name" id="item_name" required>
-        <option value="">-- Select Product --</option>
-        <?php
-        $result = $conn->query("SELECT ProductID, ProductName FROM products");
-        while ($row = $result->fetch_assoc()) {
-                        echo "<option value='{$row['ProductID']}'>{$row['ProductName']}</option>";
-        }
-        ?>
-        </select>
-        <input type="hidden" name="product_id" id="product_id">
+        <label>Item Name</label>
+        <input type="text" name="item_name" required>
         <label>Category</label>
-        <input type="hidden" name="category_id" id="category_id">
-        <input type="text" name="category" id="category" readonly>
+        <input type="text" name="category" placeholder="e.g. Skincare" required>
         <label>Unit</label>
-        <input type="text" name="unit" id="unit" readonly>
-        <input type="hidden" name="unit_id" id="unit_id">
-        <h3>Batch Information</h3>
+        <input type="text" name="unit" placeholder="e.g. pcs, box, bottle">
         <label>SKU</label>
         <input type="text" name="sku" placeholder="Optional">
-        <label>Batch Number</label>
-        <input type="text" name="Batchnum" placeholder="Optional">
         <label>Quantity</label>
         <input type="number" name="quantity" min="0" required>
         <label>Expiration</label>
@@ -538,38 +457,6 @@ try {
 
 <script>
 $(function () {
-  $('#item_name').change(function() {
-        var productID = $(this).val();
-        if (productID) {
-            $.ajax({
-                type: 'POST',
-                url: '', // same PHP file
-                data: { fetch_product: 1, product_id: productID },
-                dataType: 'json',
-                success: function(response) {
-                    $('#product_id').val(response.product_id);
-                    $('#category').val(response.category);
-                    $('#unit').val(response.unit);
-                    $('#category_id').val(response.category_id);
-                    $('#unit_id').val(response.unit_id);
-                    console.log(response);
-                    if (response.product_name) {
-                      let namePart = response.product_name.substring(0, 4).toUpperCase(); // fixed here
-                      let datePart = new Date().toISOString().slice(2,10).replace(/-/g, '')
-                      let randomPart = Math.floor(Math.random() * 900 + 100);
-                      let SKU = `${namePart}-${datePart}-${randomPart}`;
-
-                      $('input[name="sku"]').val(SKU);
-                  }
-                } 
-            });
-        } else {
-            $('#category').val('');
-            $('#unit').val('');
-            $('#category_id').val('');
-            $('#unit_id').val('');
-        }
-  });
   // Sidebar toggle
   $(".toggle").click(() => $(".sidebar").toggleClass("hide"));
 
@@ -688,8 +575,6 @@ $(function () {
         window.location.href = "logout.php";
       });
 });
-
-
 </script>
 </body>
 </html>
