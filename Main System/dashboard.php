@@ -150,7 +150,7 @@ if (isset($_SESSION['popupMessage'])) {
       $("#inventory").click(function(){ window.location.href = "Inventory.php";});
       $("#nav-suppliers").click(function(){ window.location.href ="suppliers.php"; });
       $("#request").click(function(){ window.location.href = "request_list.php"; });
-      $("#low-stock").click(function(){ window.location.href = "lowstock.html"; });
+      $("#low-stock").click(function(){ window.location.href = "lowstock.php"; });
 
 
       //Logout

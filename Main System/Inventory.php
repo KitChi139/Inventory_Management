@@ -287,13 +287,7 @@ try {
 <link rel="stylesheet" href="inventory.css" />
 <style>
 /* (minimal safe styles; keep your inventory.css) */
-
-
-
-
 .status-ok { color:#12805c; font-weight:600; } .status-low { color:#b48a00; font-weight:600; } .status-out { color:#c5162e; font-weight:600; }
-
-
 .quick-request { padding:14px; }
 .qr-table { width:100%; border-collapse:collapse; margin-top:8px;} .qr-table th, .qr-table td { padding:8px; border-bottom:1px solid #eee; }
 .qr-actions { display:flex; gap:8px; margin-top:12px; }
@@ -327,7 +321,7 @@ try {
       <ul class="menu">
         <li id="dashboard"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></li>
         <li class="active"><i class="fa-solid fa-boxes-stacked"></i><span>Inventory</span></li>
-        <li><i class="fa-solid fa-triangle-exclamation"></i><span>Low Stock</span></li>
+        <li id="low-stock"><i class="fa-solid fa-triangle-exclamation"></i><span>Low Stock</span></li>
         <li id="request"><i class="fa-solid fa-file-pen"></i><span>Requests</span></li>
         <li id="nav-suppliers"><i class="fa-solid fa-truck"></i><span>Suppliers</span></li>
         <li><i class="fa-solid fa-file-lines"></i><span>Reports</span></li>
@@ -681,7 +675,7 @@ $(function () {
   $("#dashboard").click(function(){ window.location.href = "dashboard.php"; });
   $("#nav-suppliers").click(function(){ window.location.href = "suppliers.php"; });
   $("#request").click(function(){ window.location.href = "request_list.php"; });
-  $("#low-stock").click(function(){ window.location.href = "lowstock.html"; });
+  $("#low-stock").click(function(){ window.location.href = "lowstock.php"; });
 
   //Logout
       $("#logout").click(function(){
