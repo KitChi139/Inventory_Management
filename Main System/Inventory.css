@@ -634,3 +634,17 @@ body {
   color: #ffcccc; /* optional: lighter hover color */
   text-decoration: none;
 }
+
+.batches-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+.batches-table th, .batches-table td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: center;
+}
+.batches-table th {
+  background-color: #f3f3f3;
+}

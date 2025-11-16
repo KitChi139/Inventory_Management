@@ -63,6 +63,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
       $conn->begin_transaction();
 
+    //   // Find/create category
+    //   $stmt = $conn->prepare("SELECT Category_ID, Category FROM categories WHERE Category_Name = ?");
+    //   $stmt->bind_param('s', $category);
+    //   $stmt->execute();
+    //   $stmt->bind_result($catId);
+    //   $exists = $stmt->fetch();
+    //   $stmt->close();
+    //   if (!$exists) {
+    //     $stmt = $conn->prepare("INSERT INTO categories (Category_Name) VALUES (?)");
+    //     $stmt->bind_param('s', $category);
+    //     $stmt->execute();
+    //     $catId = $stmt->insert_id;
+    //     $stmt->close();
+    //   }
+
+    // // Find or create unit
+    // $stmt = $conn->prepare("SELECT Unit_ID FROM unit WHERE Unit = ?");
+    // $stmt->bind_param('s', $unit);
+    // $stmt->execute();
+    // $stmt->bind_result($unitId);
+    // $exists = $stmt->fetch();
+    // $stmt->close();
+    // if (!$exists) {
+    //     $stmt = $conn->prepare("INSERT INTO unit (Unit) VALUES (?)");
+    //     $stmt->bind_param('s', $unit);
+    //     $stmt->execute();
+    //     $unitId = $stmt->insert_id;
+    //     $stmt->close();
+    // }
+
+    //   // Find/create product (by name + category)
+    //   $stmt = $conn->prepare("SELECT ProductID, Unit FROM products WHERE ProductName = ? AND Category_ID = ?");
+    //   $stmt->bind_param('si', $name, $catId);
+    //   $stmt->execute();
+    //   $stmt->bind_result($productId, $existingUnit);
+    //   $pExists = $stmt->fetch();
+    //   $stmt->close();
+
+    //   if (!$pExists) {
+    //     $stmt = $conn->prepare("INSERT INTO products (ProductName, Category_ID, Unit) VALUES (?, ?, ?)");
+    //     $stmt->bind_param('sis', $name, $catId, $unit);
+    //     $stmt->execute();
+    //     $productId = $stmt->insert_id;
+    //     $stmt->close();
+    //   } else if ($unit !== '' && $unit !== $existingUnit) {
+    //     $stmt = $conn->prepare("UPDATE products SET Unit = ? WHERE ProductID = ?");
+    //     $stmt->bind_param('si', $unit, $productId);
+    //     $stmt->execute();
+    //     $stmt->close();
+    //   }
+
       // Insert inventory (SKU optional -> NULLIF to avoid UNIQUE '' issue)
 
       $status = ($quantity === 0) ? 'Out of Stock' : (($quantity < 10) ? 'Low Stock' : 'In Stock');
@@ -191,34 +242,20 @@ try {
       i.Status AS InventoryStatus,
       p.ProductName,
       u.UnitName,
-      c.Category_Name,
-      IFNULL(SUM(i.Quantity),0) AS TotalQuantity
+      c.Category_Name
     FROM inventory i
     JOIN products p ON p.ProductID = i.ProductID
     LEFT JOIN categories c ON c.CategoryID = p.CategoryID
     LEFT JOIN units u ON u.UnitID = p.UnitID
-     GROUP BY p.ProductID, p.ProductName, p.Min_stock, p.Max_stock, u.UnitName, c.Category_Name
     ORDER BY p.ProductName
   ";
   $res = $conn->query($sql);
   while ($row = $res->fetch_assoc()) {
-    $q = (int)($row['TotalQuantity'] ?? 0);
-    $maxstock = (int)($row['Max_stock'] ?? 0);
-    $minstock = (int)($row['Min_stock'] ?? 0);
-    if     ($q === 0) { 
-      $row['status']='Out of Stock'; 
-      $row['status_class']='status-out'; }
-    elseif ($q < $minstock)   { 
-      $row['status']='Low Stock';   
-      $row['status_class']='status-low'; }
-    elseif ($q > $maxstock) {
-      $row['status']='Overstock';
-      $row['status_class']='status-high'; 
-    }
-    else {
-      $row['status']='In Stock';
-      $row['status_class'] = 'status-ok';
-    }
+    $q = (int)($row['Quantity'] ?? 0);
+    $row['status'] = 'In Stock';
+    $row['status_class'] = 'status-ok';
+    if     ($q === 0) { $row['status']='Out of Stock'; $row['status_class']='status-out'; }
+    elseif ($q < 5)   { $row['status']='Low Stock';   $row['status_class']='status-low'; }
     $inventory[] = $row;
   }
 } catch (Throwable $e) {
@@ -353,51 +390,13 @@ try {
           </div>
         </div>
       </div>
-      
+
       <div class="table-wrap">
         <table class="inventory-table" role="table" aria-label="Inventory table">
           <thead>
             <tr>
-              <th>Product</th>
-              <th>SKU</th>
-              <th>Total Stock</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <?php foreach ($inventory as $item): ?>
-            <tr>
-              <td><?= htmlspecialchars($item['ProductName']) ?></td>
-              <td><?= htmlspecialchars($item['SKU']) ?></td>
-              <td><?= htmlspecialchars($item['TotalQuantity']) ?></td>
-              <td><?= htmlspecialchars($item['status']) ?></td>
-              <td>
-                <button class="btn view-batches-btn" 
-                    data-productid="<?= (int)$item['ProductID'] ?>"
-                    data-productname="<?= htmlspecialchars($item['ProductName']) ?>">
-                  View Batches
-                </button>
-              </td>
-
-            </tr>
-          <?php endforeach; ?>
-          </tbody>
-        </table>
-      </div>
-      <!-- <div class="table-wrap">
-        <table class="inventory-table" role="table" aria-label="Inventory table">
-          <thead>
-            <tr>
-              <th>Item</th>
-              <th>Category</th>
-              <th>Current Stock</th>
-              <th>Status</th>
-              <th>Expiration Date</th>
-              <th>Batch Number</th>
-              <th>SKU</th><th>Unit</th>
-              <th>Request</th>
-              <th>Action</th>
+              <th>Item</th><th>Category</th><th>Current Stock</th><th>Status</th>
+              <th>Expiration Date</th><th>Batch Number</th><th>SKU</th><th>Unit</th><th>Request</th><th>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -442,7 +441,7 @@ try {
           <?php endforeach; ?>
           </tbody>
         </table>
-      </div> -->
+      </div>
     </div>
 
     <aside class="quick-request box" aria-label="Quick request panel">
@@ -565,25 +564,6 @@ $(function () {
             $('#unit_id').val('');
         }
   });
-  $(document).on('click', '.view-batches-btn', function() {
-  const productId = $(this).data('productid');
-  const productName = $(this).data('productname');
-
-  $.ajax({
-      url: 'fetch_batches.php',
-      method: 'POST',
-      data: { product_id: productId },
-      success: function(response) {
-        $('#batches-container').html(`
-          <h3>Batches for ${productName}</h3>
-          ${response}
-        `);
-      },
-      error: function() {
-        alert('Failed to load batches.');
-      }
-    });
-  });
   // Sidebar toggle
   $(".toggle").click(() => $(".sidebar").toggleClass("hide"));
 
@@ -693,7 +673,7 @@ $(function () {
 
   // Nav
   $("#dashboard").click(function(){ window.location.href = "dashboard.php"; });
-  $("#nav-suppliers").click(function(){ window.location.href = "supplier.php"; });
+  $("#nav-suppliers").click(function(){ window.location.href = "suppliers.php"; });
   $("#request").click(function(){ window.location.href = "request_list.php"; });
   $("#low-stock").click(function(){ window.location.href = "lowstock.php"; });
 
