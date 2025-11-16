@@ -191,20 +191,34 @@ try {
       i.Status AS InventoryStatus,
       p.ProductName,
       u.UnitName,
-      c.Category_Name
+      c.Category_Name,
+      IFNULL(SUM(i.Quantity),0) AS TotalQuantity
     FROM inventory i
     JOIN products p ON p.ProductID = i.ProductID
     LEFT JOIN categories c ON c.CategoryID = p.CategoryID
     LEFT JOIN units u ON u.UnitID = p.UnitID
+     GROUP BY p.ProductID, p.ProductName, p.Min_stock, p.Max_stock, u.UnitName, c.Category_Name
     ORDER BY p.ProductName
   ";
   $res = $conn->query($sql);
   while ($row = $res->fetch_assoc()) {
-    $q = (int)($row['Quantity'] ?? 0);
-    $row['status'] = 'In Stock';
-    $row['status_class'] = 'status-ok';
-    if     ($q === 0) { $row['status']='Out of Stock'; $row['status_class']='status-out'; }
-    elseif ($q < 5)   { $row['status']='Low Stock';   $row['status_class']='status-low'; }
+    $q = (int)($row['TotalQuantity'] ?? 0);
+    $maxstock = (int)($row['Max_stock'] ?? 0);
+    $minstock = (int)($row['Min_stock'] ?? 0);
+    if     ($q === 0) { 
+      $row['status']='Out of Stock'; 
+      $row['status_class']='status-out'; }
+    elseif ($q < $minstock)   { 
+      $row['status']='Low Stock';   
+      $row['status_class']='status-low'; }
+    elseif ($q > $maxstock) {
+      $row['status']='Overstock';
+      $row['status_class']='status-high'; 
+    }
+    else {
+      $row['status']='In Stock';
+      $row['status_class'] = 'status-ok';
+    }
     $inventory[] = $row;
   }
 } catch (Throwable $e) {
@@ -339,8 +353,39 @@ try {
           </div>
         </div>
       </div>
-
+      
       <div class="table-wrap">
+        <table class="inventory-table" role="table" aria-label="Inventory table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>SKU</th>
+              <th>Total Stock</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php foreach ($inventory as $item): ?>
+            <tr>
+              <td><?= htmlspecialchars($item['ProductName']) ?></td>
+              <td><?= htmlspecialchars($item['SKU']) ?></td>
+              <td><?= htmlspecialchars($item['TotalQuantity']) ?></td>
+              <td><?= htmlspecialchars($item['status']) ?></td>
+              <td>
+                <button class="btn view-batches-btn" 
+                    data-productid="<?= (int)$item['ProductID'] ?>"
+                    data-productname="<?= htmlspecialchars($item['ProductName']) ?>">
+                  View Batches
+                </button>
+              </td>
+
+            </tr>
+          <?php endforeach; ?>
+          </tbody>
+        </table>
+      </div>
+      <!-- <div class="table-wrap">
         <table class="inventory-table" role="table" aria-label="Inventory table">
           <thead>
             <tr>
@@ -397,7 +442,7 @@ try {
           <?php endforeach; ?>
           </tbody>
         </table>
-      </div>
+      </div> -->
     </div>
 
     <aside class="quick-request box" aria-label="Quick request panel">
@@ -519,6 +564,25 @@ $(function () {
             $('#category_id').val('');
             $('#unit_id').val('');
         }
+  });
+  $(document).on('click', '.view-batches-btn', function() {
+  const productId = $(this).data('productid');
+  const productName = $(this).data('productname');
+
+  $.ajax({
+      url: 'fetch_batches.php',
+      method: 'POST',
+      data: { product_id: productId },
+      success: function(response) {
+        $('#batches-container').html(`
+          <h3>Batches for ${productName}</h3>
+          ${response}
+        `);
+      },
+      error: function() {
+        alert('Failed to load batches.');
+      }
+    });
   });
   // Sidebar toggle
   $(".toggle").click(() => $(".sidebar").toggleClass("hide"));
