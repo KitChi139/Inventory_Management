@@ -137,7 +137,7 @@
 
 <main class="main">
   <header class="topbar">
-    <div class="top-left"><h2>Request</h2></div>
+    <div class="top-left"><h2>Request List</h2></div>
     <div class="top-right">
       <button class="icon-btn"><i class="fa-solid fa-bell bell"></i></button>
     </div>
@@ -218,7 +218,7 @@
       $sql = "SELECT r.request_id, p.ProductName, r.quantity, r.requester, r.status, r.request_date, s.supplier_name
               FROM requests r
               JOIN products p ON r.ProductID = p.ProductID
-              LEFT JOIN suppliers s ON s.supplier_id = p.Category_ID
+              LEFT JOIN suppliers s ON s.supplier_id = p.CategoryID
               ORDER BY r.request_date DESC";
       $result = $conn->query($sql);
       if ($result->num_rows > 0) {
@@ -309,7 +309,7 @@ $(function () {
   $("#dashboard").click(()=> window.location.href = "dashboard.php");
   $("#inventory").click(()=> window.location.href = "inventory.php");
   $("#low-stock").click(()=> window.location.href = "lowstock.php");
-  $("#nav-suppliers").click(()=> window.location.href = "suppliers.php");
+  $("#nav-suppliers").click(()=> window.location.href = "supplier.php");
   $("#logout").click(()=> window.location.href = "logout.php");
 });
 </script>

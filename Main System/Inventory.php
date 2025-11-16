@@ -560,7 +560,7 @@ $(function () {
 
   // Nav
   $("#dashboard").click(function(){ window.location.href = "dashboard.php"; });
-  $("#nav-suppliers").click(function(){ window.location.href = "suppliers.php"; });
+  $("#nav-suppliers").click(function(){ window.location.href = "supplier.php"; });
   $("#request").click(function(){ window.location.href = "request_list.php"; });
   $("#low-stock").click(function(){ window.location.href = "lowstock.php"; });
 

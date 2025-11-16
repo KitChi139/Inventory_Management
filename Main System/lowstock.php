@@ -10,11 +10,12 @@ $sql = "
     i.Status,
     i.ExpirationDate,
     p.ProductName,
-    p.Unit,
+    u.UnitName,
     c.Category_Name
   FROM inventory i
   JOIN products p ON p.ProductID = i.ProductID
-  LEFT JOIN categories c ON c.Category_ID = p.Category_ID
+  JOIN units u ON u.UnitID = p.UnitID
+  LEFT JOIN categories c ON c.CategoryID = p.CategoryID
   WHERE i.Quantity <= 5
   ORDER BY i.Quantity ASC
 ";
@@ -59,7 +60,7 @@ $totalAlerts = count($lowStockItems);
       <li id="inventory"><i class="fa-solid fa-boxes-stacked"></i><span>Inventory</span></li>
       <li class="active"><i class="fa-solid fa-triangle-exclamation"></i><span>Low Stock</span></li>
       <li id="request"><i class="fa-solid fa-file-pen"></i><span>Requests</span></li>
-      <li id="suppliers"><i class="fa-solid fa-truck"></i><span>Suppliers</span></li>
+      <li id="nav-suppliers"><i class="fa-solid fa-truck"></i><span>Suppliers</span></li>
       <li><i class="fa-solid fa-file-lines"></i><span>Reports</span></li>
       <li><i class="fa-solid fa-users"></i><span>Users</span></li>
       <li><i class="fa-solid fa-gear"></i><span>Settings</span></li>
@@ -175,7 +176,7 @@ $(function(){
   $("#dashboard").click(()=>window.location.href="dashboard.php");
   $("#inventory").click(()=>window.location.href="inventory.php");
   $("#request").click(()=>window.location.href="request_list.php");
-  $("#suppliers").click(()=>window.location.href="suppliers.php");
+  $("#nav-suppliers").click(()=>window.location.href="supplier.php");
   $("#logout").click(()=>window.location.href="logout.php");
 
   // Search filtering
