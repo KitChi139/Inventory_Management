@@ -184,6 +184,15 @@ body {
   justify-content: space-between;
 }
 
+.box.expiration {
+    justify-content: flex-start !important;
+    min-height: auto !important;
+}
+
+.box.expiration p {
+    margin-bottom: 6px !important;
+}
+
 .box h4 {
   color: #043873;
   margin-bottom: 10px;
