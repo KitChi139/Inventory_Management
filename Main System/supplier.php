@@ -85,6 +85,7 @@
 <aside class="sidebar" aria-label="Primary">
   <div class="profile">
     <div class="icon" aria-hidden="true"><i class="fa-solid fa-user"></i></div>
+    <img src="logo.png" alt="MediSync Logo" class="medisync-logo">
     <button class="toggle" aria-expanded="true" aria-label="Toggle navigation"><i class="fa-solid fa-bars"></i></button>
   </div>
   <h3 class="title">Navigation</h3>

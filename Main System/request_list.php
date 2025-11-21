@@ -127,20 +127,36 @@
       <li id="low-stock"><i class="fa-solid fa-triangle-exclamation"></i><span>Low Stock</span></li>
       <li class="active"><i class="fa-solid fa-file-pen"></i><span>Requests</span></li>
       <li id="nav-suppliers"><i class="fa-solid fa-truck"></i><span>Suppliers</span></li>
-      <li><i class="fa-solid fa-file-lines"></i><span>Reports</span></li>
-      <li><i class="fa-solid fa-users"></i><span>Users</span></li>
-      <li><i class="fa-solid fa-gear"></i><span>Settings</span></li>
+      <li id="reports"><i class="fa-solid fa-file-lines"></i><span>Reports</span></li>
+      <li id="users"><i class="fa-solid fa-users"></i><span>Users</span></li>
+      <li id="settings"><i class="fa-solid fa-gear"></i><span>Settings</span></li>
       <li id="logout"><i class="fa-solid fa-sign-out"></i><span>Log-Out</span></li>
     </ul>
   </nav>
 </aside>
 
+<?php
+// LOAD 3 MOST RECENT MESSAGES
+$recentMessages = $conn->query("
+    SELECT header, supplier, date_created 
+    FROM messages 
+    ORDER BY date_created DESC 
+    LIMIT 3
+");
+?>
+
+
 <main class="main">
   <header class="topbar">
     <div class="top-left"><h2>Request List</h2></div>
     <div class="top-right">
-      <button class="icon-btn"><i class="fa-solid fa-bell bell"></i></button>
-    </div>
+  <!-- MESSAGE ICON -->
+  <button class="icon-btn"><i id="openMessages" class="fa-solid fa-message"></i></button>
+
+  <!-- NOTIFICATION BELL -->
+  <button class="icon-btn"><i class="fa-solid fa-bell bell"></i></button>
+</div>
+
   </header>
 
   <div class="cards">
@@ -247,6 +263,43 @@
   </div>
 </div>
 
+<!-- MESSAGE POPUP MODAL -->
+<div id="messageModal" class="msg-modal">
+  <div class="msg-modal-content">
+
+      <div class="msg-header">
+        <h3>Messages</h3>
+        <span id="closeMsg" class="close-btn">&times;</span>
+      </div>
+
+      <input type="text" class="msg-search" placeholder="Search messages...">
+
+      <div class="msg-list">
+      <?php while($m = $recentMessages->fetch_assoc()): ?>
+    <div class="msg-item">
+    <div class="msg-avatar">
+        <?= strtoupper(substr($m['supplier'], 0, 2)) ?>
+    </div>
+
+    <div class="msg-details">
+        <strong><?= htmlspecialchars($m['supplier']) ?></strong>
+        <span class="msg-date"><?= date("M d, Y", strtotime($m['date_created'])) ?></span>
+        <div class="msg-preview">
+            <?= htmlspecialchars($m['header']) ?>
+        </div>
+    </div>
+</div>
+<?php endwhile; ?>
+
+
+        <div class="see-more-container">
+    <a href="message_list.php" class="see-more">See More</a>
+</div>
+
+      </div>
+  </div>
+</div>
+
   </div>
 </main>
 
@@ -305,12 +358,62 @@ $(function () {
     alert(selected.length + " item(s) selected for purchase request!");
   });
 
+  // MESSAGE POPUP
+$("#openMessages").click(function() {
+  $("#messageModal").css("display", "flex");
+});
+
+$("#closeMsg").click(function() {
+  $("#messageModal").hide();
+});
+
+// close when clicking outside
+$(window).on("click", function(e) {
+  if (e.target.id === "messageModal") {
+    $("#messageModal").hide();
+  }
+});
+
+// SEARCH BAR – FILTER MESSAGES
+const searchInput = document.querySelector(".msg-search");
+const messageItems = document.querySelectorAll(".msg-item");
+
+searchInput.addEventListener("keyup", () => {
+    const value = searchInput.value.toLowerCase();
+
+    messageItems.forEach(item => {
+        const text = item.innerText.toLowerCase();
+
+        if (text.includes(value)) {
+            item.style.display = "flex";
+        } else {
+            item.style.display = "none";
+        }
+    });
+});
+
+// AJAX SEARCH — fetch results from database
+$(".msg-search").on("keyup", function () {
+    let searchVal = $(this).val();
+
+    $.ajax({
+        url: "search_messages.php",
+        method: "POST",
+        data: { search: searchVal },
+        success: function (data) {
+            $(".msg-list").html(data);
+        }
+    });
+});
+
   // Navigation
   $("#dashboard").click(()=> window.location.href = "dashboard.php");
   $("#inventory").click(()=> window.location.href = "inventory.php");
   $("#low-stock").click(()=> window.location.href = "lowstock.php");
   $("#nav-suppliers").click(()=> window.location.href = "supplier.php");
   $("#logout").click(()=> window.location.href = "logout.php");
+
+
 });
 </script>
 </body>

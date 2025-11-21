@@ -10,7 +10,7 @@ $sql = "
     i.Status,
     i.ExpirationDate,
     p.ProductName,
-    u.UnitName,
+    u.UnitName as Unit,
     c.Category_Name
   FROM inventory i
   JOIN products p ON p.ProductID = i.ProductID
@@ -61,9 +61,9 @@ $totalAlerts = count($lowStockItems);
       <li class="active"><i class="fa-solid fa-triangle-exclamation"></i><span>Low Stock</span></li>
       <li id="request"><i class="fa-solid fa-file-pen"></i><span>Requests</span></li>
       <li id="nav-suppliers"><i class="fa-solid fa-truck"></i><span>Suppliers</span></li>
-      <li><i class="fa-solid fa-file-lines"></i><span>Reports</span></li>
-      <li><i class="fa-solid fa-users"></i><span>Users</span></li>
-      <li><i class="fa-solid fa-gear"></i><span>Settings</span></li>
+      <li id="reports"><i class="fa-solid fa-file-lines"></i><span>Reports</span></li>
+      <li id="users"><i class="fa-solid fa-users"></i><span>Users</span></li>
+      <li id="settings"><i class="fa-solid fa-gear"></i><span>Settings</span></li>
       <li id="logout"><i class="fa-solid fa-sign-out"></i><span>Log-Out</span></li>
     </ul>
   </nav>
