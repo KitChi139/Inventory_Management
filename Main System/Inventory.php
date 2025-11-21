@@ -287,9 +287,9 @@ try {
         <li id="low-stock"><i class="fa-solid fa-triangle-exclamation"></i><span>Low Stock</span></li>
         <li id="request"><i class="fa-solid fa-file-pen"></i><span>Requests</span></li>
         <li id="nav-suppliers"><i class="fa-solid fa-truck"></i><span>Suppliers</span></li>
-        <li><i class="fa-solid fa-file-lines"></i><span>Reports</span></li>
-        <li><i class="fa-solid fa-users"></i><span>Users</span></li>
-        <li><i class="fa-solid fa-gear"></i><span>Settings</span></li>
+        <li id="reports"><i class="fa-solid fa-file-lines"></i><span>Reports</span></li>
+        <li id="users"><i class="fa-solid fa-users"></i><span>Users</span></li>
+        <li id="settings"><i class="fa-solid fa-gear"></i><span>Settings</span></li>
         <li id="logout"><i class="fa-solid fa-sign-out"></i><span>Log-Out</span></li>
       </ul>
     </div>
@@ -355,36 +355,45 @@ try {
       </div>
       
       <div class="table-wrap">
-        <table class="inventory-table" role="table" aria-label="Inventory table">
-          <thead>
-            <tr>
-              <th>Product</th>
-              <th>SKU</th>
-              <th>Total Stock</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <?php foreach ($inventory as $item): ?>
-            <tr>
-              <td><?= htmlspecialchars($item['ProductName']) ?></td>
-              <td><?= htmlspecialchars($item['SKU']) ?></td>
-              <td><?= htmlspecialchars($item['TotalQuantity']) ?></td>
-              <td><?= htmlspecialchars($item['status']) ?></td>
-              <td>
-                <button class="btn view-batches-btn" 
-                    data-productid="<?= (int)$item['ProductID'] ?>"
-                    data-productname="<?= htmlspecialchars($item['ProductName']) ?>">
-                  View Batches
-                </button>
-              </td>
+  <table class="inventory-table" role="table" aria-label="Inventory table">
 
-            </tr>
-          <?php endforeach; ?>
-          </tbody>
-        </table>
-      </div>
+    <thead>
+      <tr>
+        <th><input type="checkbox" id="select-all"></th>
+        <th>Product</th>
+        <th>SKU</th>
+        <th>Total Stock</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <?php foreach ($inventory as $item): ?>
+      <tr>
+        <td>
+          <input type="checkbox" class="item-check" value="<?= (int)$item['ProductID'] ?>">
+        </td>
+
+        <td><?= htmlspecialchars($item['ProductName']) ?></td>
+        <td><?= htmlspecialchars($item['SKU']) ?></td>
+        <td><?= htmlspecialchars($item['TotalQuantity']) ?></td>
+        <td><?= htmlspecialchars($item['status']) ?></td>
+
+        <td>
+          <button class="btn view-batches-btn"
+              data-productid="<?= (int)$item['ProductID'] ?>"
+              data-productname="<?= htmlspecialchars($item['ProductName']) ?>">
+            View Batches
+          </button>
+        </td>
+      </tr>
+      <?php endforeach; ?>
+    </tbody>
+
+  </table>
+</div>
+
       <!-- <div class="table-wrap">
         <table class="inventory-table" role="table" aria-label="Inventory table">
           <thead>
@@ -442,7 +451,8 @@ try {
           <?php endforeach; ?>
           </tbody>
         </table>
-      </div> -->
+      </div>  -->
+      
     </div>
 
     <aside class="quick-request box" aria-label="Quick request panel">
@@ -684,7 +694,7 @@ $(function () {
     if (!qrItems.length) return alert("Please select at least one item.");
     if (!confirm("Submit this request?")) return;
     $.post("quick_request.php", { items: JSON.stringify(qrItems) }, res => {
-      try { res = JSON.parse(res); } catch (e) { return alert("Unexpected response."); }
+      // try { res = JSON.parse(res); } catch (e) { return alert("Unexpected response."); } 
       if (res.success) { alert("Request submitted successfully!"); qrItems = []; refreshQRTable(); }
       else alert("Error: " + (res.message || "failed"));
     }).fail(() => alert("Failed to send request."));
@@ -701,6 +711,26 @@ $(function () {
       $("#logout").click(function(){
         window.location.href = "logout.php";
       });
+
+      
+  // Toggle all checkboxes when "Select All" is clicked
+  document.getElementById("select-all").addEventListener("change", function () {
+    const isChecked = this.checked;
+    document.querySelectorAll(".item-check").forEach(cb => cb.checked = isChecked);
+  });
+
+  // If any item is unchecked → uncheck Select All
+  document.addEventListener("change", function (e) {
+    if (e.target.classList.contains("item-check")) {
+      const all = document.querySelectorAll(".item-check");
+      const checked = document.querySelectorAll(".item-check:checked");
+      const selectAll = document.getElementById("select-all");
+
+      selectAll.checked = all.length === checked.length;
+    }
+  });
+
+
 });
 
 

@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Report</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+  <style>
+    :root {
+      --primary: #043873;
+      --accent: #4f9cf9;
+      --danger: #ff4d4f;
+      --muted: #777;
+      --bg: #f5f8ff;
+      --radius: 10px;
+      --sidebar-width: 240px;
+      --sidebar-collapsed: 70px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: var(--bg);
+      display: flex;
+      height: 100vh;
+      color: #333;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: var(--sidebar-width);
+      height: 100vh;
+      background-color: var(--primary);
+      color: white;
+      position: fixed;
+      left: 0;
+      top: 0;
+      padding-top: 15px;
+      overflow-y: auto;
+    }
+
+    .sidebar.hide { width: var(--sidebar-collapsed); }
+
+    .profile {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px;
+    }
+
+    .icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: white;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .toggle {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 22px;
+      cursor: pointer;
+    }
+
+    .title {
+      text-align: center;
+      font-size: 13px;
+      color: #e6e6e6;
+      margin: 10px 0;
+    }
+
+    .menu { list-style: none; margin: 10px 0; overflow-y: auto; height: calc(100vh - 150px);}
+
+    .menu li {
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+      transition: background 0.25s;
+    }
+
+    .menu li:hover, .menu li.active {
+      background: var(--accent);
+      border-radius: 8px;
+    }
+
+    .sidebar.hide li span { display: none; }
+    .sidebar.hide .icon { opacity: 0; pointer-events: none; }
+    .sidebar.hide li { justify-content: center; }
+
+    /* MAIN */
+    .main {
+      margin-left: var(--sidebar-width);
+      padding: 24px;
+      width: calc(100% - var(--sidebar-width));
+      transition: 0.3s;
+      overflow-y: auto;
+      height: 100vh;
+    }
+
+    .sidebar.hide ~ .main {
+      margin-left: var(--sidebar-collapsed);
+      width: calc(100% - var(--sidebar-collapsed));
+    }
+
+    /* HEADER */
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+    }
+
+    .topbar h2 { color: var(--primary); font-weight: 600; }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--primary);
+    }
+	
+    /* CARDS */
+    .cards-container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 25px;
+      margin-top: 10px;
+    }
+
+    .card {
+      background: #d9d9d9;
+      padding: 35px 25px;
+      border-radius: 6px;
+      text-align: center;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .card:hover {
+      background: #c8c8c8;
+      transform: translateY(-3px);
+    }
+
+    .card .emoji {
+      font-size: 40px;
+      margin-bottom: 10px;
+    }
+
+    .card h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .card p {
+      font-size: 14px;
+      color: #444;
+    }
+
+    /* Shared report container */
+    .report-container {
+      background: white;
+      padding: 20px;
+      border-radius: var(--radius);
+      box-shadow: 0 0 10px rgba(0,0,0,0.06);
+      color: #333;
+      font-size: 14px;
+    }
+
+    .report-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-weight: 600;
+      font-size: 18px;
+      margin-bottom: 15px;
+      color: var(--primary);
+    }
+
+    .report-left {
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .report-left .title-icon {
+      width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#1b68d6);
+      display:flex;align-items:center;justify-content:center;color:white;font-size:18px;
+    }
+
+    .report-filters {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      color: var(--primary);
+      flex-wrap:wrap;
+    }
+
+    .filter-group {
+      background: #f0f6ff;
+      padding: 8px 12px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      user-select: none;
+      color: var(--primary);
+      font-weight:600;
+      border:1px solid rgba(4,56,115,0.06);
+    }
+
+    .filter-group i {
+      font-size: 12px;
+      color: var(--primary);
+    }
+
+    .export-btn {
+      margin-left: auto;
+      padding: 8px 14px;
+      background: var(--accent);
+      border: none;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      user-select: none;
+    }
+
+    .report-body {
+      display: flex;
+      gap: 25px;
+      margin-bottom: 20px;
+      flex-wrap:wrap;
+    }
+
+    .bar-chart, .summary {
+      background: #f8fbff;
+      border-radius: var(--radius);
+      padding: 15px;
+      flex: 1;
+      box-sizing: border-box;
+      min-width: 260px;
+      border:1px solid rgba(4,56,115,0.04);
+    }
+
+    .report-title {
+      margin-bottom: 12px;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--primary);
+      border-bottom: 1px solid #e6eefb;
+      padding-bottom: 8px;
+    }
+
+    /* Bar chart styles */
+    .bar-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      font-size: 13px;
+      color: #555;
+    }
+    .bar-label {
+      width: 110px;
+      font-weight:600;
+      color:var(--primary);
+    }
+    .bar-fill {
+      height: 16px;
+      background: linear-gradient(90deg,#bdeaff,#67b6ff);
+      border-radius: 6px;
+      margin: 0 10px;
+      min-width: 20px;
+      flex-grow: 1;
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.06);
+      text-align: right;
+      padding-right: 6px;
+      font-size: 12px;
+      color: #043873;
+      font-weight: 700;
+    }
+    .bar-count {
+      min-width: 40px;
+      text-align: right;
+      color:var(--primary);
+      font-weight:700;
+    }
+
+    /* Table */
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 10px;
+      font-size: 13px;
+      margin-top: 10px;
+    }
+
+    thead th{
+      text-align: left;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #e6eefb;
+      font-weight: 700;
+      color: var(--primary);
+      background: transparent;
+    }
+
+    td {
+      background: #fff;
+      padding: 12px;
+      border-radius: 8px;
+      vertical-align: middle;
+      border:1px solid rgba(4,56,115,0.03);
+      color:#222;
+    }
+
+    .small-muted { font-size:12px;color:var(--muted); }
+
+    /* Inventory specific small elements */
+    .kpi-row { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
+    .kpi {
+      background:white;padding:14px;border-radius:10px;box-shadow:0 4px 10px rgba(4,56,115,0.04);
+      min-width:150px;flex:1;border:1px solid rgba(4,56,115,0.04);
+    }
+    .kpi h4{color:var(--primary);margin-bottom:6px;}
+    .kpi p{font-size:20px;font-weight:700;color:#043873;}
+
+    /* Expiration timeline */
+    .timeline { display:flex; flex-direction:column; gap:10px; margin-top:6px; }
+    .timeline .item { display:flex; justify-content:space-between; padding:10px; background:#fff; border-radius:8px; border:1px solid rgba(4,56,115,0.03); }
+    .timeline .item b { color:var(--primary); }
+
+    /* Department badges */
+    .badge { padding:6px 10px; border-radius:20px; background:#eaf4ff; color:var(--primary); font-weight:700; display:inline-block; }
+
+    /* Responsive tweaks */
+    @media (max-width:900px) {
+      .cards-container { grid-template-columns: 1fr; }
+      .report-body { flex-direction:column; }
+      .main { padding:16px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="profile">
+      <div class="icon"><i class="fa-solid fa-user"></i></div>
+      <button class="toggle"><i class="fa-solid fa-bars"></i></button>
+    </div>
+
+    <h3 class="title">Navigation</h3>
+
+    <nav>
+  <ul class="menu">
+    <li><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></li>
+    <li><i class="fa-solid fa-boxes-stacked"></i><span>Inventory</span></li>
+    <li><i class="fa-solid fa-triangle-exclamation"></i><span>Low Stock</span></li>
+    <li><i class="fa-solid fa-file-pen"></i><span>Requests</span></li>
+    <li><i class="fa-solid fa-truck"></i><span>Suppliers</span></li>
+    <li class="active"><i class="fa-solid fa-file-lines"></i><span>Reports</span></li>
+    <li><i class="fa-solid fa-users"></i><span>Users</span></li>
+    <li><i class="fa-solid fa-gear"></i><span>Settings</span></li>
+  </ul>
+</nav>
+
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <header class="topbar">
+      <h2 id="view-title">Report</h2>
+      <button class="icon-btn"><i class="fa-solid fa-bell"></i></button>
+    </header>
+
+    <div id="view-content" class="cards-container">
+      <div class="card" data-view="inventory-management">
+        <div class="emoji">📦</div>
+        <h3>Inventory Management</h3>
+        <p>Track how items move in and out of stock over time.</p>
+      </div>
+
+      <div class="card" data-view="department-requests">
+        <div class="emoji">🏢</div>
+        <h3>Department Requests</h3>
+        <p>See which departments report the most and monitor approval trends.</p>
+      </div>
+
+      <div class="card" data-view="supplier-vendor">
+        <div class="emoji">🚚</div>
+        <h3>Supplier / Vendor</h3>
+        <p>Review supplier performance, delivery reliability, and purchase history.</p>
+      </div>
+
+      <div class="card" data-view="expiration-wastage">
+        <div class="emoji">⏳</div>
+        <h3>Expiration / Wastage</h3>
+        <p>Identify items nearing expiry and measure stock lost to wastage.</p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    $(".toggle").on("click", function() {
+      $(".sidebar").toggleClass("hide");
+    });
+
+    // Views HTML content for dynamic loading
+    const views = {
+      "inventory-management": `
+      <div class="report-container">
+        <div class="report-header">
+          <div class="report-left">
+            <div class="title-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
+            <div>
+              <div style="font-size:16px;font-weight:700;color:var(--primary)">Inventory Management</div>
+              <div class="small-muted">Overview of stock movement, fast-moving items and inventory KPIs</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <div class="filter-group"><i class="fa-solid fa-calendar"></i> Date Range</div>
+            <div class="filter-group"><i class="fa-solid fa-tags"></i> Category</div>
+            <button class="export-btn"><i class="fa-solid fa-file-export"></i> Export</button>
+          </div>
+        </div>
+
+          <div class="summary">
+            <div class="report-title">Summary</div>
+            <p><strong>Most moved item</strong></p>
+            <p>IV Saline — <span class="small-muted">350 in / 400 out</span></p>
+            <hr style="margin:12px 0;border:none;border-top:1px solid #eef6ff"/>
+            <p><strong>Low stock alerts</strong></p>
+            <p>Gloves (20 left), Mask (15 left)</p>
+            <hr style="margin:12px 0;border:none;border-top:1px solid #eef6ff"/>
+            <p class="small-muted">Last updated: Mar 16, 2025</p>
+          </div>
+        </div>
+
+        <div>
+          <div class="report-title">Frequently Moved Items</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Item Name</th>
+                <th>Batch No.</th>
+                <th>IN</th>
+                <th>OUT</th>
+                <th>Net Change</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Amoxicillin</td>
+                <td>AMX2309B</td>
+                <td>200</td>
+                <td>150</td>
+                <td>+50</td>
+              </tr>
+              <tr>
+                <td>IV Saline</td>
+                <td>IVS2401B</td>
+                <td>350</td>
+                <td>400</td>
+                <td>-50</td>
+              </tr>
+              <tr>
+                <td>Paracetamol</td>
+                <td>PCM2312C</td>
+                <td>100</td>
+                <td>200</td>
+                <td>-100</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      `,
+
+      "department-requests": `
+      <div class="report-container">
+        <div class="report-header">
+          <div class="report-left">
+            <div class="title-icon"><i class="fa-solid fa-building"></i></div>
+            <div>
+              <div style="font-size:16px;font-weight:700;color:var(--primary)">Department Requests</div>
+              <div class="small-muted">Requests per department, approval rates and backlog</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <div class="filter-group"><i class="fa-solid fa-calendar"></i> Date Range</div>
+            <div class="filter-group"><i class="fa-solid fa-clipboard-list"></i> Status</div>
+            <button class="export-btn"><i class="fa-solid fa-file-export"></i> Export</button>
+          </div>
+        </div>
+
+        <div class="report-body">
+          <div class="bar-chart">
+            <div class="report-title">Requests by Department (mock)</div>
+            <div class="bar-row"><div class="bar-label">ICU</div><div class="bar-fill" style="width:92%;">92</div><div class="bar-count">92</div></div>
+            <div class="bar-row"><div class="bar-label">ER</div><div class="bar-fill" style="width:78%;">78</div><div class="bar-count">78</div></div>
+            <div class="bar-row"><div class="bar-label">Surgery</div><div class="bar-fill" style="width:64%;">64</div><div class="bar-count">64</div></div>
+            <div style="margin-top:12px;font-size:13px;color:var(--muted)"><strong>Legend:</strong> Approved / Pending / Rejected represented visually in the table below.</div>
+          </div>
+
+          <div class="summary">
+            <div class="report-title">Summary</div>
+            <p>Total Requests: <strong>234</strong></p>
+            <p>Approved: <strong>140</strong></p>
+            <p>Rejected: <strong>70</strong></p>
+            <p>Pending: <strong>24</strong></p>
+            <hr style="margin:10px 0;border:no+ne;border-top:1px solid #eef6ff"/>
+            <p class="small-muted">Approval rate: <strong>59%</strong></p>
+          </div>
+        </div>
+
+        <div>
+          <div class="report-title">Request Log</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Department</th>
+                <th>Item Requested</th>
+                <th>Qty</th>
+                <th>Status</th>
+                <th>Date Requested</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="badge">ICU</span></td>
+                <td>Amoxicillin</td>
+                <td>200</td>
+                <td style="color:green;font-weight:700">Approved</td>
+                <td>2025-09-21</td>
+              </tr>
+              <tr>
+                <td><span class="badge">ER</span></td>
+                <td>IV Saline</td>
+                <td>350</td>
+                <td style="color:#ff9900;font-weight:700">Rejected</td>
+                <td>2025-08-12</td>
+              </tr>
+              <tr>
+                <td><span class="badge">Surgery</span></td>
+                <td>Paracetamol</td>
+                <td>100</td>
+                <td style="color:#0073e6;font-weight:700">Pending</td>
+                <td>2025-07-30</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      `,
+
+      // Keep supplier-vendor view as original (unchanged) for compatibility
+      "supplier-vendor": `
+      <div class="report-container">
+        <div class="report-header">
+          <div><i class="fa-solid fa-truck"></i> Supplier/Vendor Report</div>
+          <button class="icon-btn" style="color:#043873;"><i class="fa-solid fa-bell"></i></button>
+        </div>
+
+        <div class="report-filters">
+          <div class="filter-group">Date Range <i class="fa-solid fa-filter"></i></div>
+          <div class="filter-group">Item Category <i class="fa-solid fa-filter"></i></div>
+          <div class="filter-group">Supplier <i class="fa-solid fa-filter"></i></div>
+          <button class="export-btn">Export</button>
+        </div>
+
+        <div class="report-body">
+          <div class="bar-chart">
+            <div class="report-title">Supplier Transactions Distribution</div>
+            <div class="bar-row"><div class="bar-label">A Corp</div><div class="bar-fill" style="width: 100%;">500</div><div class="bar-count">500</div></div>
+            <div class="bar-row"><div class="bar-label">B Corp</div><div class="bar-fill" style="width: 80%;">400</div><div class="bar-count">400</div></div>
+            <div class="bar-row"><div class="bar-label">C Corp</div><div class="bar-fill" style="width: 20%;">100</div><div class="bar-count">100</div></div>
+            <div class="bar-row"><div class="bar-label">D Corp</div><div class="bar-fill" style="width: 16%;">80</div><div class="bar-count">80</div></div>
+            <div class="bar-row"><div class="bar-label">E Corp</div><div class="bar-fill" style="width: 8%;">40</div><div class="bar-count">40</div></div>
+            <div class="bar-row"><div class="bar-label">F Corp</div><div class="bar-fill" style="width: 6%;">30</div><div class="bar-count">30</div></div>
+            <div class="bar-row"><div class="bar-label">G Corp</div><div class="bar-fill" style="width: 4%;">20</div><div class="bar-count">20</div></div>
+            <div class="bar-row"><div class="bar-label">H Corp</div><div class="bar-fill" style="width: 2%;">10</div><div class="bar-count">10</div></div>
+            <div class="bar-row"><div class="bar-label">I Corp</div><div class="bar-fill" style="width: 1%;">5</div><div class="bar-count">5</div></div>
+            <div class="bar-row"><div class="bar-label">J Corp</div><div class="bar-fill" style="width: 0.8%;">4</div><div class="bar-count">4</div></div>
+            <div class="bar-row"><div class="bar-label">K Corp</div><div class="bar-fill" style="width: 0.6%;">3</div><div class="bar-count">3</div></div>
+          </div>
+
+          <div class="summary">
+            <div class="report-title">Summary</div>
+            <p><strong>Total Suppliers</strong></p>
+            <p>12</p>
+            <hr style="margin:10px 0"/>
+            <p><strong>Total Orders</strong></p>
+            <p>50</p>
+          </div>
+        </div>
+
+        <div>
+          <div class="report-title">Supplier Lists</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Supplier Name</th>
+                <th>Batch No.</th>
+                <th>Item Supplied</th>
+                <th>Total Orders</th>
+                <th>Last Order Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Medline</td>
+                <td>GLV1204M</td>
+                <td>Gloves</td>
+                <td>120</td>
+                <td>Mar 12, 2025</td>
+              </tr>
+              <tr>
+                <td>Pfizer</td>
+                <td>IP1303P</td>
+                <td>Ibuprofen</td>
+                <td>60</td>
+                <td>Mar 14, 2025</td>
+              </tr>
+              <tr>
+                <td>Vendor A</td>
+                <td>IF2012A</td>
+                <td>IV Fluids</td>
+                <td>30</td>
+                <td>Mar 16, 2025</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      `,
+
+      "expiration-wastage": `
+      <div class="report-container">
+        <div class="report-header">
+          <div class="report-left">
+            <div class="title-icon"><i class="fa-solid fa-hourglass-half"></i></div>
+            <div>
+              <div style="font-size:16px;font-weight:700;color:var(--primary)">Expiration / Wastage</div>
+              <div class="small-muted">Items nearing expiry, wastage summary and expiry log</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <div class="filter-group"><i class="fa-solid fa-calendar"></i> Date Range</div>
+            <div class="filter-group"><i class="fa-solid fa-exclamation-triangle"></i> Severity</div>
+            <button class="export-btn"><i class="fa-solid fa-file-export"></i> Export</button>
+          </div>
+        </div>
+
+        <div class="report-body">
+          <div class="bar-chart">
+            <div class="report-title">Expiration Timeline</div>
+            <div class="timeline">
+              <div class="item"><div><b>Paracetamol (PCM2312C)</b><div class="small-muted">Batch PCM2312C</div></div><div class="small-muted">2025-11-09</div></div>
+              <div class="item"><div><b>Amoxicillin (AMX2309B)</b><div class="small-muted">Batch AMX2309B</div></div><div class="small-muted">2025-10-01</div></div>
+              <div class="item"><div><b>Metformin (MET2410A)</b><div class="small-muted">Batch MET2410A</div></div><div class="small-muted">2025-10-31</div></div>
+              <div class="item"><div><b>Aspirin (ASA2207X)</b><div class="small-muted">Batch ASA2207X</div></div><div class="small-muted">2025-12-25</div></div>
+              <div class="item"><div><b>Omeprazole (OME2503Z)</b><div class="small-muted">Batch OME2503Z</div></div><div class="small-muted">2025-11-03</div></div>
+            </div>
+          </div>
+
+          <div class="summary">
+            <div class="report-title">Summary</div>
+            <p>Items Near Expiry: <strong>50</strong></p>
+            <p>Items Expired: <strong>20</strong></p>
+            <p>Total Items Reviewed: <strong>70</strong></p>
+            <hr style="margin:10px 0;border:none;border-top:1px solid #eef6ff"/>
+            <p class="small-muted">Last review: 2025-11-08</p>
+          </div>
+        </div>
+
+        <div>
+          <div class="report-title">Expiration List</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Item Name</th>
+                <th>Batch No.</th>
+                <th>Quantity</th>
+                <th>Category</th>
+                <th>Expiry Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Amoxicillin</td>
+                <td>AMX2309B</td>
+                <td>200</td>
+                <td>Antibiotics</td>
+                <td>2025-10-01</td>
+              </tr>
+              <tr>
+                <td>IV Saline</td>
+                <td>IVS2401B</td>
+                <td>350</td>
+                <td>IV Fluids</td>
+                <td>2025-10-13</td>
+              </tr>
+              <tr>
+                <td>Paracetamol</td>
+                <td>PCM2312C</td>
+                <td>100</td>
+                <td>Analgesics</td>
+                <td>2025-11-09</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      `
+    };
+
+    // Default view title and content
+    const viewTitle = $("#view-title");
+    const viewContent = $("#view-content");
+
+    // Handle card clicks for dynamic views
+    $(".card").on("click", function() {
+      const view = $(this).data("view");
+
+      if(view && views[view]) {
+        // set the header title to the card's h3 text if present, else fallback to humanized key
+        const cardTitle = $(this).find("h3").text();
+        viewTitle.text(cardTitle || view
+            .split("-")
+            .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+            .join(" ")
+        );
+        viewContent.removeClass("cards-container");
+        viewContent.html(views[view]);
+        // remove 'active' from other menu items and set current (visual)
+        $(".menu li").removeClass("active");
+        $(".menu li:contains('Report')").addClass("active");
+      }
+    });
+
+  </script>
+
+</body>
+</html>
