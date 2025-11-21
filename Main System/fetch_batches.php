@@ -1,20 +1,21 @@
 <?php
-require 'db_connection.php'; // your database connection
+require 'db_connect.php';
 
 if (isset($_POST['product_id'])) {
     $productId = intval($_POST['product_id']);
 
     $sql = "
-      SELECT 
-        i.InventoryID,
-        i.BatchNum,
-        i.SKU,
-        i.Quantity,
-        i.ExpirationDate,
-        i.Status AS InventoryStatus
-      FROM inventory i
-      WHERE i.ProductID = ?
-      ORDER BY i.ExpirationDate ASC
+        SELECT 
+            i.InventoryID,
+            i.BatchNum,
+            i.Quantity,
+            i.ExpirationDate,
+            i.Status AS InventoryStatus,
+            i.SKU
+        FROM inventory i
+        JOIN products p ON i.ProductID = p.ProductID
+        WHERE i.ProductID = ?
+        ORDER BY i.ExpirationDate ASC
     ";
 
     $stmt = $conn->prepare($sql);

@@ -178,27 +178,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // ---------- FETCH INVENTORY + STATS ----------
+  // SELECT 
+  //     p.ProductID,
+  //     p.ProductName,
+  //     p.SKU,
+  //     SUM(i.Quantity) AS TotalQuantity,
+  //     p.Min_stock,
+  //     p.Max_stock,
+  //     u.UnitName,
+  //     c.Category_Name
+  // FROM products p
+  // LEFT JOIN inventory i ON i.ProductID = p.ProductID
+  // LEFT JOIN categories c ON c.CategoryID = p.CategoryID
+  // LEFT JOIN units u ON u.UnitID = p.UnitID
+  // GROUP BY p.ProductID
+  // ORDER BY p.ProductName;
 $inventory = [];
 try {
   $sql = "
     SELECT 
-      i.InventoryID,
-      i.ProductID,
-      i.SKU,
-      i.BatchNum,
-      i.Quantity,
-      i.ExpirationDate,
-      i.Status AS InventoryStatus,
-      p.ProductName,
-      u.UnitName,
-      c.Category_Name,
-      IFNULL(SUM(i.Quantity),0) AS TotalQuantity
-    FROM inventory i
-    JOIN products p ON p.ProductID = i.ProductID
-    LEFT JOIN categories c ON c.CategoryID = p.CategoryID
-    LEFT JOIN units u ON u.UnitID = p.UnitID
-     GROUP BY p.ProductID, p.ProductName, p.Min_stock, p.Max_stock, u.UnitName, c.Category_Name
-    ORDER BY p.ProductName
+    p.ProductID,
+    p.ProductName,
+    i.SKU,
+    IFNULL(SUM(i.Quantity),0) AS TotalQuantity,
+    p.Min_stock,
+    p.Max_stock,
+    u.UnitName,
+    c.Category_Name
+FROM products p
+LEFT JOIN inventory i ON i.ProductID = p.ProductID
+LEFT JOIN categories c ON c.CategoryID = p.CategoryID
+LEFT JOIN units u ON u.UnitID = p.UnitID
+GROUP BY p.ProductID
+ORDER BY p.ProductName;
+
+
   ";
   $res = $conn->query($sql);
   while ($row = $res->fetch_assoc()) {
@@ -252,7 +266,6 @@ try {
 /* (minimal safe styles; keep your inventory.css) */
 .status-ok { color:#12805c; font-weight:600; } .status-low { color:#b48a00; font-weight:600; } .status-out { color:#c5162e; font-weight:600; }
 .quick-request { padding:14px; }
-.qr-table { width:100%; border-collapse:collapse; margin-top:8px;} .qr-table th, .qr-table td { padding:8px; border-bottom:1px solid #eee; }
 .qr-actions { display:flex; gap:8px; margin-top:12px; }
 .modal { position:fixed; inset:0; display:none; background:rgba(0,0,0,.35); align-items:center; justify-content:center; z-index:1000; }
 .modal .modal-content { background:#fff; width:min(560px, 92vw); border-radius:12px; padding:16px; }
@@ -355,36 +368,45 @@ try {
       </div>
       
       <div class="table-wrap">
-        <table class="inventory-table" role="table" aria-label="Inventory table">
-          <thead>
-            <tr>
-              <th>Product</th>
-              <th>SKU</th>
-              <th>Total Stock</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <?php foreach ($inventory as $item): ?>
-            <tr>
-              <td><?= htmlspecialchars($item['ProductName']) ?></td>
-              <td><?= htmlspecialchars($item['SKU']) ?></td>
-              <td><?= htmlspecialchars($item['TotalQuantity']) ?></td>
-              <td><?= htmlspecialchars($item['status']) ?></td>
-              <td>
-                <button class="btn view-batches-btn" 
-                    data-productid="<?= (int)$item['ProductID'] ?>"
-                    data-productname="<?= htmlspecialchars($item['ProductName']) ?>">
-                  View Batches
-                </button>
-              </td>
+  <table class="inventory-table" role="table" aria-label="Inventory table">
 
-            </tr>
-          <?php endforeach; ?>
-          </tbody>
-        </table>
-      </div>
+    <thead>
+      <tr>
+        <th><input type="checkbox" id="select-all"></th>
+        <th>Product</th>
+        <th>SKU</th>
+        <th>Total Stock</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <?php foreach ($inventory as $item): ?>
+      <tr>
+        <td>
+          <input type="checkbox" class="item-check" value="<?= (int)$item['ProductID'] ?>">
+        </td>
+
+        <td><?= htmlspecialchars($item['ProductName']) ?></td>
+        <td><?= htmlspecialchars($item['SKU']) ?></td>
+        <td><?= htmlspecialchars($item['TotalQuantity']) ?></td>
+        <td><?= htmlspecialchars($item['status']) ?></td>
+
+        <td>
+          <button class="btn view-batches-btn"
+              data-productid="<?= (int)$item['ProductID'] ?>"
+              data-productname="<?= htmlspecialchars($item['ProductName']) ?>">
+            View Batches
+          </button>
+        </td>
+      </tr>
+      <?php endforeach; ?>
+    </tbody>
+
+  </table>
+</div>
+
       <!-- <div class="table-wrap">
         <table class="inventory-table" role="table" aria-label="Inventory table">
           <thead>
@@ -442,7 +464,8 @@ try {
           <?php endforeach; ?>
           </tbody>
         </table>
-      </div> -->
+      </div>  -->
+      
     </div>
 
     <aside class="quick-request box" aria-label="Quick request panel">
@@ -465,7 +488,7 @@ try {
       </div>
     </aside>
   </section>
-
+  
   <!-- Add Item Modal -->
   <div class="modal" id="addItemModal" style="display:none;">
     <div class="modal-content">
@@ -569,6 +592,7 @@ $(function () {
   const productId = $(this).data('productid');
   const productName = $(this).data('productname');
 
+  // fetch batches
   $.ajax({
       url: 'fetch_batches.php',
       method: 'POST',
@@ -578,12 +602,26 @@ $(function () {
           <h3>Batches for ${productName}</h3>
           ${response}
         `);
+        $('#batches-modal').fadeIn(); // show modal
       },
       error: function() {
         alert('Failed to load batches.');
       }
-    });
   });
+});
+
+// Close modal when clicking the close button
+$(document).on('click', '.batches-close', function() {
+  $('#batches-modal').fadeOut();
+});
+
+// Optional: close modal when clicking outside modal content
+$(window).on('click', function(e) {
+  if ($(e.target).is('#batches-modal')) {
+    $('#batches-modal').fadeOut();
+  }
+});
+
   // Sidebar toggle
   $(".toggle").click(() => $(".sidebar").toggleClass("hide"));
 
@@ -655,36 +693,93 @@ $(function () {
     }
     $("#qr-total").text(qrItems.length);
   }
-  $(document).on("click", ".select-btn", function () {
-    const productId = $(this).data("productid");
-    const name = $(this).data("name");
-    if (!qrItems.some(i => i.productId === productId)) {
-      qrItems.push({ productId, name, quantity: 1 });
-      refreshQRTable();
-      alert(`${name} added to Quick Request.`);
+
+  $(document).on("change", ".item-check", function() {
+    const productId = parseInt($(this).val());
+    const $row = $(this).closest("tr");
+    const productName = $row.find("td:nth-child(2)").text(); // assuming 2nd column is Product Name
+
+    if (this.checked) {
+        // Add to QR if not already there
+        if (!qrItems.some(i => i.productId === productId)) {
+            qrItems.push({ productId, name: productName, quantity: 1 });
+        }
     } else {
-      alert(`${name} is already in your request list.`);
+        // Remove from QR
+        qrItems = qrItems.filter(i => i.productId !== productId);
     }
-  });
-  $(document).on("click", ".remove-qr", function () {
-    const productId = $(this).closest("tr").data("productid");
-    qrItems = qrItems.filter(i => i.productId !== productId);
+
     refreshQRTable();
+    const all = document.querySelectorAll(".item-check");
+    const checked = document.querySelectorAll(".item-check:checked");
+    document.getElementById("select-all").checked = all.length === checked.length;
   });
-  $(document).on("input", ".qr-qty", function () {
+
+    // Toggle all checkboxes when "Select All" is clicked
+  document.getElementById("select-all").addEventListener("change", function () {
+    const isChecked = this.checked;
+    document.querySelectorAll(".item-check").forEach(cb => {
+      cb.checked = isChecked;
+    $(cb).trigger('change'); // trigger change to update QR
+    });
+});
+
+
+
+  // Update quantity in QR table
+$(document).on("input", ".qr-qty", function() {
     const productId = $(this).closest("tr").data("productid");
     const qty = Math.max(1, parseInt($(this).val()) || 1);
     qrItems = qrItems.map(i => i.productId === productId ? { ...i, quantity: qty } : i);
-  });
-  $("#clear-qr").click(() => {
-    if (!qrItems.length) return alert("No items to clear.");
-    if (confirm("Clear all selected items?")) { qrItems = []; refreshQRTable(); alert("All items cleared."); }
-  });
+});
+
+// Remove item via button
+$(document).on("click", ".remove-qr", function() {
+    const productId = $(this).closest("tr").data("productid");
+    qrItems = qrItems.filter(i => i.productId !== productId);
+    // Also uncheck the checkbox in the main table
+    $(`.item-check[value="${productId}"]`).prop("checked", false);
+    refreshQRTable();
+});
+
+// Clear all
+$("#clear-qr").click(() => {
+    qrItems = [];
+    $(".item-check").prop("checked", false);
+    refreshQRTable();
+});
+  // $(document).on("click", ".select-btn", function () {
+  //   const productId = $(this).data("productid");
+  //   const name = $(this).data("name");
+  //   if (!qrItems.some(i => i.productId === productId)) {
+  //     qrItems.push({ productId, name, quantity: 1 });
+  //     refreshQRTable();
+  //     alert(`${name} added to Quick Request.`);
+  //   } else {
+  //     alert(`${name} is already in your request list.`);
+  //   }
+  // });
+  // $(document).on("click", ".remove-qr", function () {
+  //   const productId = $(this).closest("tr").data("productid");
+  //   qrItems = qrItems.filter(i => i.productId !== productId);
+  //   refreshQRTable();
+  // });
+  // $(document).on("input", ".qr-qty", function () {
+  //   const productId = $(this).closest("tr").data("productid");
+  //   const qty = Math.max(1, parseInt($(this).val()) || 1);
+  //   qrItems = qrItems.map(i => i.productId === productId ? { ...i, quantity: qty } : i);
+  // });
+  // Clear all
+$("#clear-qr").click(() => {
+    qrItems = [];
+    $(".item-check, #select-all").prop("checked", false);
+    refreshQRTable();
+});
   $("#submit-qr").click(() => {
     if (!qrItems.length) return alert("Please select at least one item.");
     if (!confirm("Submit this request?")) return;
     $.post("quick_request.php", { items: JSON.stringify(qrItems) }, res => {
-      try { res = JSON.parse(res); } catch (e) { return alert("Unexpected response."); }
+      // try { res = JSON.parse(res); } catch (e) { return alert("Unexpected response."); } 
       if (res.success) { alert("Request submitted successfully!"); qrItems = []; refreshQRTable(); }
       else alert("Error: " + (res.message || "failed"));
     }).fail(() => alert("Failed to send request."));
@@ -701,9 +796,19 @@ $(function () {
       $("#logout").click(function(){
         window.location.href = "logout.php";
       });
+
+      
+
 });
 
 
 </script>
+<!-- Batch Modal -->
+    <div id="batches-modal" style="display:none;">
+      <div class="modal-content">
+        <span id="close-modal">&times;</span>
+        <div id="batches-container"></div>
+      </div>
+    </div>
 </body>
 </html>
