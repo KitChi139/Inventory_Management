@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
   <header>
     <div class="logo">
-      <img src="your-logo.png" alt="Hospital Logo">
+      <img src="../logo.png?v=2" alt="MediSync Logo" class="medisync-logo">
     </div>
     <h1>Generic Hospital</h1>
   </header>

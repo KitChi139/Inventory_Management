@@ -1,6 +1,11 @@
 <?php
-session_start();
 require 'db_connect.php';
+
+// Protect page - require login
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
+  header("Location: login.php");
+  exit();
+}
 
 if (isset($_POST['fetch_product']) && $_POST['fetch_product'] == 1) {
     $productID = (int)$_POST['product_id'];
@@ -45,34 +50,94 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   try {
     if ($action === 'add_item') {
       // Inputs
-      $productID       = trim($_POST['item_name'] ?? '');
+      // $productID       = trim($_POST['item_name'] ?? '');
       // $productID  = trim($_POST['product_id'] ?? '');
+      $product    = trim($_POST['product'] ?? '');
       $category   = trim($_POST['category'] ?? '');
       $catid      = trim($_POST['category_id'] ?? '');
       $unit       = trim($_POST['unit'] ?? '');
       $unitId       = trim($_POST['unit_id'] ?? '');
-      $sku        = trim($_POST['sku'] ?? '');
-      $Batchnum     = trim($_POST['Batchnum'] ?? '');
-      $quantity   = isset($_POST['quantity']) ? (int)$_POST['quantity'] : 0;
-      $expiration = $_POST['expiration'] ?? null;
-      if ($expiration === '') $expiration = null;
+      $price       = trim($_POST['price'] ?? '');
+      // $sku        = trim($_POST['sku'] ?? '');
+      // $Batchnum     = trim($_POST['Batchnum'] ?? '');
+      $minquantity   = isset($_POST['minquantity']) ? (int)$_POST['minquantity'] : 0;
+      $maxquantity   = isset($_POST['maxquantity']) ? (int)$_POST['maxquantity'] : 0;
+      // $expiration = $_POST['expiration'] ?? null;
+      // if ($expiration === '') $expiration = null;
 
-      if ($name === '' || $category === '' || $quantity < 0) {
-        throw new Exception('Invalid input for Add.');
+
+      if ($product === '') {
+          throw new Exception("Product name is required.");
       }
 
+      if ($catid === '' && $category === '') {
+          throw new Exception("Category is required (select or enter new).");
+      }
+
+      if (!is_numeric($price) || $price < 0) {
+          throw new Exception("Invalid price.");
+      }
+
+      if ($minquantity < 0 || $maxquantity < 0) {
+          throw new Exception("Stock quantities must be non-negative.");
+      }
       $conn->begin_transaction();
+      // Category
+      if ($catid !== '') {
+        $categoryId = (int)$catid;
+    } else {
+        // Check if name already exists
+        $stmt = $conn->prepare("SELECT CategoryID FROM categories WHERE Category_Name = ?");
+        $stmt->bind_param("s", $category);
+        $stmt->execute();
+        $stmt->bind_result($existingCatId);
+        if ($stmt->fetch()) {
+            $categoryId = $existingCatId;
+        } else {
+            $stmt->close();
+            $stmt = $conn->prepare("INSERT INTO categories (Category_Name) VALUES (?)");
+            $stmt->bind_param("s", $category);
+            $stmt->execute();
+            $categoryId = $stmt->insert_id;
+        }
+        $stmt->close();
+    }
 
-      // Insert inventory (SKU optional -> NULLIF to avoid UNIQUE '' issue)
+      // Unit
+      if (!$unitId && $unit !== '') {
+          $stmt = $conn->prepare("SELECT UnitID FROM units WHERE UnitName = ?");
+          $stmt->bind_param('s', $unit);
+          $stmt->execute();
+          $stmt->bind_result($existingUnitId);
+          if ($stmt->fetch()) {
+              $unitId = $existingUnitId;
+          } else {
+              $stmt->close();
+              $stmt = $conn->prepare("INSERT INTO units (UnitName) VALUES (?)");
+              $stmt->bind_param('s', $unit);
+              $stmt->execute();
+              $unitId = $stmt->insert_id;
+          }
+          $stmt->close();
+      }
 
-      $status = ($quantity === 0) ? 'Out of Stock' : (($quantity < 10) ? 'Low Stock' : 'In Stock');
       $stmt = $conn->prepare("
-        INSERT INTO inventory (ProductID, SKU, BatchNum, Quantity, ExpirationDate, Status)
-        VALUES (?, NULLIF(?, ''), ?, ?, ?, ?)
+        INSERT INTO products (ProductName, CategoryID, UnitID, Price, Min_stock, Max_stock)
+        VALUES (?, ?, ?, ?, ?, ?)
       ");
-      $stmt->bind_param('ississ', $productID, $sku, $Batchnum, $quantity, $expiration, $status);
+      $stmt->bind_param('siidii', $product, $categoryId, $unitId, $price, $minquantity, $maxquantity);
       $stmt->execute();
       $stmt->close();
+      // // Insert inventory (SKU optional -> NULLIF to avoid UNIQUE '' issue)
+
+      // $status = ($quantity === 0) ? 'Out of Stock' : (($quantity < 10) ? 'Low Stock' : 'In Stock');
+      // $stmt = $conn->prepare("
+      //   INSERT INTO inventory (ProductID, SKU, BatchNum, Quantity, ExpirationDate, Status)
+      //   VALUES (?, NULLIF(?, ''), ?, ?, ?, ?)
+      // ");
+      // $stmt->bind_param('ississ', $productID, $sku, $Batchnum, $quantity, $expiration, $status);
+      // $stmt->execute();
+      // $stmt->close();
 
 //       $stmt = $conn->prepare("
 //         SELECT Min_stock, Max_stock FROM inventory i
@@ -92,78 +157,101 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       flash('success', 'Item added successfully.');
 
     } elseif ($action === 'update_item') {
-      $inventoryId = (int)($_POST['inventory_id'] ?? 0);
-      $name        = trim($_POST['item_name'] ?? '');
-      $category    = trim($_POST['category'] ?? '');
-      $unit        = trim($_POST['unit'] ?? '');
-      $sku         = trim($_POST['sku'] ?? '');
-      $quantity    = isset($_POST['quantity']) ? (int)$_POST['quantity'] : 0;
-      $expiration  = $_POST['expiration'] ?? null;
-      if ($expiration === '') $expiration = null;
 
-      if ($inventoryId <= 0 || $name === '' || $category === '' || $quantity < 0) {
-        throw new Exception('Invalid input for Update.');
-      }
+    $productID  = (int)($_POST['product_id'] ?? 0);
+    $product    = trim($_POST['product'] ?? '');
+    $category   = trim($_POST['category'] ?? '');
+    $categoryId = trim($_POST['category_id'] ?? '');
+    $unit       = trim($_POST['unit'] ?? '');
+    $unitId     = trim($_POST['unit_id'] ?? '');
+    $price      = trim($_POST['price'] ?? '');
+    $minquantity = (int)($_POST['minquantity'] ?? 0);
+    $maxquantity = (int)($_POST['maxquantity'] ?? 0);
 
-      $conn->begin_transaction();
+    if ($productID <= 0 || $product === '') {
+        throw new Exception("Invalid input for Update.");
+    }
 
-      // Get ProductID from inventory
-      $stmt = $conn->prepare("SELECT ProductID FROM inventory WHERE InventoryID = ?");
-      $stmt->bind_param('i', $inventoryId);
-      $stmt->execute();
-      $stmt->bind_result($productId);
-      if (!$stmt->fetch()) { $stmt->close(); throw new Exception('Inventory row not found.'); }
-      $stmt->close();
+    $conn->begin_transaction();
 
-      // Find/create category
-      $stmt = $conn->prepare("SELECT Category_ID FROM categories WHERE Category_Name = ?");
-      $stmt->bind_param('s', $category);
-      $stmt->execute();
-      $stmt->bind_result($catId);
-      $cExists = $stmt->fetch();
-      $stmt->close();
-      if (!$cExists) {
-        $stmt = $conn->prepare("INSERT INTO categories (Category_Name) VALUES (?)");
-        $stmt->bind_param('s', $category);
+    // Create category if needed
+    if (!$categoryId && $category !== '') {
+        $stmt = $conn->prepare("SELECT CategoryID FROM categories WHERE Category_Name = ?");
+        $stmt->bind_param("s", $category);
         $stmt->execute();
-        $catId = $stmt->insert_id;
+        $stmt->bind_result($existingCatId);
+
+        if ($stmt->fetch()) {
+            $categoryId = $existingCatId;
+        } else {
+            $stmt->close();
+            $stmt = $conn->prepare("INSERT INTO categories (Category_Name) VALUES (?)");
+            $stmt->bind_param("s", $category);
+            $stmt->execute();
+            $categoryId = $stmt->insert_id;
+        }
         $stmt->close();
-      }
+    }
 
-      // Update product fields
-      $stmt = $conn->prepare("UPDATE products SET ProductName = ?, Category_ID = ?, Unit = ? WHERE ProductID = ?");
-      $stmt->bind_param('sisi', $name, $catId, $unit, $productId);
-      $stmt->execute();
-      $stmt->close();
+    // Create unit if needed
+    if (!$unitId && $unit !== '') {
+        $stmt = $conn->prepare("SELECT UnitID FROM units WHERE UnitName = ?");
+        $stmt->bind_param("s", $unit);
+        $stmt->execute();
+        $stmt->bind_result($existingUnitId);
 
-      // Update inventory (SKU via NULLIF)
-      $status = ($quantity === 0) ? 'Out of Stock' : (($quantity < 5) ? 'Low Stock' : 'In Stock');
-      $stmt = $conn->prepare("
-        UPDATE inventory
-           SET SKU = NULLIF(?, ''),
-               Quantity = ?,
-               ExpirationDate = ?,
-               Status = ?
-         WHERE InventoryID = ?
-      ");
-      $stmt->bind_param('sissi', $sku, $quantity, $expiration, $status, $inventoryId);
-      $stmt->execute();
-      $stmt->close();
+        if ($stmt->fetch()) {
+            $unitId = $existingUnitId;
+        } else {
+            $stmt->close();
+            $stmt = $conn->prepare("INSERT INTO units (UnitName) VALUES (?)");
+            $stmt->bind_param("s", $unit);
+            $stmt->execute();
+            $unitId = $stmt->insert_id;
+        }
+        $stmt->close();
+    }
 
-      $conn->commit();
-      flash('success', 'Item updated successfully.');
+    // Perform update
+    $stmt = $conn->prepare("
+        UPDATE products 
+        SET ProductName = ?, CategoryID = ?, UnitID = ?, Price = ?, Min_stock = ?, Max_stock = ?
+        WHERE ProductID = ?
+    ");
 
-    } elseif ($action === 'delete_item') {
-      $inventoryId = (int)($_POST['inventory_id'] ?? 0);
-      if ($inventoryId <= 0) throw new Exception('Invalid inventory id.');
+    $stmt->bind_param(
+        "siidiii",
+        $product,
+        $categoryId,
+        $unitId,
+        $price,
+        $minquantity,
+        $maxquantity,
+        $productID
+    );
 
-      $stmt = $conn->prepare("DELETE FROM inventory WHERE InventoryID = ?");
-      $stmt->bind_param('i', $inventoryId);
+    $stmt->execute();
+    $rows = $stmt->affected_rows;
+    $stmt->close();
+
+    $conn->commit();
+
+    if ($rows > 0) {
+        flash('success', 'Item updated successfully.');
+    } else {
+        flash('warning', 'No changes were made.');
+    }
+} elseif ($action === 'delete_item') {
+      $productid = (int)($_POST['product_id'] ?? 0);
+      if ($productid <= 0) throw new Exception('Invalid product id.');
+
+      $stmt = $conn->prepare("DELETE FROM products WHERE ProductID = ?");
+      $stmt->bind_param('i', $productid);
       $stmt->execute();
       $affected = $stmt->affected_rows;
       $stmt->close();
 
-      if ($affected > 0) flash('success', 'Inventory row deleted.');
+      if ($affected > 0) flash('success', 'Product row deleted.');
       else flash('warning', 'Row not found or already deleted.');
     }
 
@@ -201,10 +289,14 @@ try {
     p.ProductName,
     i.SKU,
     IFNULL(SUM(i.Quantity),0) AS TotalQuantity,
+    p.Price,
     p.Min_stock,
     p.Max_stock,
     u.UnitName,
-    c.Category_Name
+    c.Category_Name,
+    c.CategoryID,
+    u.UnitName,
+    u.UnitID
 FROM products p
 LEFT JOIN inventory i ON i.ProductID = p.ProductID
 LEFT JOIN categories c ON c.CategoryID = p.CategoryID
@@ -238,7 +330,9 @@ ORDER BY p.ProductName;
 } catch (Throwable $e) {
   $inventory = [];
 }
-
+$total_low_and_out = count(array_filter($inventory, fn($i) => 
+    $i['status'] === 'Low Stock' || $i['status'] === 'Out of Stock'
+));
 $total_items = count($inventory);
 $low_stock   = count(array_filter($inventory, fn($i) => $i['status'] === 'Low Stock'));
 
@@ -261,7 +355,10 @@ try {
 <title>Inventory — Dashboard</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<link rel="stylesheet" href="sidebar.css" />
 <link rel="stylesheet" href="inventory.css" />
+<link rel="stylesheet" href="notification.css">
+<script src="notification.js" defer></script>
 <style>
 /* (minimal safe styles; keep your inventory.css) */
 .status-ok { color:#12805c; font-weight:600; } .status-low { color:#b48a00; font-weight:600; } .status-out { color:#c5162e; font-weight:600; }
@@ -286,37 +383,41 @@ try {
 </head>
 <body>
 
-<aside class="sidebar" aria-label="Primary">
+<aside class="sidebar" id="sidebar">
   <div class="profile">
-    <div class="icon" aria-hidden="true"><i class="fa-solid fa-user"></i></div>
-    <button class="toggle" aria-expanded="true" aria-label="Toggle navigation"><i class="fa-solid fa-bars"></i></button>
-  </div>
-  <h3 class="title">Navigation</h3>
-  <nav>
-    <div class="navbar">
-      <ul class="menu">
-        <li id="dashboard"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></li>
-        <li class="active"><i class="fa-solid fa-boxes-stacked"></i><span>Inventory</span></li>
-        <li id="low-stock"><i class="fa-solid fa-triangle-exclamation"></i><span>Low Stock</span></li>
-        <li id="request"><i class="fa-solid fa-file-pen"></i><span>Requests</span></li>
-        <li id="nav-suppliers"><i class="fa-solid fa-truck"></i><span>Suppliers</span></li>
-        <li id="reports"><i class="fa-solid fa-file-lines"></i><span>Reports</span></li>
-        <li id="users"><i class="fa-solid fa-users"></i><span>Users</span></li>
-        <li id="settings"><i class="fa-solid fa-gear"></i><span>Settings</span></li>
-        <li id="logout"><i class="fa-solid fa-sign-out"></i><span>Log-Out</span></li>
-      </ul>
+    <div class="icon">
+      <img src="logo.png?v=2" alt="MediSync Logo" class="medisync-logo">
     </div>
-  </nav>
+    <button class="toggle" id="toggleBtn"><i class="fa-solid fa-bars"></i></button>
+  </div>
+  <ul class="menu">
+    <li id="dashboard"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></li>
+    <li id="inventory" class="active"><i class="fa-solid fa-boxes-stacked"></i><span>Inventory</span></li>
+    <li id="low-stock"><i class="fa-solid fa-triangle-exclamation"></i><span>Low Stock</span></li>
+    <li id="request"><i class="fa-solid fa-file-pen"></i><span>Requests</span></li>
+    <li id="nav-suppliers"><i class="fa-solid fa-truck"></i><span>Suppliers</span></li>
+    <li id="reports"><i class="fa-solid fa-file-lines"></i><span>Reports</span></li>
+    <?php if ($_SESSION['roleName'] === 'Admin'): ?>
+      <li id="users"><i class="fa-solid fa-users"></i><span>Users</span></li>
+    <?php endif; ?>    <li id="settings"><i class="fa-solid fa-gear"></i><span>Settings</span></li>
+    <li id="logout"><i class="fa-solid fa-sign-out"></i><span>Log-Out</span></li>
+  </ul>
 </aside>
 
 <main class="main">
-  <header class="topbar">
-    <div class="top-left"><h2>Inventory</h2></div>
-    <div class="top-right">
-      <button class="icon-btn" title="Notifications" aria-label="Notifications"><i class="fa-solid fa-bell bell"></i></button>
-      <a href="#" class="btn add-item"><i class="fa-solid fa-plus"></i> Add Item</a>
+  <!-- Notification + Profile icon (top-right in main content) -->
+  <div class="topbar-right">
+    <?php include 'notification_component.php'; ?>
+    <div class="profile-icon">
+      <i class="fa-solid fa-user"></i>
     </div>
-  </header>
+  </div>
+
+  <!-- Heading Bar -->
+  <div class="heading-bar">
+    <h1>Inventory</h1>
+    <a href="#" class="btn add-item"><i class="fa-solid fa-plus"></i> Add Item</a>
+  </div>
 
   <!-- flash alerts -->
   <div class="alerts">
@@ -325,13 +426,20 @@ try {
     <?php endforeach; $_SESSION['flash']=[]; ?>
   </div>
 
-  <section class="cards">
-    <div class="card"><h4>Total Items</h4><p><?= (int)$total_items ?></p></div>
-    <div class="card red"><h4>Low Stock Alerts</h4><p><?= (int)$low_stock ?></p></div>
+  <section class="cards" style="margin-top: 0;">
+    <div class="card"><h4>Total Items per Product</h4><p><?= (int)$total_items ?></p></div>
+<div class="card red">
+      <h4>Low Stock Alerts</h4>
+      <p><?= (int)$low_stock ?></p>
+    </div>
+    <div class="card" style="background-color: #ffe5e5; color: #d32f2f;">
+      <h4>Out of Stock Alerts</h4>
+      <p><?= (int)($total_low_and_out - $low_stock) ?></p>
+    </div>
     <div class="card yellow"><h4>Pending Requests</h4><p><?= (int)$pending_requests ?></p></div>
   </section>
 
-  <section class="content-grid">
+  <section class="content-grid" style="margin-top: 20px;">
     <div class="table-panel box">
       <div class="panel-top">
         <h4>Inventory List</h4>
@@ -372,37 +480,63 @@ try {
 
     <thead>
       <tr>
-        <th><input type="checkbox" id="select-all"></th>
+        <th><input type="checkbox" class="select-all" id="select-all"></th>
         <th>Product</th>
         <th>SKU</th>
         <th>Total Stock</th>
+        <th>Unit</th>
         <th>Status</th>
+        <th>Category</th>
         <th>Actions</th>
       </tr>
+      
     </thead>
 
     <tbody>
-      <?php foreach ($inventory as $item): ?>
-      <tr>
-        <td>
-          <input type="checkbox" class="item-check" value="<?= (int)$item['ProductID'] ?>">
-        </td>
+<?php foreach ($inventory as $item): ?>
+<tr data-category="<?= htmlspecialchars($item['Category_Name'] ?? '') ?>">
+  <td>
+    <input type="checkbox" class="item-check" value="<?= (int)$item['ProductID'] ?>">
+  </td>
 
-        <td><?= htmlspecialchars($item['ProductName']) ?></td>
-        <td><?= htmlspecialchars($item['SKU']) ?></td>
-        <td><?= htmlspecialchars($item['TotalQuantity']) ?></td>
-        <td><?= htmlspecialchars($item['status']) ?></td>
+  <td><?= htmlspecialchars($item['ProductName']) ?></td>
+  <td><?= htmlspecialchars($item['SKU']) ?></td>
+  <td><?= htmlspecialchars($item['TotalQuantity']) ?></td>
+  <td><?= htmlspecialchars($item['UnitName'] ?? '-') ?></td>
+  <td><?= htmlspecialchars($item['status']) ?></td>
+  <td><?= htmlspecialchars($item['Category_Name']) ?></td>
+  <td style="white-space: nowrap;">
+    <button class="btn view-batches-btn"
+        data-productid="<?= (int)$item['ProductID'] ?>"
+        data-productname="<?= htmlspecialchars($item['ProductName']) ?>">
+      View Batches
+    </button>
+    <div class="action-wrap">
+      <button class="icon-more"><i class="fa-solid fa-ellipsis"></i></button>
+      <div class="more-menu">
+        <button class="menu-item edit-btn"
+            data-productid="<?= (int)$item['ProductID'] ?>"
+            data-product="<?= htmlspecialchars($item['ProductName']) ?>"
+            data-categoryid="<?= htmlspecialchars($item['CategoryID'] ?? '') ?>"
+            data-categoryname="<?= htmlspecialchars($item['Category_Name'] ?? '') ?>"
+            data-unitid="<?= htmlspecialchars($item['UnitID'] ?? '') ?>"
+            data-unitname="<?= htmlspecialchars($item['Unit'] ?? '') ?>"
+            data-price="<?= htmlspecialchars($item['Price'] ?? '') ?>"
+            data-minquantity="<?= (int)$item['Min_stock'] ?>"
+            data-maxquantity="<?= (int)$item['Max_stock'] ?>"
+        >Edit</button>
 
-        <td>
-          <button class="btn view-batches-btn"
-              data-productid="<?= (int)$item['ProductID'] ?>"
-              data-productname="<?= htmlspecialchars($item['ProductName']) ?>">
-            View Batches
-          </button>
-        </td>
-      </tr>
-      <?php endforeach; ?>
-    </tbody>
+        <form method="post" style="margin:0;">
+          <input type="hidden" name="action" value="delete_item">
+          <input type="hidden" name="product_id" value="<?= (int)$item['ProductID'] ?>">
+          <button type="submit" class="menu-item danger" onclick="return confirm('Delete this row?')">Delete</button>
+        </form>
+      </div>
+    </div>
+  </td>
+</tr>
+<?php endforeach; ?>
+</tbody>
 
   </table>
 </div>
@@ -471,11 +605,11 @@ try {
     <aside class="quick-request box" aria-label="Quick request panel">
       <div style="padding:14px;">
         <h4>Quick Request</h4>
-        <p>Select items and submit requests for your department.</p>
+        <p style="font-size: 18px;">Select items and submit requests for your department.</p>
 
         <table id="qr-table" class="qr-table">
           <thead><tr><th>Item</th><th>Quantity</th><th>Action</th></tr></thead>
-          <tbody id="qr-items"><tr class="empty"><td colspan="3" style="text-align:center;color:#999;">No items selected</td></tr></tbody>
+          <tbody id="qr-items"><tr class="empty"><td colspan="3" style="text-align:center;color:#999; font-size: 16px;">No items selected</td></tr></tbody>
         </table>
         <div class="qr-summary">
           <p><strong>Total Items:</strong> <span id="qr-total">0</span></p>
@@ -496,7 +630,7 @@ try {
       <h3>Product Information</h3>
       <form method="post">
         <input type="hidden" name="action" value="add_item">
-        <label>Select Product</label>
+        <!-- <label>Select Product</label>
         <select name="item_name" id="item_name" required>
         <option value="">-- Select Product --</option>
         <?php
@@ -505,23 +639,38 @@ try {
                         echo "<option value='{$row['ProductID']}'>{$row['ProductName']}</option>";
         }
         ?>
-        </select>
+        </select> -->
         <input type="hidden" name="product_id" id="product_id">
+        <label>Product Name</label>
+        <input type="text" name="product">
         <label>Category</label>
+        <select id="category-select">
+          <option value="">-- Select Category --</option>
+          <?php
+          $catRes = $conn->query("SELECT CategoryID, Category_Name FROM categories ORDER BY Category_Name");
+          while ($cat = $catRes->fetch_assoc()):
+          ?>
+            <option value="<?= $cat['CategoryID'] ?>"><?= htmlspecialchars($cat['Category_Name']) ?></option>
+          <?php endwhile; ?>
+        </select>
         <input type="hidden" name="category_id" id="category_id">
-        <input type="text" name="category" id="category" readonly>
         <label>Unit</label>
-        <input type="text" name="unit" id="unit" readonly>
+        <select id="unit-select">
+          <option value="">-- Select Unit --</option>
+          <?php
+          $unitRes = $conn->query("SELECT UnitID, UnitName FROM units ORDER BY UnitName");
+          while ($u = $unitRes->fetch_assoc()):
+          ?>
+            <option value="<?= $u['UnitID'] ?>"><?= htmlspecialchars($u['UnitName']) ?></option>
+          <?php endwhile; ?>
+        </select>
         <input type="hidden" name="unit_id" id="unit_id">
-        <h3>Batch Information</h3>
-        <label>SKU</label>
-        <input type="text" name="sku" placeholder="Optional">
-        <label>Batch Number</label>
-        <input type="text" name="Batchnum" placeholder="Optional">
-        <label>Quantity</label>
-        <input type="number" name="quantity" min="0" required>
-        <label>Expiration</label>
-        <input type="date" name="expiration">
+        <label>Price</label>
+        <input type="text" name="price" placeholder="eg... 2.75">
+        <label>Minimum Stock</label>
+        <input type="number" name="minquantity" min="0" required >
+        <label>Maximum Stock</label>
+        <input type="number" name="maxquantity" min="0" required>
         <button type="submit" class="btn" style="margin-top:10px;">Add Item</button>
       </form>
     </div>
@@ -534,19 +683,39 @@ try {
       <h3>Edit Item</h3>
       <form method="post">
         <input type="hidden" name="action" value="update_item">
-        <input type="hidden" name="inventory_id" id="edit-inventory-id">
-        <label>Item Name</label>
-        <input type="text" name="item_name" id="edit-item-name" required>
+        <input type="hidden" name="product_id" id="edit-product_id">
+        <label>Product Name</label>
+        <input type="text" name="product" id="edit-product">
         <label>Category</label>
-        <input type="text" name="category" id="edit-category" required>
+        <select id="edit-category-select">
+          <option value="">-- Select Category --</option>
+          <?php
+          $catRes = $conn->query("SELECT CategoryID, Category_Name FROM categories ORDER BY Category_Name");
+          while ($cat = $catRes->fetch_assoc()):
+          ?>
+            <option value="<?= $cat['CategoryID'] ?>"><?= htmlspecialchars($cat['Category_Name']) ?></option>
+          <?php endwhile; ?>
+        </select>
+        <input type="text" name="category" id="edit-category" placeholder="Or enter new category">
+        <input type="hidden" name="category_id" id="edit-category_id">
         <label>Unit</label>
-        <input type="text" name="unit" id="edit-unit">
-        <label>SKU</label>
-        <input type="text" name="sku" id="edit-sku">
-        <label>Quantity</label>
-        <input type="number" name="quantity" id="edit-quantity" min="0" required>
-        <label>Expiration</label>
-        <input type="date" name="expiration" id="edit-expiration">
+        <select id="edit-unit-select">
+          <option value="">-- Select Unit --</option>
+          <?php
+          $unitRes = $conn->query("SELECT UnitID, UnitName FROM units ORDER BY UnitName");
+          while ($u = $unitRes->fetch_assoc()):
+          ?>
+            <option value="<?= $u['UnitID'] ?>"><?= htmlspecialchars($u['UnitName']) ?></option>
+          <?php endwhile; ?>
+        </select>
+        <input type="text" name="unit" id="edit-unit" placeholder="Or enter new unit">        
+        <input type="hidden" name="unit_id" id="edit-unit_id">
+        <label>Price</label>
+        <input type="text" name="price" id="edit-price" placeholder="eg... 2.75">
+        <label>Minimum Stock</label>
+        <input type="number" name="minquantity" min="0" id="edit-minquantity" required >
+        <label>Maximum Stock</label>
+        <input type="number" name="maxquantity" min="0" id="edit-maxquantity" required>
         <button type="submit" class="btn" style="margin-top:10px;">Update Item</button>
       </form>
     </div>
@@ -554,6 +723,7 @@ try {
 
 </main>
 
+<script src="sidebar.js"></script>
 <script>
 $(function () {
   $('#item_name').change(function() {
@@ -588,6 +758,29 @@ $(function () {
             $('#unit_id').val('');
         }
   });
+
+  $('#category-select').change(function() {
+  const selectedText = $(this).find('option:selected').text();
+  const selectedId   = $(this).val();
+  $('#category').val(selectedText);
+  $('#category_id').val(selectedId);
+});
+
+// Unit select → fill text input and hidden ID
+$('#unit-select').change(function() {
+  const selectedText = $(this).find('option:selected').text();
+  const selectedId   = $(this).val();
+  $('#unit').val(selectedText);
+  $('#unit_id').val(selectedId);
+});
+
+// Optional: if user types new category/unit → clear hidden ID
+$('#category').on('input', function() {
+  $('#category_id').val(''); // new category
+});
+$('#unit').on('input', function() {
+  $('#unit_id').val(''); // new unit
+});
   $(document).on('click', '.view-batches-btn', function() {
   const productId = $(this).data('productid');
   const productName = $(this).data('productname');
@@ -602,7 +795,7 @@ $(function () {
           <h3>Batches for ${productName}</h3>
           ${response}
         `);
-        $('#batches-modal').fadeIn(); // show modal
+        $('#batches-modal').addClass('show').css('display', 'flex');
       },
       error: function() {
         alert('Failed to load batches.');
@@ -611,38 +804,99 @@ $(function () {
 });
 
 // Close modal when clicking the close button
-$(document).on('click', '.batches-close', function() {
-  $('#batches-modal').fadeOut();
+$(document).on('click', '#close-modal, .batches-close', function(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  $('#batches-modal').removeClass('show').fadeOut(300);
 });
 
-// Optional: close modal when clicking outside modal content
-$(window).on('click', function(e) {
+// Close modal when clicking outside modal content
+$(document).on('click', '#batches-modal', function(e) {
   if ($(e.target).is('#batches-modal')) {
-    $('#batches-modal').fadeOut();
+    $(this).removeClass('show').fadeOut(300);
   }
 });
 
-  // Sidebar toggle
-  $(".toggle").click(() => $(".sidebar").toggleClass("hide"));
+// Close modal on Escape key
+$(document).on('keydown', function(e) {
+  if (e.key === 'Escape' && $('#batches-modal').hasClass('show')) {
+    $('#batches-modal').removeClass('show').fadeOut(300);
+  }
+});
+
+  // Sidebar toggle handled by sidebar.js
 
   // Open/Close modals
   $(".add-item").click(e => { e.preventDefault(); $("#addItemModal").css('display','flex'); });
   $(".modal .close").click(function () { $(this).closest(".modal").hide(); });
   $(window).click(e => { if ($(e.target).hasClass("modal")) $(".modal").hide(); });
 
+  //Edit Mode
   // Prefill Edit modal (no AJAX submit — standard POST)
   $(document).on("click", ".edit-btn", function () {
     const $btn = $(this);
-    $("#edit-inventory-id").val($btn.data("inventoryid"));
-    $("#edit-item-name").val($btn.data("name"));
-    $("#edit-category").val($btn.data("category"));
-    $("#edit-unit").val($btn.data("unit"));
-    $("#edit-sku").val($btn.data("sku"));
-    $("#edit-quantity").val($btn.data("quantity"));
-    $("#edit-expiration").val($btn.data("expiration") || '');
+    $("#edit-product_id").val($btn.data("productid"));
+    $("#edit-product").val($btn.data("product"));
+    $("#edit-price").val($btn.data("price"));
+    $("#edit-minquantity").val($btn.data("minquantity"));
+    $("#edit-maxquantity").val($btn.data("maxquantity"));
+    // CATEGORY
+    const catId = $btn.data("categoryid");
+    const catName = $btn.data("categoryname");
+
+    $("#edit-category_id").val(catId || "");
+
+    if (catId) {
+        $("#edit-category-select").val(catId);
+        $("#edit-category").val("");
+    } else {
+        $("#edit-category-select").val("");
+        $("#edit-category").val(catName);
+    }
+
+    // UNIT
+    const unitId = $btn.data("unitid");
+    const unitName = $btn.data("unitname");
+
+    $("#edit-unit_id").val(unitId || "");
+
+    if (unitId) {
+        $("#edit-unit-select").val(unitId);
+        $("#edit-unit").val("");
+    } else {
+        $("#edit-unit-select").val("");
+        $("#edit-unit").val(unitName);
+    }
+
+
     $("#editItemModal").css('display','flex');
   });
 
+$("#edit-category-select").on("change", function () {
+    const val = $(this).val();
+    $("#edit-category_id").val(val);
+    if (val) $("#edit-category").val("");
+});
+
+// Category text input
+$("#edit-category").on("input", function () {
+    $("#edit-category-select").val("");
+    $("#edit-category_id").val("");
+});
+
+// Unit dropdown
+$("#edit-unit-select").on("change", function () {
+    const val = $(this).val();
+    $("#edit-unit_id").val(val);
+    if (val) $("#edit-unit").val("");
+});
+
+// Unit text input
+$("#edit-unit").on("input", function () {
+    $("#edit-unit-select").val("");
+    $("#edit-unit_id").val("");
+});
+//Edit Mode
   // Action menu
   $(document).on("click", ".icon-more", function (e) {
     e.stopPropagation();
@@ -659,20 +913,24 @@ $(window).on('click', function(e) {
   $("#category-filter, #stock-filter").on("change", filterTable);
   $("#clear-filters").on("click", function () { $("#table-search").val(''); $("#category-filter").val(''); $("#stock-filter").val(''); filterTable(); $("#filter-dropdown").addClass("hidden"); });
 
-  function filterTable() {
-    const searchValue   = $("#table-search").val().toLowerCase();
-    const categoryValue = $("#category-filter").val().toLowerCase();
-    const stockValue    = $("#stock-filter").val().toLowerCase();
-    $(".inventory-table tbody tr").each(function () {
-      const name     = $(this).find("td:nth-child(1)").text().toLowerCase();
-      const category = $(this).find("td:nth-child(2)").text().toLowerCase();
-      const status   = $(this).find("td:nth-child(4)").text().toLowerCase();
-      const matchesSearch   = name.includes(searchValue) || category.includes(searchValue);
-      const matchesCategory = !categoryValue || category === categoryValue;
-      const matchesStock    = !stockValue || status === stockValue;
-      $(this).toggle(matchesSearch && matchesCategory && matchesStock);
-    });
-  }
+function filterTable() {
+  const searchValue   = $("#table-search").val().toLowerCase();
+  const categoryValue = $("#category-filter").val().toLowerCase();
+  const stockValue    = $("#stock-filter").val().toLowerCase();
+
+  $(".inventory-table tbody tr").each(function () {
+    const name     = $(this).find("td:nth-child(2)").text().toLowerCase(); // Product
+    const category = $(this).find("td:nth-child(7)").text().toLowerCase(); // Category (moved after Unit)
+    const status   = $(this).find("td:nth-child(6)").text().toLowerCase(); // Status (moved after Unit)
+
+    const matchesSearch   = name.includes(searchValue) || category.includes(searchValue);
+    const matchesCategory = !categoryValue || category === categoryValue;
+    const matchesStock    = !stockValue || status === stockValue;
+
+    $(this).toggle(matchesSearch && matchesCategory && matchesStock);
+  });
+}
+
 
   // Quick Request (kept as-is; still posts to quick_request.php)
   let qrItems = [];
@@ -788,19 +1046,74 @@ $("#clear-qr").click(() => {
 
   // Nav
   $("#dashboard").click(function(){ window.location.href = "dashboard.php"; });
-  $("#nav-suppliers").click(function(){ window.location.href = "supplier.php"; });
-  $("#request").click(function(){ window.location.href = "request_list.php"; });
+  $("#inventory").click(function(){ window.location.href = "Inventory.php"; });
   $("#low-stock").click(function(){ window.location.href = "lowstock.php"; });
-
-  //Logout
-      $("#logout").click(function(){
-        window.location.href = "logout.php";
-      });
+  $("#request").click(function(){ window.location.href = "request_list.php"; });
+  $("#nav-suppliers").click(function(){ window.location.href = "supplier.php"; });
+  $("#reports").click(function(){ window.location.href = "report.php"; });
+  $("#users").click(function(){ window.location.href = "admin.php"; });
+  $("#settings").click(function(){ window.location.href = "settings.php"; });
+  $("#logout").click(function(){ window.location.href = "logout.php"; });
 
       
 
 });
+document.addEventListener('DOMContentLoaded', () => {
+  const table = document.querySelector('.inventory-table tbody');
+  const rows = Array.from(table.querySelectorAll('tr'));
 
+  const categoryFilter = document.getElementById('category-filter');
+  const stockFilter = document.getElementById('stock-filter');
+  const clearBtn = document.getElementById('clear-filters');
+
+  function applyFilters() {
+    const categoryVal = categoryFilter.value.toLowerCase();
+    const stockVal = stockFilter.value.toLowerCase();
+
+    rows.forEach(row => {
+      const category = row.dataset.category?.toLowerCase() || '';
+      const status = row.querySelector('td:nth-child(5)').textContent.toLowerCase();
+
+      const matchCategory = !categoryVal || category === categoryVal;
+      const matchStock = !stockVal || status === stockVal;
+
+      if (matchCategory && matchStock) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  }
+
+  categoryFilter.addEventListener('change', applyFilters);
+  stockFilter.addEventListener('change', applyFilters);
+
+  clearBtn.addEventListener('click', () => {
+    categoryFilter.value = '';
+    stockFilter.value = '';
+    applyFilters();
+  });
+});
+function loadNotifications() {
+    $.ajax({
+        url: "get_notifications.php",
+        method: "GET",
+        dataType: "json",
+        success: function(data) {
+            let total = data.messages + data.lowstock;
+
+            if (total > 0) {
+                $("#notifBadge").text(total).show();
+            } else {
+                $("#notifBadge").hide();
+            }
+        }
+    });
+}
+loadNotifications();
+
+// Refresh every 10 seconds
+setInterval(loadNotifications, 10000);
 
 </script>
 <!-- Batch Modal -->

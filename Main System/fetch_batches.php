@@ -11,9 +11,11 @@ if (isset($_POST['product_id'])) {
             i.Quantity,
             i.ExpirationDate,
             i.Status AS InventoryStatus,
-            i.SKU
+            i.SKU,
+            u.UnitName AS Unit
         FROM inventory i
         JOIN products p ON i.ProductID = p.ProductID
+        LEFT JOIN units u ON u.UnitID = p.UnitID
         WHERE i.ProductID = ?
         ORDER BY i.ExpirationDate ASC
     ";
@@ -30,6 +32,8 @@ if (isset($_POST['product_id'])) {
                     <th>Batch #</th>
                     <th>SKU</th>
                     <th>Quantity</th>
+                    <th>Unit</th>
+                    <th>Quantity per Unit</th>
                     <th>Expiration Date</th>
                     <th>Status</th>
                   </tr>
@@ -37,12 +41,27 @@ if (isset($_POST['product_id'])) {
                 <tbody>";
 
         while ($row = $result->fetch_assoc()) {
+            $unit = htmlspecialchars($row['Unit'] ?? '-');
+            $quantity = (int)$row['Quantity'];
+            // Quantity per unit is the same as quantity for each batch
+            $quantityPerUnit = $quantity;
+            
+            // Format expiration date
+            $expirationDate = $row['ExpirationDate'];
+            if ($expirationDate && $expirationDate !== '0000-00-00' && $expirationDate !== null) {
+                $expirationDate = date('Y-m-d', strtotime($expirationDate));
+            } else {
+                $expirationDate = '-';
+            }
+            
             echo "<tr>
-                    <td>{$row['BatchNum']}</td>
-                    <td>{$row['SKU']}</td>
-                    <td>{$row['Quantity']}</td>
-                    <td>{$row['ExpirationDate']}</td>
-                    <td>{$row['InventoryStatus']}</td>
+                    <td>" . htmlspecialchars($row['BatchNum'] ?? '-') . "</td>
+                    <td>" . htmlspecialchars($row['SKU'] ?? '-') . "</td>
+                    <td>{$quantity}</td>
+                    <td>{$unit}</td>
+                    <td>{$quantityPerUnit}</td>
+                    <td>{$expirationDate}</td>
+                    <td>" . htmlspecialchars($row['InventoryStatus'] ?? '-') . "</td>
                   </tr>";
         }
 
