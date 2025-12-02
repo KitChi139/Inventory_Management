@@ -13,9 +13,12 @@
   <!-- Font Awesome & jQuery (your project already used these) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  
+
 
   <!-- Reuse your existing styles -->
   <link rel="stylesheet" href="inventory.css" />
+  <link rel="stylesheet" href="notification.css">
 
   <!-- Page-specific CSS -->
   <style>
@@ -85,7 +88,6 @@
 <aside class="sidebar" aria-label="Primary">
   <div class="profile">
     <div class="icon" aria-hidden="true"><i class="fa-solid fa-user"></i></div>
-    <img src="logo.png" alt="MediSync Logo" class="medisync-logo">
     <button class="toggle" aria-expanded="true" aria-label="Toggle navigation"><i class="fa-solid fa-bars"></i></button>
   </div>
   <h3 class="title">Navigation</h3>
@@ -110,8 +112,7 @@
       <h2>Suppliers</h2>
     </div>
     <div class="top-right">
-      <button class="icon-btn" title="Notifications" aria-label="Notifications"><i class="fa-solid fa-bell bell"></i></button>
-      <a href="#" class="btn add-supplier"><i class="fa-solid fa-plus"></i> Add Supplier</a>
+      <?php include 'notification_component.php'; ?>
     </div>
   </header>
 
@@ -282,19 +283,57 @@
   </div>
 </div>
 
-<!-- Page JS: demo data + interactions -->
+<!-- CONTACT MODAL -->
+<div class="modal-overlay" id="contact-modal">
+    <div class="modal-box">
+        <h2>Contact Supplier</h2>
+
+        <form id="contactForm">
+
+            <input type="hidden" name="supplier" id="modalSupplierValue">
+            <input type="hidden" name="batch" id="modalBatchValue">
+
+            <div class="form-group">
+                <label>Subject</label>
+                <input type="text" name="subject" id="contact-subject" required>
+            </div>
+
+            <div class="form-group">
+                <label>Message</label>
+                <textarea name="message" id="contact-message" rows="5" required></textarea>
+            </div>
+
+            <div class="modal-details">
+                <p><strong>Supplier:</strong> <span id="modal-supplier"></span></p>
+                <p><strong>Batch:</strong> <span id="modal-batch"></span></p>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" id="contact-close">Cancel</button>
+                <button type="submit" class="btn-primary">Send</button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+
+
 <script>
 $(function(){
 
-  // Demo supplier data (replace with AJAX fetch later)
-  const demoSuppliers = [
-    { id: 1, name: "MedSupply Corp", contact: "Diane Cruz", phone: "+639271234567", email: "diane@example.com", categories: ["PPE","Pharma"], rating: 4.8, items: 12, status: "Active" },
-    { id: 2, name: "HealthLine Inc", contact: "John Santos", phone: "+639101112131", email: "john@hl.com", categories: ["Devices"], rating: 4.2, items: 3, status: "Active" },
-    { id: 3, name: "PharmaPlus", contact: "Maya Lopez", phone: "+639181234567", email: "maya@pharmaplus.com", categories: ["Pharma"], rating: 3.9, items: 0, status: "Inactive" }
-  ];
+let suppliers = [];
 
-  let suppliers = [...demoSuppliers];
-  let selectedSupplierId = null;
+// Load from database
+function loadSuppliers() {
+    $.getJSON("get_suppliers.php", function(data) {
+        suppliers = data;
+        renderSuppliers();
+    });
+}
+
+loadSuppliers();
+
 
   /* ------------------ render helpers ------------------ */
   function renderSuppliers() {
@@ -305,8 +344,8 @@ $(function(){
       const statusBadge = `<span class="badge ${s.status.toLowerCase()==='active' ? 'active' : 'inactive'}">${s.status}</span>`;
       $tbody.append(`
         <tr data-id="${s.id}">
-          <td>${escapeHtml(s.name)}</td>
-          <td>${escapeHtml(s.contact)}</td>
+          <td>${escapeHtml(s.supplier_name)}</td>
+          <td>${escapeHtml(s.contact_person)}</td>
           <td>${escapeHtml(s.phone)}</td>
           <td>${escapeHtml(s.email)}</td>
           <td>${escapeHtml(cats)}</td>
@@ -314,22 +353,37 @@ $(function(){
           <td>${s.items}</td>
           <td>${statusBadge}</td>
           <td>
-            <div class="action-wrap">
-              <button class="icon-more"><i class="fa-solid fa-ellipsis"></i></button>
-              <div class="more-menu">
-                <button class="menu-item edit-supplier">Edit</button>
-                <button class="menu-item contact-supplier">Contact</button>
-                <button class="menu-item restock-supplier">Restock</button>
-                <button class="menu-item danger delete-supplier">Delete</button>
-              </div>
-            </div>
+            <button class="btn select-supplier-btn" data-id="${escapeHtml(s.supplier_id)}">
+              Select Supplier
+            </button>
           </td>
         </tr>
       `);
     });
     updateStats();
   }
+  let selectedSupplierId = null;
 
+$(document).on("click", ".select-supplier-btn", function () {
+    selectedSupplierId = $(this).data("supplier_id");
+    const supplier = suppliers.find(s => s.id == selectedSupplierId);
+
+    // Update right panel display
+    $("#sel-supplier").text(supplier.supplier_name);
+
+    // Enable buttons
+    $("#contact-sel").prop("disabled", false);
+    $("#restock-sel").prop("disabled", false);
+});
+// <div class="action-wrap">
+//               <button class="icon-more"><i class="fa-solid fa-ellipsis"></i></button>
+//               <div class="more-menu">
+//                 <button class="menu-item edit-supplier">Edit</button>
+//                 <button class="menu-item contact-supplier">Contact</button>
+//                 <button class="menu-item restock-supplier">Restock</button>
+//                 <button class="menu-item danger delete-supplier">Delete</button>
+//               </div>
+//             </div>
   function updateStats(){
     $("#stat-total").text(suppliers.length);
     $("#stat-active").text(suppliers.filter(s => s.status === "Active").length);
@@ -383,8 +437,15 @@ $(function(){
   $(document).on("click", ".delete-supplier", function(){
     const id = $(this).closest("tr").data("id");
     if(!confirm("Delete this supplier?")) return;
-    suppliers = suppliers.filter(s=>s.id!==id);
-    renderSuppliers();
+    $.post("delete_supplier.php", { supplier_id: id }, function(res) {
+    const r = JSON.parse(res);
+    if (r.success) {
+        loadSuppliers();
+    } else {
+        alert("Delete failed.");
+    }
+});
+
   });
 
   // row click selects supplier for right panel
@@ -392,7 +453,7 @@ $(function(){
     const id = $(this).data("id");
     selectedSupplierId = id;
     const s = suppliers.find(x=>x.id===id);
-    $("#sel-supplier").html(`<strong>${escapeHtml(s.name)}</strong><div class="muted">${escapeHtml(s.contact)} • ${escapeHtml(s.phone)}</div>`);
+    $("#sel-supplier").html(`<strong>${escapeHtml(s.name)}</strong><div class="muted">${escapeHtml(s.contact_person)} • ${escapeHtml(s.phone)}</div>`);
     $("#contact-sel, #restock-sel").prop("disabled", false);
   });
 
@@ -420,50 +481,70 @@ $(function(){
     $("#supplierModal").show();
   }
 
-  // Save supplier (frontend only)
-  $("#supplierForm").on("submit", function(e){
+$("#supplierForm").on("submit", function(e) {
     e.preventDefault();
-    const id = $("#supplier-id").val();
-    const obj = {
-      id: id ? parseInt(id) : (suppliers.length ? Math.max(...suppliers.map(s=>s.id))+1 : 1),
-      name: $("#supplier-name").val().trim(),
-      contact: $("#supplier-contact").val().trim(),
-      phone: $("#supplier-phone").val().trim(),
-      email: $("#supplier-email").val().trim(),
-      categories: $("#supplier-categories").val().split(",").map(x=>x.trim()).filter(Boolean),
-      rating: 4.0,
-      items: 0,
-      status: "Active"
-    };
-    if(!obj.name) { alert("Supplier name required"); return; }
 
-    if(id){
-      suppliers = suppliers.map(s => s.id === obj.id ? {...s, ...obj} : s);
-    } else {
-      suppliers.push(obj);
-    }
-    renderSuppliers();
-    $("#supplierModal").hide();
-  });
+    const formData = {
+        supplier_id: $("#supplier-id").val(),
+        name: $("#supplier-name").val(),
+        contact: $("#supplier-contact").val(),
+        phone: $("#supplier-phone").val(),
+        email: $("#supplier-email").val(),
+        categories: $("#supplier-categories").val(),
+        status: "Active",
+        rating: 4.0,
+        items: 0
+    };
+
+    $.post("save_supplier.php", formData, function(res) {
+        const r = JSON.parse(res);
+        if (r.success) {
+            $("#supplierModal").hide();
+            loadSuppliers();
+        } else {
+            alert("Error saving supplier.");
+        }
+    });
+});
+
 
   // Contact / Restock modals handling
-  function openContactModal(id){
-    const s = suppliers.find(x=>x.id===id);
-    if(!s) return;
-    $("#contact-supplier-info").html(`<strong>${escapeHtml(s.name)}</strong><div class="muted">${escapeHtml(s.contact)} • ${escapeHtml(s.email)} • ${escapeHtml(s.phone)}</div>`);
-    $("#contact-subject").val("");
-    $("#contact-message").val("");
-    $("#contactModal").show();
-  }
+function openContactModal(id){
+  const s = suppliers.find(x => x.id == id);
+  if (!s) return;
 
-  function openRestockModal(id){
-    const s = suppliers.find(x=>x.id===id);
-    if(!s) return;
-    $("#restock-supplier-info").html(`<strong>${escapeHtml(s.name)}</strong><div class="muted">${escapeHtml(s.contact)} • ${escapeHtml(s.email)}</div>`);
-    $("#restock-subject").val("Low Stock Reorder Request");
-    $("#restock-message").val(`Hello ${s.contact},\n\nWe need to restock items supplied by ${s.name}. Please provide availability and pricing.\n\nThanks.`);
-    $("#restockModal").show();
-  }
+  $("#contact-supplier-info").html(`
+    <strong>${escapeHtml(s.supplier_name)}</strong>
+    <div class="muted">
+      ${escapeHtml(s.contact_person)} • ${escapeHtml(s.email)} • ${escapeHtml(s.phone)}
+    </div>
+  `);
+
+  $("#contact-subject").val("");
+  $("#contact-message").val("");
+  $("#contactModal").show();
+}
+
+function openRestockModal(id){
+  const s = suppliers.find(x => x.id == id);
+  if (!s) return;
+
+  $("#restock-supplier-info").html(`
+    <strong>${escapeHtml(s.supplier_name)}</strong>
+    <div class="muted">
+      ${escapeHtml(s.contact_person)} • ${escapeHtml(s.email)}
+    </div>
+  `);
+
+  $("#restock-subject").val("Low Stock Reorder Request");
+  $("#restock-message").val(
+    `Hello ${s.contact_person},\n\n` +
+    `We need to restock items supplied by ${s.supplier_name}. ` +
+    `Please provide availability and pricing.\n\nThanks.`
+  );
+
+  $("#restockModal").show();
+}
 
   // Right panel contact/restock buttons
   $("#contact-sel").click(()=> {
@@ -527,6 +608,66 @@ $(function(){
     });
   }
 
+  // OPEN CONTACT MODAL
+document.querySelectorAll(".contact-option").forEach(btn => {
+    btn.addEventListener("click", () => {
+
+        const row = btn.closest("tr");
+        const supplier = row.cells[3].textContent;
+        const batch = row.cells[4].textContent;
+
+        // Fill text
+        document.getElementById("modal-supplier").textContent = supplier;
+        document.getElementById("modal-batch").textContent = batch;
+
+        // Fill hidden values
+        document.getElementById("modalSupplierValue").value = supplier;
+        document.getElementById("modalBatchValue").value = batch;
+
+        // Clear old values
+        document.getElementById("contact-subject").value = "";
+        document.getElementById("contact-message").value = "";
+
+        // Show modal
+        document.getElementById("contact-modal").style.display = "flex";
+    });
+});
+
+// CLOSE MODAL
+document.getElementById("contact-close").addEventListener("click", () => {
+    document.getElementById("contact-modal").style.display = "none";
+});
+
+// CLOSE WHEN CLICKING OUTSIDE
+document.getElementById("contact-modal").addEventListener("click", (e) => {
+    if (e.target.id === "contact-modal") {
+        document.getElementById("contact-modal").style.display = "none";
+    }
+});
+
+// SUBMIT CONTACT FORM
+document.getElementById("contactForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    let f = new FormData(this);
+
+    fetch("send_message.php", {
+        method: "POST",
+        body: f
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "success") {
+            alert("Message sent!");
+            document.getElementById("contact-modal").style.display = "none";
+            location.reload();
+        } else {
+            alert("Error: " + data.error);
+        }
+    });
+});
+
+
   // small utility: close dropdown if ESC pressed
   $(document).keyup(function(e){ if(e.key === "Escape") $(".modal, .filter-dropdown").addClass("hidden").hide(); });
 
@@ -540,7 +681,12 @@ $(function(){
   $("#low-stock").click(()=> window.location.href = "lowstock.php");
   $("#logout").click(()=>window.location.href="logout.php");
 });
+
+
+
 </script>
+
+<script src="notification.js" defer></script>
 
 </body>
 </html>

@@ -6,8 +6,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Request List</title>
   <link rel="stylesheet" href="request_list.css">
+  <link rel="stylesheet" href="notification.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+  
+
   <style>
     /* i did this because it wont work in the css file */
 /* === FILTERS SECTION (aligned horizontally) === */
@@ -153,8 +157,33 @@ $recentMessages = $conn->query("
   <!-- MESSAGE ICON -->
   <button class="icon-btn"><i id="openMessages" class="fa-solid fa-message"></i></button>
 
-  <!-- NOTIFICATION BELL -->
-  <button class="icon-btn"><i class="fa-solid fa-bell bell"></i></button>
+
+  <!-- NOTIFICATION DROPDOWN -->
+<div class="notif-wrap">
+  <button class="notif-btn" id="notifBtn">
+    <i class="fa-solid fa-bell"></i>
+    <span class="notif-count" id="notifCount">0</span>
+  </button>
+
+  <div class="notif-dd" id="notifDropdown">
+    <div class="dd-header">
+      <h4>Notifications</h4>
+      <div class="notif-settings">
+        <input type="checkbox" id="notifyToggle" checked>
+        <label for="notifyToggle">Notify</label>
+      </div>
+    </div>
+    <div class="dd-list" id="notifList"></div>
+    <div class="notif-footer">
+      <a href="message_list.php">See all messages / low stock</a>
+    </div>
+  </div>
+</div>
+
+
+<!-- notification sound -->
+<audio id="notifSound" src="notification_ping.mp3" preload="auto"></audio>
+
 </div>
 
   </header>
@@ -363,6 +392,17 @@ $("#openMessages").click(function() {
   $("#messageModal").css("display", "flex");
 });
 
+// NOTIFICATION DROPDOWN OPEN/CLOSE
+$("#notifBtn").click(function(e){
+    e.stopPropagation();
+    $("#notifDropdown").toggleClass("show");
+
+    if ($("#notifDropdown").hasClass("show")) {
+        loadNotificationDropdown();
+    }
+});
+
+
 $("#closeMsg").click(function() {
   $("#messageModal").hide();
 });
@@ -415,6 +455,89 @@ $(".msg-search").on("keyup", function () {
 
 
 });
+
+function loadNotifications() {
+    $.ajax({
+        url: "get_notifications.php",
+        method: "GET",
+        dataType: "json",
+        success: function(data) {
+            let total = data.messages + data.lowstock;
+
+            if (total > 0) {
+                $("#notifBadge").text(total).show();
+            } else {
+                $("#notifBadge").hide();
+            }
+        }
+    });
+}
+
+// Load on page open
+loadNotifications();
+
+// Refresh every 10 seconds
+setInterval(loadNotifications, 10000);
+
+// close when clicking outside
+$(document).click(function () {
+    $("#notifDropdown").removeClass("show");
+});
+
+function loadNotificationDropdown() {
+    $.ajax({
+        url: "get_notifications.php",
+        method: "GET",
+        dataType: "json",
+        success: function(data) {
+
+            let list = $("#notifList");
+            list.html(""); // clear
+
+            // Recent Messages
+            if (data.messages > 0) {
+                list.append(`
+                    <div class="notif-item msg">
+                        <div class="left">
+                            <i class="fa-solid fa-envelope"></i>
+                        </div>
+                        <div class="right">
+                            <p><strong>${data.messages} New Messages</strong></p>
+                            <span>Click to view</span>
+                        </div>
+                    </div>
+                `);
+            }
+
+            // Low Stock Alerts
+            if (data.lowstock > 0) {
+                list.append(`
+                    <div class="notif-item lowstock">
+                        <div class="left">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+                        <div class="right">
+                            <p><strong>${data.lowstock} Low Stock Items</strong></p>
+                            <span>Click to view</span>
+                        </div>
+                    </div>
+                `);
+            }
+
+            if (data.messages === 0 && data.lowstock === 0) {
+                list.html(`<div style="padding:12px; color:#777;">No new notifications</div>`);
+            }
+
+            // CLICK ACTIONS
+            $(".notif-item.msg").click(() => window.location.href = "message_list.php");
+            $(".notif-item.lowstock").click(() => window.location.href = "lowstock.php");
+        }
+    });
+}
+
+
 </script>
+
+<script src="notification.js" defer></script>
 </body>
 </html>
