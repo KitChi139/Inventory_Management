@@ -56,32 +56,6 @@ $pendingMessages = $conn->query("SELECT COUNT(*) AS total FROM messages WHERE st
     <link rel="stylesheet" href="message_list.css">
     <link rel="stylesheet" href="notification.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <!-- NOTIFICATION BELL + DROPDOWN -->
-<style>
-/* minimal notif CSS, include in your main CSS if you prefer */
-.notif-wrap { position: relative; display:inline-block; }
-.notif-btn { background:none; border:none; font-size:20px; cursor:pointer; position:relative; }
-.notif-count { position:absolute; top:-6px; right:-6px; background:#e53e3e; color:#fff; font-size:11px; padding:2px 6px; border-radius:999px; font-weight:700; }
-.notif-dd { position:absolute; right:0; width:320px; max-width:90vw; background:#fff; border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,0.12); display:none; z-index:1200; overflow:hidden; }
-.notif-dd.show { display:block; }
-.notif-dd .dd-header { display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-bottom:1px solid #f1f5f9; }
-.notif-dd .dd-header h4{ margin:0; font-size:15px; }
-.notif-dd .dd-list { max-height:260px; overflow:auto; }
-.notif-item { display:flex; gap:10px; padding:12px; border-bottom:1px solid #f6f8fb; cursor:pointer; align-items:flex-start; }
-.notif-item:last-child{ border-bottom:none; }
-.notif-dot { width:12px; height:12px; border-radius:999px; flex:0 0 12px; margin-top:6px; }
-.notif-item .title { font-weight:600; font-size:14px; }
-.notif-item .body { font-size:13px; color:#555; margin-top:4px; }
-.notif-item .meta { font-size:12px; color:#888; margin-top:6px; }
-.notif-item.lowstock .notif-dot{ background:#ffb100; } /* amber for low stock */
-.notif-item.message .notif-dot{ background:#4f9cf9; } /* blue for messages */
-.notif-footer { padding:8px 12px; text-align:center; border-top:1px solid #f1f5f9; }
-.notif-footer a { text-decoration:none; color:#0366d6; font-weight:600; }
-.notif-settings { font-size:13px; display:flex; gap:8px; align-items:center; }
-.notif-settings label { font-size:13px; color:#333; }
-</style>
-
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 </head>
 <body>
@@ -263,53 +237,6 @@ $pendingMessages = $conn->query("SELECT COUNT(*) AS total FROM messages WHERE st
         </div>
     </div>
 
-<!-- CONTACT MODAL -->
-<!-- <form id="contactForm">
-
-    hidden fields
-    <input type="hidden" id="modalSupplierValue" name="supplier">
-    <input type="hidden" id="modalBatchValue" name="batch">
-
-    <div class="form-group">
-        <label>Subject</label>
-        <input type="text" name="subject" required>
-    </div>
-
-    <div class="form-group">
-        <label>Message</label>
-        <textarea name="message" rows="5" required></textarea>
-    </div>
-
-    <div class="supplier-info">
-        <strong>Supplier:</strong> <span id="modal-supplier"></span><br>
-        <strong>Batch:</strong> <span id="modal-batch"></span>
-    </div>
-
-    <div class="modal-actions">
-        <button type="button" class="btn-secondary" id="close-modal">Cancel</button>
-        <button type="submit" class="btn-primary">Send Message</button>
-    </div>
-</form> -->
-
-
-    <!-- </div>
-</div> -->
-
-<!-- RESTOCK MODAL -->
-<div class="modal" id="restock-modal">
-    <div class="modal-content">
-        <h2>Send Restock Request</h2>
-        <p class="modal-subtitle">This will send an automated restock message</p>
-
-        <div class="supplier-info">
-            <strong>Supplier:</strong> <span id="restock-supplier"></span><br>
-            <strong>Batch:</strong> <span id="restock-batch"></span><br>
-            <strong>Message:</strong> <span id="restock-message"></span>
-        </div>
-
-        <div class="modal-actions">
-            <button type="button" class="btn-secondary" id="close-restock-modal">Cancel</button>
-            <button type="button" class="btn-primary" id="confirm-restock">Send Restock Request</button>
     <!-- Restock Confirmation Modal -->
     <div class="modal" id="restock-modal" style="display:none;">
         <div class="modal-content">
@@ -377,33 +304,6 @@ $pendingMessages = $conn->query("SELECT COUNT(*) AS total FROM messages WHERE st
             });
         });
 
-<<<<<<< HEAD
-// Contact Modal
-document.querySelectorAll(".contact-option").forEach(btn => {
-    btn.addEventListener("click", () => {
-
-        const row = btn.closest("tr");
-
-        const supplier = row.cells[3].textContent;
-        const batch = row.cells[4].textContent;
-
-        // visible text
-        document.getElementById("modal-supplier").textContent = supplier;
-        document.getElementById("modal-batch").textContent = batch;
-
-        // hidden inputs
-        document.getElementById("modalSupplierValue").value = supplier;
-        document.getElementById("modalBatchValue").value = batch;
-
-        // show modal
-        document.getElementById("contactForm").style.display = "flex";
-    });
-});
-
-
-document.getElementById("close-modal").onclick = () =>
-    document.getElementById("contactForm").style.display = "none";
-=======
         // Close dropdown when clicking outside
         document.addEventListener('click', () => {
             document.querySelectorAll('.dropdown-menu').forEach(menu => {
@@ -427,7 +327,6 @@ document.getElementById("close-modal").onclick = () =>
                 btn.closest('.dropdown-menu').classList.remove('show');
             });
         });
->>>>>>> 2891d21a4d3ccbddfcb28e9a5092422e799f0fbb
 
         // Restock option - opens automated message confirmation
         document.querySelectorAll('.restock-option').forEach(btn => {
@@ -464,188 +363,11 @@ document.getElementById("close-modal").onclick = () =>
             document.getElementById('restock-modal').style.display = 'none';
         });
 
-<<<<<<< HEAD
-document.getElementById("confirm-restock").onclick = () => {
-    alert("Restock request sent successfully!");
-    document.getElementById("restock-modal").style.display = "none";
-};
-
-function loadNotifications() {
-    $.ajax({
-        url: "get_notifications.php",
-        method: "GET",
-        dataType: "json",
-        success: function(data) {
-            let total = data.messages + data.lowstock;
-
-            if (total > 0) {
-                $("#notifBadge").text(total).show();
-            } else {
-                $("#notifBadge").hide();
-            }
-        }
-    });
-}
-
-// Load on page open
-loadNotifications();
-
-// Refresh every 10 seconds
-setInterval(loadNotifications, 10000);
-
-// AJAX submit for contact form
-document.getElementById("contactForm").addEventListener("submit", function(e) {
-    e.preventDefault();
-
-    let formData = new FormData(this);
-
-    fetch("send_message.php", {
-        method: "POST",
-        body: formData
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.status === "success") {
-            alert("Message sent successfully!");
-            document.getElementById("contactForm").style.display = "none";
-
-            // You can optionally reload message list
-            location.reload();
-        } else {
-            alert("Error: " + data.error);
-        }
-    });
-});
-
-<script>
-(function(){
-  const notifBtn = document.getElementById('notifBtn');
-  const dropdown = document.getElementById('notifDropdown');
-  const notifList = document.getElementById('notifList');
-  const notifCountEl = document.getElementById('notifCount');
-  const soundEl = document.getElementById('notifSound');
-  const notifyToggle = document.getElementById('notifyToggle');
-
-  // persist user preference (notify on/off)
-  const PREF_KEY = 'notify_enabled_v1';
-  const stored = localStorage.getItem(PREF_KEY);
-  if (stored !== null) notifyToggle.checked = stored === '1';
-
-  notifyToggle.addEventListener('change', () => {
-    localStorage.setItem(PREF_KEY, notifyToggle.checked ? '1' : '0');
-    // if user disables, clear the count badge (the "🛑 stops")
-    if (!notifyToggle.checked) {
-      notifCountEl.style.display = 'none';
-    }
-  });
-
-  // Toggle dropdown
-  notifBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    dropdown.classList.toggle('show');
-    notifBtn.setAttribute('aria-expanded', dropdown.classList.contains('show'));
-  });
-
-  // close when clicking outside
-  document.addEventListener('click', () => {
-    dropdown.classList.remove('show');
-    notifBtn.setAttribute('aria-expanded', 'false');
-  });
-
-  // when user clicks an alert, go to relevant page
-  function handleAlertClick(alert) {
-    if (alert.type === 'message') {
-      window.location.href = 'message_list.php';
-    } else if (alert.type === 'lowstock') {
-      window.location.href = 'lowstock.php';
-    } else {
-      window.location.href = 'message_list.php';
-    }
-  }
-
-  // Render alerts
-  function renderAlerts(data) {
-    notifList.innerHTML = '';
-    if (!data.alerts || data.alerts.length === 0) {
-      notifList.innerHTML = '<div style="padding:14px; color:#666;">No recent alerts</div>';
-      notifCountEl.style.display = 'none';
-      return;
-    }
-    data.alerts.forEach(a => {
-      const div = document.createElement('div');
-      div.className = `notif-item ${a.type}`;
-      div.innerHTML = `
-        <div class="notif-dot"></div>
-        <div style="flex:1">
-          <div class="title">${escapeHtml(a.title)}</div>
-          <div class="body">${escapeHtml(a.body)}</div>
-          <div class="meta">${a.date_at}${a.meta ? ' • ' + escapeHtml(a.meta) : ''}</div>
-        </div>
-      `;
-      div.addEventListener('click', () => handleAlertClick(a));
-      notifList.appendChild(div);
-    });
-    // update count badge
-    const total = data.counts.total || 0;
-    if (total > 0 && notifyToggle.checked) {
-      notifCountEl.style.display = 'inline-block';
-      notifCountEl.textContent = total;
-    } else {
-      notifCountEl.style.display = 'none';
-    }
-  }
-
-  // simple escape to avoid HTML injection
-  function escapeHtml(s){ return (s||'').toString().replace(/[&<>"']/g, (m)=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[m]); }
-
-  // polling & new notification detection
-  let lastSeenTime = localStorage.getItem('notif_last_time') || '';
-  function fetchNotifs() {
-    fetch('notifications.php')
-      .then(r => r.json())
-      .then(data => {
-        if (data.status !== 'ok') return;
-        renderAlerts(data);
-
-        // detect new
-        const newTime = data.last_time || '';
-        if (newTime && lastSeenTime && newTime !== lastSeenTime) {
-          // there's an update since lastSeenTime
-          if (notifyToggle.checked) {
-            // play the sound
-            try { soundEl.currentTime = 0; soundEl.play(); } catch(e){}
-          }
-        }
-        // update stored last time (update always so page restarts view)
-        lastSeenTime = newTime;
-        localStorage.setItem('notif_last_time', newTime);
-      })
-      .catch(err => {
-        console.error('notif error', err);
-      });
-  }
-
-  // initial fetch
-  fetchNotifs();
-  // poll every 10 seconds (tune as needed)
-  setInterval(fetchNotifs, 10000);
-
-  // expose small helper so dev can manually refresh
-  window.refreshNotifs = fetchNotifs;
-})();
-</script>
-
-<script src="notification.js" defer></script>
-
-
-</script>
-=======
         document.getElementById('restock-modal').addEventListener('click', (e) => {
             if (e.target.id === 'restock-modal') {
                 document.getElementById('restock-modal').style.display = 'none';
             }
         });
->>>>>>> 2891d21a4d3ccbddfcb28e9a5092422e799f0fbb
 
         // Confirm restock
         document.getElementById('confirm-restock').addEventListener('click', () => {

@@ -405,11 +405,11 @@ try {
 </aside>
 
 <main class="main">
-  <header class="topbar">
-    <div class="top-left"><h2>Inventory</h2></div>
-    <div class="top-right">
-      <?php include 'notification_component.php'; ?>
-      <a href="#" class="btn add-item"><i class="fa-solid fa-plus"></i> Add Item</a>
+  <!-- Notification + Profile icon (top-right in main content) -->
+  <div class="topbar-right">
+    <?php include 'notification_component.php'; ?>
+    <div class="profile-icon">
+      <i class="fa-solid fa-user"></i>
     </div>
   </div>
 

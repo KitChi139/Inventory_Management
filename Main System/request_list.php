@@ -356,89 +356,17 @@ $suppliers = $conn->query("SELECT DISTINCT supplier_name FROM suppliers WHERE su
             $("#sidebar").toggleClass("hide");
         });
 
-
-function loadNotifications() {
-    $.ajax({
-        url: "get_notifications.php",
-        method: "GET",
-        dataType: "json",
-        success: function(data) {
-            let total = data.messages + data.lowstock;
-
-            if (total > 0) {
-                $("#notifBadge").text(total).show();
-            } else {
-                $("#notifBadge").hide();
-            }
-        }
-    });
-}
-
-// Load on page open
-loadNotifications();
-
-// Refresh every 10 seconds
-setInterval(loadNotifications, 10000);
-
-// close when clicking outside
-$(document).click(function () {
-    $("#notifDropdown").removeClass("show");
-});
-
-function loadNotificationDropdown() {
-    $.ajax({
-        url: "get_notifications.php",
-        method: "GET",
-        dataType: "json",
-        success: function(data) {
-
-            let list = $("#notifList");
-            list.html(""); // clear
-
-            // Recent Messages
-            if (data.messages > 0) {
-                list.append(`
-                    <div class="notif-item msg">
-                        <div class="left">
-                            <i class="fa-solid fa-envelope"></i>
-                        </div>
-                        <div class="right">
-                            <p><strong>${data.messages} New Messages</strong></p>
-                            <span>Click to view</span>
-                        </div>
-                    </div>
-                `);
-            }
-
-            // Low Stock Alerts
-            if (data.lowstock > 0) {
-                list.append(`
-                    <div class="notif-item lowstock">
-                        <div class="left">
-                            <i class="fa-solid fa-triangle-exclamation"></i>
-                        </div>
-                        <div class="right">
-                            <p><strong>${data.lowstock} Low Stock Items</strong></p>
-                            <span>Click to view</span>
-                        </div>
-                    </div>
-                `);
-            }
-
-            if (data.messages === 0 && data.lowstock === 0) {
-                list.html(`<div style="padding:12px; color:#777;">No new notifications</div>`);
-            }
-
-            // CLICK ACTIONS
-            $(".notif-item.msg").click(() => window.location.href = "message_list.php");
-            $(".notif-item.lowstock").click(() => window.location.href = "lowstock.php");
-        }
-    });
-}
-
-
-</script>
-
-<script src="notification.js" defer></script>
+        // Navigation handlers
+        $("#dashboard").click(function(){ window.location.href = "dashboard.php"; });
+        $("#inventory").click(function(){ window.location.href = "Inventory.php"; });
+        $("#low-stock").click(function(){ window.location.href = "lowstock.php"; });
+        $("#request").click(function(){ window.location.href = "request_list.php"; });
+        $("#nav-suppliers").click(function(){ window.location.href = "supplier.php"; });
+        $("#reports").click(function(){ window.location.href = "report.php"; });
+        $("#users").click(function(){ window.location.href = "admin.php"; });
+        $("#settings").click(function(){ window.location.href = "settings.php"; });
+        $("#logout").click(function(){ window.location.href = "logout.php"; });
+    </script>
+    <script src="notification.js" defer></script>
 </body>
 </html>
