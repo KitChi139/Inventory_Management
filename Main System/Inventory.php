@@ -1,6 +1,11 @@
 <?php
-session_start();
 require 'db_connect.php';
+
+// Protect page - require login
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
+  header("Location: login.php");
+  exit();
+}
 
 if (isset($_POST['fetch_product']) && $_POST['fetch_product'] == 1) {
     $productID = (int)$_POST['product_id'];
@@ -350,6 +355,7 @@ try {
 <title>Inventory — Dashboard</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<link rel="stylesheet" href="sidebar.css" />
 <link rel="stylesheet" href="inventory.css" />
 <link rel="stylesheet" href="notification.css">
 <script src="notification.js" defer></script>
@@ -377,27 +383,25 @@ try {
 </head>
 <body>
 
-<aside class="sidebar" aria-label="Primary">
+<aside class="sidebar" id="sidebar">
   <div class="profile">
-    <div class="icon" aria-hidden="true"><i class="fa-solid fa-user"></i></div>
-    <button class="toggle" aria-expanded="true" aria-label="Toggle navigation"><i class="fa-solid fa-bars"></i></button>
-  </div>
-  <h3 class="title">Navigation</h3>
-  <nav>
-    <div class="navbar">
-      <ul class="menu">
-        <li id="dashboard"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></li>
-        <li class="active"><i class="fa-solid fa-boxes-stacked"></i><span>Inventory</span></li>
-        <li id="low-stock"><i class="fa-solid fa-triangle-exclamation"></i><span>Low Stock</span></li>
-        <li id="request"><i class="fa-solid fa-file-pen"></i><span>Requests</span></li>
-        <li id="nav-suppliers"><i class="fa-solid fa-truck"></i><span>Suppliers</span></li>
-        <li id="reports"><i class="fa-solid fa-file-lines"></i><span>Reports</span></li>
-        <li id="users"><i class="fa-solid fa-users"></i><span>Users</span></li>
-        <li id="settings"><i class="fa-solid fa-gear"></i><span>Settings</span></li>
-        <li id="logout"><i class="fa-solid fa-sign-out"></i><span>Log-Out</span></li>
-      </ul>
+    <div class="icon">
+      <img src="logo.png?v=2" alt="MediSync Logo" class="medisync-logo">
     </div>
-  </nav>
+    <button class="toggle" id="toggleBtn"><i class="fa-solid fa-bars"></i></button>
+  </div>
+  <ul class="menu">
+    <li id="dashboard"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></li>
+    <li id="inventory" class="active"><i class="fa-solid fa-boxes-stacked"></i><span>Inventory</span></li>
+    <li id="low-stock"><i class="fa-solid fa-triangle-exclamation"></i><span>Low Stock</span></li>
+    <li id="request"><i class="fa-solid fa-file-pen"></i><span>Requests</span></li>
+    <li id="nav-suppliers"><i class="fa-solid fa-truck"></i><span>Suppliers</span></li>
+    <li id="reports"><i class="fa-solid fa-file-lines"></i><span>Reports</span></li>
+    <?php if ($_SESSION['roleName'] === 'Admin'): ?>
+      <li id="users"><i class="fa-solid fa-users"></i><span>Users</span></li>
+    <?php endif; ?>    <li id="settings"><i class="fa-solid fa-gear"></i><span>Settings</span></li>
+    <li id="logout"><i class="fa-solid fa-sign-out"></i><span>Log-Out</span></li>
+  </ul>
 </aside>
 
 <main class="main">
@@ -407,7 +411,13 @@ try {
       <?php include 'notification_component.php'; ?>
       <a href="#" class="btn add-item"><i class="fa-solid fa-plus"></i> Add Item</a>
     </div>
-  </header>
+  </div>
+
+  <!-- Heading Bar -->
+  <div class="heading-bar">
+    <h1>Inventory</h1>
+    <a href="#" class="btn add-item"><i class="fa-solid fa-plus"></i> Add Item</a>
+  </div>
 
   <!-- flash alerts -->
   <div class="alerts">
@@ -416,15 +426,20 @@ try {
     <?php endforeach; $_SESSION['flash']=[]; ?>
   </div>
 
-  <section class="cards">
-    <div class="card"><h4>Total Items</h4><p><?= (int)$total_items ?></p></div>
+  <section class="cards" style="margin-top: 0;">
+    <div class="card"><h4>Total Items per Product</h4><p><?= (int)$total_items ?></p></div>
 <div class="card red">
-    <h4>Low & Out of Stock Alerts</h4>
-    <p><?= (int)$total_low_and_out ?></p>
-</div>    <div class="card yellow"><h4>Pending Requests</h4><p><?= (int)$pending_requests ?></p></div>
+      <h4>Low Stock Alerts</h4>
+      <p><?= (int)$low_stock ?></p>
+    </div>
+    <div class="card" style="background-color: #ffe5e5; color: #d32f2f;">
+      <h4>Out of Stock Alerts</h4>
+      <p><?= (int)($total_low_and_out - $low_stock) ?></p>
+    </div>
+    <div class="card yellow"><h4>Pending Requests</h4><p><?= (int)$pending_requests ?></p></div>
   </section>
 
-  <section class="content-grid">
+  <section class="content-grid" style="margin-top: 20px;">
     <div class="table-panel box">
       <div class="panel-top">
         <h4>Inventory List</h4>
@@ -465,10 +480,11 @@ try {
 
     <thead>
       <tr>
-        <th><input type="checkbox" id="select-all"></th>
+        <th><input type="checkbox" class="select-all" id="select-all"></th>
         <th>Product</th>
         <th>SKU</th>
         <th>Total Stock</th>
+        <th>Unit</th>
         <th>Status</th>
         <th>Category</th>
         <th>Actions</th>
@@ -486,9 +502,10 @@ try {
   <td><?= htmlspecialchars($item['ProductName']) ?></td>
   <td><?= htmlspecialchars($item['SKU']) ?></td>
   <td><?= htmlspecialchars($item['TotalQuantity']) ?></td>
+  <td><?= htmlspecialchars($item['UnitName'] ?? '-') ?></td>
   <td><?= htmlspecialchars($item['status']) ?></td>
   <td><?= htmlspecialchars($item['Category_Name']) ?></td>
-  <td>
+  <td style="white-space: nowrap;">
     <button class="btn view-batches-btn"
         data-productid="<?= (int)$item['ProductID'] ?>"
         data-productname="<?= htmlspecialchars($item['ProductName']) ?>">
@@ -588,11 +605,11 @@ try {
     <aside class="quick-request box" aria-label="Quick request panel">
       <div style="padding:14px;">
         <h4>Quick Request</h4>
-        <p>Select items and submit requests for your department.</p>
+        <p style="font-size: 18px;">Select items and submit requests for your department.</p>
 
         <table id="qr-table" class="qr-table">
           <thead><tr><th>Item</th><th>Quantity</th><th>Action</th></tr></thead>
-          <tbody id="qr-items"><tr class="empty"><td colspan="3" style="text-align:center;color:#999;">No items selected</td></tr></tbody>
+          <tbody id="qr-items"><tr class="empty"><td colspan="3" style="text-align:center;color:#999; font-size: 16px;">No items selected</td></tr></tbody>
         </table>
         <div class="qr-summary">
           <p><strong>Total Items:</strong> <span id="qr-total">0</span></p>
@@ -636,8 +653,7 @@ try {
             <option value="<?= $cat['CategoryID'] ?>"><?= htmlspecialchars($cat['Category_Name']) ?></option>
           <?php endwhile; ?>
         </select>
-        <input type="text" name="category" id="category" placeholder="Or enter new category">
-        <input type="" name="category_id" id="category_id">
+        <input type="hidden" name="category_id" id="category_id">
         <label>Unit</label>
         <select id="unit-select">
           <option value="">-- Select Unit --</option>
@@ -648,7 +664,6 @@ try {
             <option value="<?= $u['UnitID'] ?>"><?= htmlspecialchars($u['UnitName']) ?></option>
           <?php endwhile; ?>
         </select>
-        <input type="text" name="unit" id="unit" placeholder="Or enter new unit">        
         <input type="hidden" name="unit_id" id="unit_id">
         <label>Price</label>
         <input type="text" name="price" placeholder="eg... 2.75">
@@ -708,6 +723,7 @@ try {
 
 </main>
 
+<script src="sidebar.js"></script>
 <script>
 $(function () {
   $('#item_name').change(function() {
@@ -779,7 +795,7 @@ $('#unit').on('input', function() {
           <h3>Batches for ${productName}</h3>
           ${response}
         `);
-        $('#batches-modal').fadeIn(); // show modal
+        $('#batches-modal').addClass('show').css('display', 'flex');
       },
       error: function() {
         alert('Failed to load batches.');
@@ -788,19 +804,27 @@ $('#unit').on('input', function() {
 });
 
 // Close modal when clicking the close button
-$(document).on('click', '.batches-close', function() {
-  $('#batches-modal').fadeOut();
+$(document).on('click', '#close-modal, .batches-close', function(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  $('#batches-modal').removeClass('show').fadeOut(300);
 });
 
-// Optional: close modal when clicking outside modal content
-$(window).on('click', function(e) {
+// Close modal when clicking outside modal content
+$(document).on('click', '#batches-modal', function(e) {
   if ($(e.target).is('#batches-modal')) {
-    $('#batches-modal').fadeOut();
+    $(this).removeClass('show').fadeOut(300);
   }
 });
 
-  // Sidebar toggle
-  $(".toggle").click(() => $(".sidebar").toggleClass("hide"));
+// Close modal on Escape key
+$(document).on('keydown', function(e) {
+  if (e.key === 'Escape' && $('#batches-modal').hasClass('show')) {
+    $('#batches-modal').removeClass('show').fadeOut(300);
+  }
+});
+
+  // Sidebar toggle handled by sidebar.js
 
   // Open/Close modals
   $(".add-item").click(e => { e.preventDefault(); $("#addItemModal").css('display','flex'); });
@@ -896,8 +920,8 @@ function filterTable() {
 
   $(".inventory-table tbody tr").each(function () {
     const name     = $(this).find("td:nth-child(2)").text().toLowerCase(); // Product
-    const category = $(this).find("td:nth-child(6)").text().toLowerCase(); // Category
-    const status   = $(this).find("td:nth-child(5)").text().toLowerCase(); // Status
+    const category = $(this).find("td:nth-child(7)").text().toLowerCase(); // Category (moved after Unit)
+    const status   = $(this).find("td:nth-child(6)").text().toLowerCase(); // Status (moved after Unit)
 
     const matchesSearch   = name.includes(searchValue) || category.includes(searchValue);
     const matchesCategory = !categoryValue || category === categoryValue;
@@ -1022,14 +1046,14 @@ $("#clear-qr").click(() => {
 
   // Nav
   $("#dashboard").click(function(){ window.location.href = "dashboard.php"; });
-  $("#nav-suppliers").click(function(){ window.location.href = "supplier.php"; });
-  $("#request").click(function(){ window.location.href = "request_list.php"; });
+  $("#inventory").click(function(){ window.location.href = "Inventory.php"; });
   $("#low-stock").click(function(){ window.location.href = "lowstock.php"; });
-
-  //Logout
-      $("#logout").click(function(){
-        window.location.href = "logout.php";
-      });
+  $("#request").click(function(){ window.location.href = "request_list.php"; });
+  $("#nav-suppliers").click(function(){ window.location.href = "supplier.php"; });
+  $("#reports").click(function(){ window.location.href = "report.php"; });
+  $("#users").click(function(){ window.location.href = "admin.php"; });
+  $("#settings").click(function(){ window.location.href = "settings.php"; });
+  $("#logout").click(function(){ window.location.href = "logout.php"; });
 
       
 

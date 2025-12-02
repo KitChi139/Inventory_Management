@@ -2,7 +2,9 @@
 // quick_request.php
 header('Content-Type: application/json');
 require 'db_connect.php';
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 $itemsJson = $_POST['items'] ?? '[]';
 $items = json_decode($itemsJson, true);
@@ -16,14 +18,22 @@ $requester = $_SESSION['username'] ?? 'Anonymous';
 try {
   $conn->begin_transaction();
 
-  $stmt = $conn->prepare("INSERT INTO requests (ProductID, quantity, requester, status) VALUES (?, ?, ?, 'Pending')");
+    $createdAt = date("Y-m-d H:i:s");
+    $stmtBatch = $conn->prepare("INSERT INTO batches (request_date) VALUES (?)");
+    $stmtBatch->bind_param('s', $createdAt);
+    $stmtBatch->execute();
+    $batchId = $stmtBatch->insert_id;
+    $stmtBatch->close();
+
+
+  $stmt = $conn->prepare("INSERT INTO requests (ProductID, BatchID, quantity, requester, status) VALUES (?, ?, ?, ?, 'Pending')");
 
   foreach ($items as $it) {
     $productId = (int)($it['productId'] ?? 0);
     $qty       = (int)($it['quantity'] ?? 0);
     if ($productId <= 0 || $qty <= 0) continue;
 
-    $stmt->bind_param('iis', $productId, $qty, $requester);
+    $stmt->bind_param('iiis', $productId, $batchId, $qty, $requester);
     $stmt->execute();
   }
   $stmt->close();
@@ -33,6 +43,6 @@ try {
   echo json_encode(['success'=>true]);
 
 } catch (Throwable $e) {
-  if ($conn->errno) $conn->rollback();
+  $conn->rollback();  
   echo json_encode(['success'=>false, 'message'=>'Error: '.$e->getMessage()]);
 }

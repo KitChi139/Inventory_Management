@@ -1,6 +1,12 @@
 <?php
 require 'db_connect.php';
 
+// Protect page - require login
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
+  header("Location: login.php");
+  exit();
+}
+
 /* ---------------------------------------------------------
    FETCH LOW & OUT-OF-STOCK ITEMS
 --------------------------------------------------------- */
@@ -10,7 +16,9 @@ $sql = "
     i.Quantity,
     i.Status,
     i.ExpirationDate,
+    i.BatchNum,
     p.ProductName,
+    p.Min_stock,
     u.UnitName AS Unit,
     c.Category_Name,
     s.supplier_name AS SupplierName
@@ -47,387 +55,212 @@ $totalAlerts = count($lowStockItems);
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Low Stock Alerts</title>
-
-  <!-- STYLESHEETS -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <link rel="stylesheet" href="lowstock.css" />
-  <link rel="stylesheet" href="notification.css">
-
-
-
-  <!-- jQuery -->
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Low Stock Alerts</title>
+    <link rel="stylesheet" href="sidebar.css">
+    <link rel="stylesheet" href="lowstock.css">
+    <link rel="stylesheet" href="notification.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 </head>
 
 <body>
-
-<!-- SIDEBAR -->
-<aside class="sidebar">
-  <div class="profile">
-    <div class="icon"><i class="fa-solid fa-user"></i></div>
-    <button class="toggle"><i class="fa-solid fa-bars"></i></button>
-  </div>
-
-  <nav>
-    <h3 class="title">Navigation</h3>
-
-    <ul class="menu">
-      <li id="dashboard"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></li>
-      <li id="inventory"><i class="fa-solid fa-boxes-stacked"></i><span>Inventory</span></li>
-      <li class="active"><i class="fa-solid fa-triangle-exclamation"></i><span>Low Stock</span></li>
-      <li id="request"><i class="fa-solid fa-file-pen"></i><span>Requests</span></li>
-      <li id="nav-suppliers"><i class="fa-solid fa-truck"></i><span>Suppliers</span></li>
-      <li id="reports"><i class="fa-solid fa-file-lines"></i><span>Reports</span></li>
-      <li id="users"><i class="fa-solid fa-users"></i><span>Users</span></li>
-      <li id="settings"><i class="fa-solid fa-gear"></i><span>Settings</span></li>
-      <li id="logout"><i class="fa-solid fa-sign-out"></i><span>Log-Out</span></li>
-    </ul>
-  </nav>
-</aside>
-
-
-
-<!-- MAIN SECTION -->
-<div class="main">
-  <div class="topbar">
-      <h2>Low Stock Alerts</h2>
-
-      <div class="top-right">
-        <?php include 'notification_component.php'; ?>
-      </div>
-  </div>
-
-
-  <div class="content-area">
-
-      <!-- SUMMARY BOXES -->
-      <div class="alert-summary">
-        <div class="alert-box high">
-          <h3>High Priority</h3>
-          <p><?= $highCount ?> Require immediate action</p>
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="profile">
+            <div class="icon">
+                <img src="logo.png?v=2" alt="MediSync Logo" class="medisync-logo">
+            </div>
+            <!-- Toggle button -->
+            <button class="toggle" id="toggleBtn"><i class="fa-solid fa-bars"></i></button>
         </div>
 
-        <div class="alert-box medium">
-          <h3>Medium Priority</h3>
-          <p><?= $mediumCount ?> Need attention soon</p>
+
+        <ul class="menu">
+            <li id="dashboard"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></li>
+            <li id="inventory"><i class="fa-solid fa-boxes-stacked"></i><span>Inventory</span></li>
+            <li id="low-stock" class="active"><i class="fa-solid fa-triangle-exclamation"></i><span>Low Stock</span></li>
+            <li id="request"><i class="fa-solid fa-file-pen"></i><span>Requests</span></li>
+            <li id="nav-suppliers"><i class="fa-solid fa-truck"></i><span>Suppliers</span></li>
+            <li id="reports"><i class="fa-solid fa-file-lines"></i><span>Reports</span></li>
+            <?php if ($_SESSION['roleName'] === 'Admin'): ?>
+            <li id="users"><i class="fa-solid fa-users"></i><span>Users</span></li>
+            <?php endif; ?>   
+            <li id="settings"><i class="fa-solid fa-gear"></i><span>Settings</span></li>
+            <li id="logout"><i class="fa-solid fa-sign-out"></i><span>Log-Out</span></li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main low-stock-main">
+        <!-- Notification + Profile icon (top-right in main content) -->
+        <div class="topbar-right">
+            <?php include 'notification_component.php'; ?>
+            <div class="profile-icon">
+                <i class="fa-solid fa-user"></i>
+            </div>
         </div>
 
-        <div class="alert-box total">
-          <h3>Total Alerts</h3>
-          <p><?= $totalAlerts ?> Active Alerts</p>
-        </div>
-      </div>
-
-
-
-      <!-- HIGH PRIORITY LIST -->
-      <section class="priority-section high-priority">
-        <div class="priority-header">
-          <h3>High Priority Alerts</h3>
-          <p>These items require immediate attention</p>
-
-          <div class="search-container">
-            <i class="fa-solid fa-filter filter-icon"></i>
-            <input type="text" id="searchHigh" class="search-bar" placeholder="Search high priority items...">
-          </div>
+        <!-- Heading Bar -->
+        <div class="heading-bar">
+            <h1>Low Stock Alerts</h1>   
         </div>
 
-        <div class="priority-list" id="highPriorityList">
-            <?php if (empty($highPriorityItems)): ?>
-              <p>No high priority alerts 🎉</p>
-            <?php else: ?>
-              <?php foreach ($highPriorityItems as $item): ?>
-                <div class="alert-item high" data-id="<?= $item['InventoryID'] ?>">
-                  <h4><?= htmlspecialchars($item['ProductName']) ?></h4>
-                  <p>Company: <?= htmlspecialchars($item['SupplierName'] ?? 'N/A') ?></p>
-                  <p>Category: <?= htmlspecialchars($item['Category_Name'] ?? '—') ?></p>
-                  <p>Current: <?= (int)$item['Quantity'] ?> | Unit: <?= htmlspecialchars($item['Unit']) ?></p>
+        <!-- Statistics Cards -->
+        <section class="stats-cards">
+            <div class="stat-card">
+                <div class="stat-title">High Priority</div>
+                <div class="stat-number"><?= $highCount ?></div>
+                <div class="stat-subtext">Require immediate action</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Medium Priority</div>
+                <div class="stat-number"><?= $mediumCount ?></div>
+                <div class="stat-subtext">Need attention soon</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Total Alerts</div>
+                <div class="stat-number"><?= $totalAlerts ?></div>
+                <div class="stat-subtext">Active Alerts</div>
+            </div>
+        </section>
 
-                  <?php if (!empty($item['ExpirationDate'])): ?>
-                    <p>Expiration: <?= htmlspecialchars($item['ExpirationDate']) ?></p>
-                  <?php endif; ?>
-
-                  <div class="labels">
-                    <span class="label out">Out of Stock</span>
-                    <span class="label high">High Priority</span>
-                    <span class="label view">View Items</span>
-                    <span class="label contact">Contact Supplier</span>
-                  </div>
+        <!-- High Priority Alerts -->
+        <section class="alerts-section">
+            <div class="section-header">
+                <div class="section-title-group">
+                    <h2>High Priority Alerts</h2>
+                    <p class="section-subtitle">These items require immediate attention</p>
                 </div>
-              <?php endforeach; ?>
-            <?php endif; ?>
-        </div>
-      </section>
+                <div class="section-filters">
+                    <button class="filter-icon"><i class="fa-solid fa-filter"></i></button>
+                    <input type="text" class="search-input" id="search-high" placeholder="Search items...">
+                </div>
+            </div>
 
-
-
-      <!-- MEDIUM PRIORITY LIST -->
-      <section class="priority-section medium-priority">
-        <div class="priority-header">
-          <h3>Medium Priority Alerts</h3>
-          <p>These items need attention soon</p>
-
-          <div class="search-container">
-            <i class="fa-solid fa-filter filter-icon"></i>
-            <input type="text" id="searchMedium" class="search-bar" placeholder="Search medium priority items...">
-          </div>
-        </div>
-
-        <div class="priority-list" id="mediumPriorityList">
-          <?php if (empty($mediumPriorityItems)): ?>
-            <p>No medium priority alerts 🎉</p>
-          <?php else: ?>
-            <?php foreach ($mediumPriorityItems as $item): ?>
-              <div class="alert-item medium"data-id="<?= $item['InventoryID'] ?>">
-                <h4><?= htmlspecialchars($item['ProductName']) ?></h4>
-                <p>Company: <?= htmlspecialchars($item['SupplierName'] ?? 'N/A') ?></p>
-                <p>Category: <?= htmlspecialchars($item['Category_Name'] ?? '—') ?></p>
-                <p>Current: <?= (int)$item['Quantity'] ?> | Unit: <?= htmlspecialchars($item['Unit']) ?></p>
-
-                <?php if (!empty($item['ExpirationDate'])): ?>
-                  <p>Expiration: <?= htmlspecialchars($item['ExpirationDate']) ?></p>
+            <div class="alerts-list" id="high-priority-list">
+                <?php if (empty($highPriorityItems)): ?>
+                    <div class="alert-card placeholder">
+                        <div class="alert-content">
+                            <div class="alert-main">
+                                <div class="alert-item-name">No high priority alerts 🎉</div>
+                                <div class="alert-company">All items are well stocked</div>
+                            </div>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <?php foreach ($highPriorityItems as $item): 
+                        $qty = (int)$item['Quantity'];
+                        $statusTag = $qty == 0 ? 'out-of-stock' : 'low-stock';
+                        $statusText = $qty == 0 ? 'Out of Stock' : 'Low Stock';
+                    ?>
+                        <div class="alert-card" data-name="<?= strtolower(htmlspecialchars($item['ProductName'])) ?>">
+                            <div class="alert-content">
+                                <div class="alert-main">
+                                    <div class="alert-item-name"><?= htmlspecialchars($item['ProductName']) ?></div>
+                                    <div class="alert-company"><?= htmlspecialchars($item['SupplierName'] ?? 'N/A') ?></div>
+                                    <div class="alert-supplier">Supplier: <?= htmlspecialchars($item['SupplierName'] ?? 'N/A') ?></div>
+                                    <div class="alert-stock-info">
+                                        <span>Current: <?= $qty ?> <?= htmlspecialchars($item['Unit']) ?> | Min Required: <?= htmlspecialchars($item['Min_stock'] ?? 5) ?> <?= htmlspecialchars($item['Unit']) ?></span>
+                                    </div>
+                                </div>
+                                <div class="alert-actions">
+                                    <span class="status-tag <?= $statusTag ?>"><?= $statusText ?></span>
+                                    <span class="priority-tag high-priority">High Priority</span>
+                                    <button class="action-btn" onclick="window.location.href='Inventory.php'">View Items</button>
+                                    <button class="action-btn" onclick="window.location.href='supplier.php'">Contact Suppliers</button>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
                 <?php endif; ?>
+            </div>
+        </section>
 
-                <div class="labels">
-                  <span class="label low">Low Stock</span>
-                  <span class="label medium">Medium Priority</span>
-                  <span class="label view">View Items</span>
-                  <span class="label contact">Contact Supplier</span>
+        <!-- Medium Priority Alerts -->
+        <section class="alerts-section">
+            <div class="section-header">
+                <div class="section-title-group">
+                    <h2>Medium Priority Alerts</h2>
+                    <p class="section-subtitle">These items need attention in the near future</p>
                 </div>
-              </div>
-            <?php endforeach; ?>
-          <?php endif; ?>
-        </div>
-      </section>
-  </div>
+                <div class="section-filters">
+                    <button class="filter-icon"><i class="fa-solid fa-filter"></i></button>
+                    <input type="text" class="search-input" id="search-medium" placeholder="Search items...">
+                </div>
+            </div>
 
-  <!-- ITEM DETAILS MODAL -->
-<div id="itemDetailsModal" class="item-modal hidden">
-    <div class="item-modal-content">
-
-        <button class="close-modal">&times;</button>
-
-        <h2>Item Details</h2>
-        <p class="item-desc"></p>
-
-        <span class="alert-tags"></span>
-
-        <hr>
-
-        <!-- Item Info -->
-        <section class="modal-section">
-            <h3>Item Information</h3>
-            <div class="modal-grid">
-                <p><strong>Item Name:</strong> <span id="mItemName"></span></p>
-                <p><strong>Category:</strong> <span id="mCategory"></span></p>
-                <p><strong>Item ID:</strong> <span id="mItemID"></span></p>
-                <p><strong>Location:</strong> Emergency Ward</p>
+            <div class="alerts-list" id="medium-priority-list">
+                <?php if (empty($mediumPriorityItems)): ?>
+                    <div class="alert-card placeholder">
+                        <div class="alert-content">
+                            <div class="alert-main">
+                                <div class="alert-item-name">No medium priority alerts 🎉</div>
+                                <div class="alert-company">All items are well stocked</div>
+                            </div>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <?php foreach ($mediumPriorityItems as $item): 
+                        $qty = (int)$item['Quantity'];
+                    ?>
+                        <div class="alert-card" data-name="<?= strtolower(htmlspecialchars($item['ProductName'])) ?>">
+                            <div class="alert-content">
+                                <div class="alert-main">
+                                    <div class="alert-item-name"><?= htmlspecialchars($item['ProductName']) ?></div>
+                                    <div class="alert-company"><?= htmlspecialchars($item['SupplierName'] ?? 'N/A') ?></div>
+                                    <div class="alert-supplier">Supplier: <?= htmlspecialchars($item['SupplierName'] ?? 'N/A') ?></div>
+                                    <div class="alert-stock-info">
+                                        <span>Current: <?= $qty ?> <?= htmlspecialchars($item['Unit']) ?> | Min Required: <?= htmlspecialchars($item['Min_stock'] ?? 5) ?> <?= htmlspecialchars($item['Unit']) ?></span>
+                                    </div>
+                                </div>
+                                <div class="alert-actions">
+                                    <span class="status-tag low-stock">Low Stock</span>
+                                    <span class="priority-tag medium-priority">Medium Priority</span>
+                                    <button class="action-btn" onclick="window.location.href='Inventory.php'">View Items</button>
+                                    <button class="action-btn" onclick="window.location.href='supplier.php'">Contact Suppliers</button>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
         </section>
+    </main>
 
-        <!-- Stock Info -->
-        <section class="modal-section">
-            <h3>Stock Information</h3>
-            <div class="modal-grid">
-                <p><strong>Current Stock:</strong> <span id="mCurrentStock"></span></p>
-                <p><strong>Minimum Required Stock:</strong> <span id="mMinStock"></span></p>
-            </div>
-
-            <div class="stock-bar">
-                <div id="mStockLevel"></div>
-            </div>
-
-            <div id="mStockDeficit" class="stock-alert"></div>
-        </section>
-
-        <!-- Supplier Info -->
-        <section class="modal-section">
-            <h3>Supplier Information</h3>
-            <div class="supplier-box">
-                <p><strong>Supplier Name:</strong> <span id="mSupplier"></span></p>
-                <p><strong>Contact Person:</strong> <span id="mContactPerson"></span></p>
-                <p><strong>Email:</strong> <span id="mEmail"></span></p>
-                <p><strong>Phone:</strong> <span id="mPhone"></span></p>
-            </div>
-        </section>
-
-        <button id="contactSupplierBtn" class="btn-contact">Contact Supplier</button>
-        <button class="btn-close">Close</button>
-    </div>
-</div>
-
-<style>
-.item-modal {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,.5);
-    display: flex; justify-content: center; align-items: center;
-    z-index: 9999;
-}
-.item-modal.hidden { display: none; }
-
-.item-modal-content {
-    background: #fff;
-    width: 750px;
-    padding: 25px;
-    border-radius: 12px;
-    max-height: 95vh;
-    overflow-y: auto;
-    position: relative;
-}
-
-.close-modal {
-    position: absolute;
-    top: 15px; right: 20px;
-    background: none;
-    border: none;
-    font-size: 22px;
-    cursor: pointer;
-}
-
-.modal-section { margin-top: 25px; }
-.modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-.supplier-box {
-    background: #e8f0ff;
-    padding: 15px;
-    border-radius: 10px;
-}
-
-.btn-contact {
-    margin-top: 20px;
-    background: #0066ff;
-    color: white;
-    padding: 10px 20px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-}
-
-.btn-close {
-    margin-left: 10px;
-    padding: 10px 20px;
-    border-radius: 8px;
-    background: #f0f0f0;
-    border: none;
-    cursor: pointer;
-}
-
-.stock-bar {
-    width: 100%;
-    height: 8px;
-    background: #ddd;
-    border-radius: 5px;
-    margin-top: 8px;
-}
-#mStockLevel {
-    height: 100%;
-    background: #3b82f6;
-    border-radius: 5px;
-}
-.stock-alert {
-    margin-top: 10px;
-    background: #fff8d1;
-    border-left: 5px solid #e6c200;
-    padding: 10px;
-    border-radius: 6px;
-}
-</style>
-
-</div>
-
-
-
-
-<!-- PAGE SCRIPTS -->
-<script>
-$(function(){
-
-  // Sidebar toggle
-  $(".toggle").click(()=> $(".sidebar").toggleClass("hide"));
-
-  // Sidebar navigation
-  $("#dashboard").click(()=>window.location.href="dashboard.php");
-  $("#inventory").click(()=>window.location.href="inventory.php");
-  $("#request").click(()=>window.location.href="request_list.php");
-  $("#nav-suppliers").click(()=>window.location.href="supplier.php");
-  $("#logout").click(()=>window.location.href="logout.php");
-
-  // Search filtering
-  $("#searchHigh").keyup(function(){
-    let val = $(this).val().toLowerCase();
-    $("#highPriorityList .alert-item").each(function(){
-      $(this).toggle($(this).text().toLowerCase().includes(val));
-    });
-  });
-
-  $("#searchMedium").keyup(function(){
-    let val = $(this).val().toLowerCase();
-    $("#mediumPriorityList .alert-item").each(function(){
-      $(this).toggle($(this).text().toLowerCase().includes(val));
-    });
-  });
-
-});
-
-// OPEN MODAL (View Items)
-$(document).on("click", ".label.view", function() {
-
-    let itemElement = $(this).closest(".alert-item");
-    let id = itemElement.data("id");
-
-    $.get("get_item_details.php", { id: id }, function(res){
-
-        if (res.error) {
-            alert(res.error);
-            return;
-        }
-
-        $("#mItemName").text(res.ProductName);
-        $("#mCategory").text(res.Category_Name ?? "—");
-        $("#mItemID").text(res.InventoryID);
-
-        $("#mCurrentStock").text(res.Quantity + " units");
-        $("#mMinStock").text(res.Min_stock + " units");
-
-        let pct = Math.min(100, (res.Quantity / res.Min_stock) * 100);
-        $("#mStockLevel").css("width", pct + "%");
-
-        let deficit = res.Min_stock - res.Quantity;
-        $("#mStockDeficit").text(
-            deficit > 0 
-            ? `Stock Deficit: ${deficit} units needed to reach minimum stock`
-            : "Stock is sufficient"
-        );
-
-        $("#mSupplier").text(res.supplier_name ?? "N/A");
-        $("#mContactPerson").text(res.contact_person ?? "N/A");
-        $("#mEmail").text(res.email ?? "N/A");
-        $("#mPhone").text(res.phone ?? "N/A");
-
-        $("#contactSupplierBtn").off().click(function(){
-            window.location.href = "supplier.php?id=" + res.supplier_id;
+    <script src="sidebar.js"></script>
+    <script>
+        // Search functionality
+        $('#search-high').on('keyup', function() {
+            const search = $(this).val().toLowerCase();
+            $('#high-priority-list .alert-card').each(function() {
+                const name = $(this).data('name') || '';
+                $(this).toggle(name.includes(search));
+            });
         });
 
-        $("#itemDetailsModal").removeClass("hidden");
-    });
-});
+        $('#search-medium').on('keyup', function() {
+            const search = $(this).val().toLowerCase();
+            $('#medium-priority-list .alert-card').each(function() {
+                const name = $(this).data('name') || '';
+                $(this).toggle(name.includes(search));
+            });
+        });
 
-// Close modal
-$(document).on("click", ".close-modal, .btn-close", function(){
-    $("#itemDetailsModal").addClass("hidden");
-});
-</script>
+        // Sidebar toggle handled by sidebar.js
 
-
-</script>
-
-<!-- GLOBAL NOTIFICATION SCRIPT (must be LAST) -->
-<script src="notification.js" defer></script>
-
+        // Navigation handlers
+        $("#dashboard").click(function(){ window.location.href = "dashboard.php"; });
+        $("#inventory").click(function(){ window.location.href = "Inventory.php"; });
+        $("#low-stock").click(function(){ window.location.href = "lowstock.php"; });
+        $("#request").click(function(){ window.location.href = "request_list.php"; });
+        $("#nav-suppliers").click(function(){ window.location.href = "supplier.php"; });
+        $("#reports").click(function(){ window.location.href = "report.php"; });
+        $("#users").click(function(){ window.location.href = "admin.php"; });
+        $("#settings").click(function(){ window.location.href = "settings.php"; });
+        $("#logout").click(function(){ window.location.href = "logout.php"; });
+    </script>
+    <script src="notification.js" defer></script>
 </body>
 </html>

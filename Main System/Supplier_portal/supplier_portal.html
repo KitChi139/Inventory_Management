@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supplier Portal - MediSync</title>
+    <link rel="stylesheet" href="supplier_portal.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <header class="top-nav">
+        <div class="nav-left">
+            <div class="logo-container">
+                <img src="logo.png" alt="MediSync Logo" class="logo-img">
+            </div>
+        </div>
+        <div class="nav-right">
+            <button class="icon-btn notification-btn" title="Notifications">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge">3</span>
+            </button>
+            <button class="icon-btn profile-btn">
+                <i class="fas fa-user-circle"></i>
+            </button>
+            <button class="logout-button" title="Logout">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Secondary Navigation Tabs -->
+    <nav class="tab-navigation">
+        <button class="tab-link active" data-tab="dashboard">
+            <i class="fas fa-chart-line"></i>
+            <span>Dashboard</span>
+        </button>
+        <button class="tab-link" data-tab="orders">
+            <i class="fas fa-box"></i>
+            <span>Orders</span>
+        </button>
+        <button class="tab-link" data-tab="messages">
+            <i class="fas fa-envelope"></i>
+            <span>Messages</span>
+        </button>
+        <button class="tab-link" data-tab="process-order">
+            <i class="fas fa-tasks"></i>
+            <span>Process Order</span>
+        </button>
+        <button class="tab-link" data-tab="company-profile">
+            <i class="fas fa-building"></i>
+            <span>Company Profile</span>
+        </button>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <!-- Dashboard Tab -->
+        <section class="content-section active" id="dashboard-section">
+            <div class="page-header">
+                <h1>Dashboard Overview</h1>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="summary-grid">
+                <div class="stat-card blue-card">
+                    <div class="stat-header">
+                        <span class="stat-label">Total Orders</span>
+                        <i class="fas fa-box stat-icon"></i>
+                    </div>
+                    <div class="stat-value">24</div>
+                    <div class="stat-footer">This Month</div>
+                </div>
+                <div class="stat-card red-card">
+                    <div class="stat-header">
+                        <span class="stat-label">Pending Orders</span>
+                        <i class="fas fa-clock stat-icon"></i>
+                    </div>
+                    <div class="stat-value">5</div>
+                    <div class="stat-footer">Awaiting Response</div>
+                </div>
+                <div class="stat-card yellow-card">
+                    <div class="stat-header">
+                        <span class="stat-label">Unread Messages</span>
+                        <i class="fas fa-envelope stat-icon"></i>
+                    </div>
+                    <div class="stat-value">8</div>
+                    <div class="stat-footer">New</div>
+                </div>
+                <div class="stat-card green-card">
+                    <div class="stat-header">
+                        <span class="stat-label">Total Monthly Orders</span>
+                        <i class="fas fa-box stat-icon"></i>
+                    </div>
+                    <div class="stat-value">24</div>
+                    <div class="stat-footer">This Month</div>
+                </div>
+            </div>
+
+            <!-- Dashboard Widgets -->
+            <div class="widgets-grid">
+                <div class="widget-card">
+                    <h3 class="widget-title">Order Status Overview</h3>
+                    <div class="status-list">
+                        <div class="status-row">
+                            <div class="status-info">
+                                <span class="status-name">Accepted</span>
+                                <span class="status-percent">65%</span>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar-fill green-bar" style="width: 65%;"></div>
+                            </div>
+                        </div>
+                        <div class="status-row">
+                            <div class="status-info">
+                                <span class="status-name">Pending</span>
+                                <span class="status-percent">25%</span>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar-fill yellow-bar" style="width: 25%;"></div>
+                            </div>
+                        </div>
+                        <div class="status-row">
+                            <div class="status-info">
+                                <span class="status-name">In Transit</span>
+                                <span class="status-percent">10%</span>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar-fill blue-bar" style="width: 10%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="widget-card">
+                    <h3 class="widget-title">Quick Actions</h3>
+                    <div class="quick-actions-list">
+                        <button class="quick-action-btn" onclick="switchTab('process-order')">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Process New Order</span>
+                        </button>
+                        <button class="quick-action-btn" onclick="switchTab('messages')">
+                            <i class="fas fa-envelope-open"></i>
+                            <span>View Messages</span>
+                        </button>
+                        <button class="quick-action-btn" onclick="switchTab('orders')">
+                            <i class="fas fa-list"></i>
+                            <span>View All Orders</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="widget-card full-width">
+                    <h3 class="widget-title">Recent Orders</h3>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Date</th>
+                                    <th>Items</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>ORD-001</strong></td>
+                                    <td>04/10/2025</td>
+                                    <td>Face Mask, Medical Gloves</td>
+                                    <td>₱45,000</td>
+                                    <td><span class="badge badge-yellow">Pending</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>ORD-002</strong></td>
+                                    <td>04/08/2025</td>
+                                    <td>Syringes, Sanitizers</td>
+                                    <td>₱67,500</td>
+                                    <td><span class="badge badge-green">Accepted</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>ORD-003</strong></td>
+                                    <td>04/05/2025</td>
+                                    <td>Thermometers</td>
+                                    <td>₱28,750</td>
+                                    <td><span class="badge badge-blue">In Transit</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Orders Tab -->
+        <section class="content-section" id="orders-section">
+            <div class="page-header">
+                <h1>Orders Management</h1>
+            </div>
+
+            <div class="orders-container">
+                <div class="order-card">
+                    <div class="order-card-header">
+                        <span class="order-number">Ord - 001</span>
+                        <span class="badge badge-yellow">Pending</span>
+                    </div>
+                    <div class="order-card-body">
+                        <h3 class="section-subtitle">Order Items:</h3>
+                        <ul class="order-items-list">
+                            <li>Face Mask | qty: 50 boxes</li>
+                            <li>Medical Gloves | qty: 30 boxes</li>
+                        </ul>
+                    </div>
+                    <div class="order-details-box">
+                        <div class="detail-line">
+                            <span>Order Date</span>
+                            <span>04/10/2025</span>
+                        </div>
+                        <div class="detail-line">
+                            <span>Item Amounts</span>
+                            <span>₱25,000, ₱20,000</span>
+                        </div>
+                        <div class="detail-line total-line">
+                            <span>Total</span>
+                            <span>₱45,000</span>
+                        </div>
+                    </div>
+                    <div class="order-card-actions">
+                        <button class="btn btn-success">Accept Order</button>
+                        <button class="btn btn-secondary">Request Change</button>
+                    </div>
+                </div>
+
+                <div class="order-card">
+                    <div class="order-card-header">
+                        <span class="order-number">Ord - 002</span>
+                        <span class="badge badge-green">Accepted</span>
+                    </div>
+                    <div class="order-card-body">
+                        <h3 class="section-subtitle">Order Items:</h3>
+                        <ul class="order-items-list">
+                            <li>Syringes | qty: 100 pieces</li>
+                            <li>Sanitizers | qty: 50 bottles</li>
+                        </ul>
+                    </div>
+                    <div class="order-details-box">
+                        <div class="detail-line">
+                            <span>Order Date</span>
+                            <span>04/08/2025</span>
+                        </div>
+                        <div class="detail-line">
+                            <span>Item Amounts</span>
+                            <span>₱25,000, ₱22,500</span>
+                        </div>
+                        <div class="detail-line total-line">
+                            <span>Total</span>
+                            <span>₱47,500</span>
+                        </div>
+                    </div>
+                    <div class="order-card-actions">
+                        <button class="btn btn-success">View Details</button>
+                        <button class="btn btn-secondary">Track Order</button>
+                    </div>
+                </div>
+
+                <div class="order-card">
+                    <div class="order-card-header">
+                        <span class="order-number">Ord - 003</span>
+                        <span class="badge badge-blue">In Transit</span>
+                    </div>
+                    <div class="order-card-body">
+                        <h3 class="section-subtitle">Order Items:</h3>
+                        <ul class="order-items-list">
+                            <li>Thermometers | qty: 25 units</li>
+                            <li>Face Mask | qty: 30 boxes</li>
+                        </ul>
+                    </div>
+                    <div class="order-details-box">
+                        <div class="detail-line">
+                            <span>Order Date</span>
+                            <span>04/05/2025</span>
+                        </div>
+                        <div class="detail-line">
+                            <span>Item Amounts</span>
+                            <span>₱21,250, ₱15,000</span>
+                        </div>
+                        <div class="detail-line total-line">
+                            <span>Total</span>
+                            <span>₱36,250</span>
+                        </div>
+                    </div>
+                    <div class="order-card-actions">
+                        <button class="btn btn-success">View Details</button>
+                        <button class="btn btn-secondary">Track Order</button>
+                    </div>
+                </div>
+
+                <div class="order-card">
+                    <div class="order-card-header">
+                        <span class="order-number">Ord - 004</span>
+                        <span class="badge badge-yellow">Pending</span>
+                    </div>
+                    <div class="order-card-body">
+                        <h3 class="section-subtitle">Order Items:</h3>
+                        <ul class="order-items-list">
+                            <li>Medical Gloves | qty: 40 boxes</li>
+                            <li>Sanitizers | qty: 30 bottles</li>
+                        </ul>
+                    </div>
+                    <div class="order-details-box">
+                        <div class="detail-line">
+                            <span>Order Date</span>
+                            <span>04/12/2025</span>
+                        </div>
+                        <div class="detail-line">
+                            <span>Item Amounts</span>
+                            <span>₱26,000, ₱13,500</span>
+                        </div>
+                        <div class="detail-line total-line">
+                            <span>Total</span>
+                            <span>₱39,500</span>
+                        </div>
+                    </div>
+                    <div class="order-card-actions">
+                        <button class="btn btn-success">Accept Order</button>
+                        <button class="btn btn-secondary">Request Change</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Messages Tab -->
+        <section class="content-section" id="messages-section">
+            <div class="page-header">
+                <h1>Messages</h1>
+            </div>
+
+            <div class="messages-list-container">
+                <div class="message-item" data-message="1">
+                    <div class="message-item-header">
+                        <div class="message-item-info">
+                            <span class="message-item-subject">Order Inquiry - ORD-001</span>
+                            <span class="message-item-sender">From: Inventory Manager</span>
+                        </div>
+                        <span class="message-item-date">04/10/2025</span>
+                    </div>
+                    <div class="message-item-preview">Hello, I would like to inquire about the availability of Face Masks and Medical Gloves for order ORD-001. Can you confirm the stock levels and estimated delivery time?</div>
+                    <div class="message-item-actions">
+                        <button class="view-message-btn" onclick="openMessageModal(1)">View Full Message</button>
+                        <button class="reply-message-btn" onclick="openReplyModal(1)">Reply</button>
+                    </div>
+                </div>
+
+                <div class="message-item" data-message="2">
+                    <div class="message-item-header">
+                        <div class="message-item-info">
+                            <span class="message-item-subject">Order Update - ORD-002</span>
+                            <span class="message-item-sender">From: Procurement Team</span>
+                        </div>
+                        <span class="message-item-date">04/08/2025</span>
+                    </div>
+                    <div class="message-item-preview">We need to update the delivery date for order ORD-002. Please confirm if you can accommodate the new schedule. The items are urgently needed.</div>
+                    <div class="message-item-actions">
+                        <button class="view-message-btn" onclick="openMessageModal(2)">View Full Message</button>
+                        <button class="reply-message-btn" onclick="openReplyModal(2)">Reply</button>
+                    </div>
+                </div>
+
+                <div class="message-item" data-message="3">
+                    <div class="message-item-header">
+                        <div class="message-item-info">
+                            <span class="message-item-subject">Stock Availability Check</span>
+                            <span class="message-item-sender">From: Hospital Admin</span>
+                        </div>
+                        <span class="message-item-date">04/07/2025</span>
+                    </div>
+                    <div class="message-item-preview">Good day! We are planning to place a large order next week. Could you please provide current stock levels for Syringes, Sanitizers, and Thermometers?</div>
+                    <div class="message-item-actions">
+                        <button class="view-message-btn" onclick="openMessageModal(3)">View Full Message</button>
+                        <button class="reply-message-btn" onclick="openReplyModal(3)">Reply</button>
+                    </div>
+                </div>
+
+                <div class="message-item" data-message="4">
+                    <div class="message-item-header">
+                        <div class="message-item-info">
+                            <span class="message-item-subject">Payment Confirmation - ORD-003</span>
+                            <span class="message-item-sender">From: Finance Department</span>
+                        </div>
+                        <span class="message-item-date">04/05/2025</span>
+                    </div>
+                    <div class="message-item-preview">Payment for order ORD-003 has been processed. Please confirm receipt and proceed with shipping arrangements. Thank you for your prompt service.</div>
+                    <div class="message-item-actions">
+                        <button class="view-message-btn" onclick="openMessageModal(4)">View Full Message</button>
+                        <button class="reply-message-btn" onclick="openReplyModal(4)">Reply</button>
+                    </div>
+                </div>
+
+                <div class="message-item" data-message="5">
+                    <div class="message-item-header">
+                        <div class="message-item-info">
+                            <span class="message-item-subject">Delivery Schedule Change</span>
+                            <span class="message-item-sender">From: Logistics Coordinator</span>
+                        </div>
+                        <span class="message-item-date">04/03/2025</span>
+                    </div>
+                    <div class="message-item-preview">Due to unforeseen circumstances, we need to reschedule the delivery for next week's orders. Please let us know your availability for the new dates.</div>
+                    <div class="message-item-actions">
+                        <button class="view-message-btn" onclick="openMessageModal(5)">View Full Message</button>
+                        <button class="reply-message-btn" onclick="openReplyModal(5)">Reply</button>
+                    </div>
+                </div>
+
+                <div class="message-item" data-message="6">
+                    <div class="message-item-header">
+                        <div class="message-item-info">
+                            <span class="message-item-subject">New Product Inquiry</span>
+                            <span class="message-item-sender">From: Medical Supplies Buyer</span>
+                        </div>
+                        <span class="message-item-date">04/01/2025</span>
+                    </div>
+                    <div class="message-item-preview">We are interested in adding new medical supplies to our inventory. Do you have catalogs or product lists we can review? We're particularly interested in protective equipment.</div>
+                    <div class="message-item-actions">
+                        <button class="view-message-btn" onclick="openMessageModal(6)">View Full Message</button>
+                        <button class="reply-message-btn" onclick="openReplyModal(6)">Reply</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="message-reply-section">
+                <form class="message-reply-form" onsubmit="return sendMessage(event)">
+                    <div class="input-group">
+                        <label>Send a Message</label>
+                        <textarea id="replyMessage" rows="4"></textarea>
+                    </div>
+                    <div class="form-buttons">
+                        <button type="button" class="btn btn-secondary" onclick="clearReply()">Clear</button>
+                        <button type="submit" class="btn btn-primary">Send Message</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Process Order Tab -->
+        <section class="content-section" id="process-order-section">
+            <div class="page-header">
+                <h1>Process Orders</h1>
+            </div>
+
+            <div class="process-orders-container">
+                <!-- Order 1 -->
+                <div class="process-order-card">
+                    <div class="process-order-header">
+                        <h2>Order #001</h2>
+                        <span class="order-badge">Pending</span>
+                    </div>
+                    <div class="process-order-layout">
+                        <div class="process-section">
+                            <div class="process-card">
+                                <h3 class="card-title">Order Items</h3>
+                                <table class="process-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Stocks</th>
+                                            <th>Qty</th>
+                                            <th>Price (₱)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Face Mask</td>
+                                            <td>50 boxes</td>
+                                            <td>₱500</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Medical Gloves</td>
+                                            <td>30 boxes</td>
+                                            <td>₱650</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <div class="total-row">
+                                    <span>Total</span>
+                                    <span>₱45,000</span>
+                                </div>
+                                <div class="dates-inline">
+                                    <div class="date-group">
+                                        <label>Shipping Date</label>
+                                        <input type="date" class="date-input" value="2025-10-05">
+                                    </div>
+                                    <div class="date-group">
+                                        <label>Delivery Date</label>
+                                        <input type="date" class="date-input" value="2025-10-07">
+                                    </div>
+                                </div>
+                                <div class="action-buttons-group">
+                                    <button class="btn btn-success" onclick="acceptOrder()">Accept Order</button>
+                                    <button class="btn btn-danger" onclick="denyOrder()">Deny Order</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order 2 -->
+                <div class="process-order-card">
+                    <div class="process-order-header">
+                        <h2>Order #002</h2>
+                        <span class="order-badge badge-completed">Completed</span>
+                    </div>
+                    <div class="process-order-layout">
+                        <div class="process-section">
+                            <div class="process-card">
+                                <h3 class="card-title">Order Items</h3>
+                                <table class="process-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Stocks</th>
+                                            <th>Qty</th>
+                                            <th>Price (₱)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Syringes</td>
+                                            <td>100 pieces</td>
+                                            <td>₱250</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Sanitizers</td>
+                                            <td>50 bottles</td>
+                                            <td>₱450</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <div class="total-row">
+                                    <span>Total</span>
+                                    <span>₱47,500</span>
+                                </div>
+                                <div class="dates-inline">
+                                    <div class="date-group">
+                                        <label>Shipping Date</label>
+                                        <input type="date" class="date-input" value="2025-10-08">
+                                    </div>
+                                    <div class="date-group">
+                                        <label>Delivery Date</label>
+                                        <input type="date" class="date-input" value="2025-10-10">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order 3 -->
+                <div class="process-order-card">
+                    <div class="process-order-header">
+                        <h2>Order #003</h2>
+                        <span class="order-badge badge-completed">Completed</span>
+                    </div>
+                    <div class="process-order-layout">
+                        <div class="process-section">
+                            <div class="process-card">
+                                <h3 class="card-title">Order Items</h3>
+                                <table class="process-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Stocks</th>
+                                            <th>Qty</th>
+                                            <th>Price (₱)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Thermometers</td>
+                                            <td>25 units</td>
+                                            <td>₱850</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Face Mask</td>
+                                            <td>30 boxes</td>
+                                            <td>₱500</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <div class="total-row">
+                                    <span>Total</span>
+                                    <span>₱36,250</span>
+                                </div>
+                                <div class="dates-inline">
+                                    <div class="date-group">
+                                        <label>Shipping Date</label>
+                                        <input type="date" class="date-input" value="2025-10-06">
+                                    </div>
+                                    <div class="date-group">
+                                        <label>Delivery Date</label>
+                                        <input type="date" class="date-input" value="2025-10-08">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order 4 -->
+                <div class="process-order-card">
+                    <div class="process-order-header">
+                        <h2>Order #004</h2>
+                        <span class="order-badge">Pending</span>
+                    </div>
+                    <div class="process-order-layout">
+                        <div class="process-section">
+                            <div class="process-card">
+                                <h3 class="card-title">Order Items</h3>
+                                <table class="process-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Stocks</th>
+                                            <th>Qty</th>
+                                            <th>Price (₱)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Medical Gloves</td>
+                                            <td>40 boxes</td>
+                                            <td>₱650</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Sanitizers</td>
+                                            <td>30 bottles</td>
+                                            <td>₱450</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <div class="total-row">
+                                    <span>Total</span>
+                                    <span>₱39,500</span>
+                                </div>
+                                <div class="dates-inline">
+                                    <div class="date-group">
+                                        <label>Shipping Date</label>
+                                        <input type="date" class="date-input" value="2025-10-12">
+                                    </div>
+                                    <div class="date-group">
+                                        <label>Delivery Date</label>
+                                        <input type="date" class="date-input" value="2025-10-14">
+                                    </div>
+                                </div>
+                                <div class="action-buttons-group">
+                                    <button class="btn btn-success" onclick="acceptOrder()">Accept Order</button>
+                                    <button class="btn btn-danger" onclick="denyOrder()">Deny Order</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Company Profile Tab -->
+        <section class="content-section" id="company-profile-section">
+            <div class="page-header">
+                <h1>Company Profile</h1>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="profile-card">
+                <div class="profile-card-header">
+                    <h3>Contact Information</h3>
+                    <button class="edit-icon-btn" onclick="openEditModal('contact')">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                </div>
+                <div class="profile-content">
+                    <div class="info-grid">
+                        <div class="info-item-compact">
+                            <i class="fas fa-building info-icon-small"></i>
+                            <div class="info-details-compact">
+                                <strong>Head Office:</strong> <span id="display-address">1456 Industrial Avenue, Metro City, Philippines</span>
+                            </div>
+                        </div>
+                        <div class="info-item-compact">
+                            <i class="fas fa-phone info-icon-small"></i>
+                            <div class="info-details-compact">
+                                <strong>Phone:</strong> <span id="display-phone">+63 (2) 8456-7890</span>
+                            </div>
+                        </div>
+                        <div class="info-item-compact">
+                            <i class="fas fa-envelope info-icon-small"></i>
+                            <div class="info-details-compact">
+                                <strong>Email:</strong> <span id="display-email">support@medisync.com.ph</span>
+                            </div>
+                        </div>
+                        <div class="info-item-compact">
+                            <i class="fas fa-globe info-icon-small"></i>
+                            <div class="info-details-compact">
+                                <strong>Website:</strong> <span id="display-website">www.medisync.com.ph</span>
+                            </div>
+                        </div>
+                        <div class="info-item-compact full-width">
+                            <i class="fas fa-map-marker-alt info-icon-small"></i>
+                            <div class="info-details-compact">
+                                <strong>Regional Offices:</strong> <span id="display-regional">Luzon: Quezon City, Metro Manila | Visayas: Cebu City | Mindanao: Davao City</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mission Statement -->
+            <div class="profile-card">
+                <div class="profile-card-header">
+                    <h3>Mission Statement</h3>
+                    <button class="edit-icon-btn" onclick="openEditModal('mission')">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                </div>
+                <div class="profile-content">
+                    <p class="mission-statement" id="display-mission">"To deliver reliable, innovative, and high-quality medical supplies that safeguard lives and support healthier communities across the Philippines."</p>
+                </div>
+            </div>
+
+            <!-- History -->
+            <div class="profile-card">
+                <div class="profile-card-header">
+                    <h3>History</h3>
+                    <button class="edit-icon-btn" onclick="openEditModal('history')">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                </div>
+                <div class="profile-content">
+                    <div class="history-content" id="display-history">
+                        <p>MediSync is a trusted supplier of medical and healthcare essentials in the Philippines, dedicated to serving hospitals, clinics, and healthcare providers for over two decades. Established in 2001, the company began as a small local distributor and has since expanded into a nationwide brand recognized for its reliability, innovation, and commitment to quality.</p>
+                        <p>Over the years, MediSync has continuously adapted to the evolving needs of the healthcare industry. From protective equipment and diagnostic tools to sanitization and emergency supplies, our products are designed to meet the highest standards of safety and performance. Our strong partnerships with healthcare providers nationwide stand as proof of our mission to safeguard lives and promote healthier communities.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Items/Stock/Status -->
+            <div class="profile-card">
+                <div class="profile-card-header">
+                    <h3>Items / Stock / Status</h3>
+                    <button class="edit-icon-btn" onclick="openEditModal('inventory')">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                </div>
+                <div class="profile-content">
+                    <div class="table-container">
+                        <table class="data-table" id="inventoryTable">
+                            <thead>
+                                <tr>
+                                    <th>Items</th>
+                                    <th>Stock</th>
+                                    <th>Price (₱)</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventoryTableBody">
+                                <!-- Will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 id="modalTitle">Edit Information</h3>
+                <button class="close-modal-btn" onclick="closeEditModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Dynamic content -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveEdit()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message View Modal -->
+    <div id="messageModal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 id="messageModalTitle">Message</h3>
+                <button class="close-modal-btn" onclick="closeMessageModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="messageModalBody">
+                <!-- Dynamic content -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="closeMessageModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reply Modal -->
+    <div id="replyModal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 id="replyModalTitle">Reply to Message</h3>
+                <button class="close-modal-btn" onclick="closeReplyModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="replyModalBody">
+                <div class="input-group">
+                    <label id="replyToLabel">Reply to:</label>
+                    <textarea id="replyModalText" rows="6" placeholder="Type your reply here..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeReplyModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="sendReplyFromModal()">Send Reply</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications Modal -->
+    <div id="notificationsModal" class="modal-overlay">
+        <div class="modal-container notifications-modal">
+            <div class="modal-header">
+                <h3 id="notificationsTitle">Notifications</h3>
+                <button class="close-modal-btn" onclick="closeNotificationsModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="notificationsBody">
+                <!-- Notifications will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="supplier_portal.js"></script>
+</body>
+</html>

@@ -1,12 +1,11 @@
 <?php
-session_start();
 require 'db_connect.php';
 
-// --- Optional: protect page (uncomment if using sessions/login) ---
-// if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
-//   header("Location: login.php");
-//   exit();
-// }
+// Protect page - require login
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
+  header("Location: login.php");
+  exit();
+}
 
 // Pull any popup message (keeps existing behavior)
 $popupMessage = '';
@@ -176,14 +175,16 @@ try {
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <link rel="stylesheet" href="sidebar.css" />
   <link rel="stylesheet" href="dashboard.css" />
   <link rel="stylesheet" href="notification.css">
 
 
   <style>
     /* small inline helpers so labels look good if your CSS misses them */
-    .status-label { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
-    .status-label .details { color:#555; font-weight:600; font-size:.95rem; }
+    .status-label { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size: 18px; }
+    .status-label span:first-child { font-weight: 600; font-size: 18px; }
+    .status-label .details { color:#555; font-weight:600; font-size: 18px; }
     .progress-bar { background:#e6e6e6; height:10px; border-radius:8px; overflow:hidden; }
     .progress { height:100%; border-radius:8px; }
     .progress.in-stock { background:#28b463; }
@@ -201,41 +202,47 @@ try {
 </head>
 <body>
 
-  <aside class="sidebar" aria-label="Primary">
+  <aside class="sidebar" id="sidebar">
     <div class="profile">
-      <div class="icon"><i class="fa-solid fa-user"></i></div>
-      <button class="toggle"><i class="fa-solid fa-bars"></i></button>
+      <div class="icon">
+        <img src="logo.png?v=2" alt="MediSync Logo" class="medisync-logo">
+      </div>
+      <button class="toggle" id="toggleBtn"><i class="fa-solid fa-bars"></i></button>
     </div>
 
-    <h3 class="title">Navigation</h3>
 
-    <nav>
     <ul class="menu">
-      <li class="active"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></li>
+      <li id="dashboard" class="active"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></li>
       <li id="inventory"><i class="fa-solid fa-boxes-stacked"></i><span>Inventory</span></li>
       <li id="low-stock"><i class="fa-solid fa-triangle-exclamation"></i><span>Low Stock</span></li>
       <li id="request"><i class="fa-solid fa-file-pen"></i><span>Requests</span></li>
       <li id="nav-suppliers"><i class="fa-solid fa-truck"></i><span>Suppliers</span></li>
       <li id="reports"><i class="fa-solid fa-file-lines"></i><span>Reports</span></li>
+      <?php if ($_SESSION['roleName'] === 'Admin'): ?>
       <li id="users"><i class="fa-solid fa-users"></i><span>Users</span></li>
+      <?php endif; ?>
       <li id="settings"><i class="fa-solid fa-gear"></i><span>Settings</span></li>
       <li id="logout"><i class="fa-solid fa-sign-out"></i><span>Log-Out</span></li>
     </ul>
-  </nav>
   </aside>
 
-  <div class="main">
-    <div class="topbar">
-      <h2>Dashboard Overview</h2>
-      <div class="top-right">
+  <main class="main">
+    <!-- Notification + Profile icon (top-right in main content) -->
+    <div class="topbar-right">
       <?php include 'notification_component.php'; ?>
+      <div class="profile-icon">
+        <i class="fa-solid fa-user"></i>
+      </div>
     </div>
 
+    <!-- Heading Bar -->
+    <div class="heading-bar">
+      <h1>Dashboard Overview</h1>   
     </div>
 
     <div class="cards">
       <div class="card">
-        <h4>Total Items In Stock</h4>
+        <h4>Total Items per Unit</h4>
         <p><?= number_format($total_quantity) ?></p>
       </div>
       <div class="card red">
@@ -296,9 +303,9 @@ try {
               ? '<span class="tag low">LOW</span>'
               : '<span class="tag good">GOOD</span>';
 
-          echo '<p style="margin:8px 0;">' 
+          echo '<p style="margin:8px 0; font-size:18px;">' 
                 . htmlspecialchars($cat['name']) .
-                ' <small style="color:#666;">(' . (int)$cat['row_count'] . ' rows, ' . (int)$cat['total_quantity'] . ' qty)</small> ' .
+                ' <small style="color:#666; font-size:16px;">(' . (int)$cat['row_count'] . ' rows, ' . (int)$cat['total_quantity'] . ' qty)</small> ' .
                 $label .
                 '</p>';
 
@@ -307,7 +314,7 @@ try {
     ?>
 
     <button id="show-all-categories" class="btn" 
-        style="width: 100%; margin-top: 10px; background:#0b66a1; color:white;">
+        style="width: 100%; margin-top: 10px; background:#0b66a1; color:white; box-shadow: none;">
         See More
     </button>
 </div>
@@ -330,8 +337,8 @@ foreach ($expirations as $e):
 ?>
           <tr style="vertical-align:middle; <?= $rowStyle ?>">
             <td style="padding:8px 6px; width:56%;">
-              <div style="font-weight:600; color:#0b3350;"><?= htmlspecialchars($e['ProductName']) ?></div>
-              <div style="font-size:.85rem; color:#666; margin-top:4px;">
+              <div style="font-weight:600; color:#0b3350; font-size:18px;"><?= htmlspecialchars($e['ProductName']) ?></div>
+              <div style="font-size:16px; color:#666; margin-top:4px;">
                 Qty: <?= (int)$e['Quantity'] ?> &nbsp; • &nbsp; Expires: <?= ($e['ExpirationDate'] ? date('m/d/Y', strtotime($e['ExpirationDate'])) : '--') ?>
               </div>
             </td>
@@ -345,7 +352,7 @@ foreach ($expirations as $e):
   </table>
 
   <button id="show-all-expirations" class="btn" 
-    style="width: 100%; margin-top: 10px; background:#0b66a1; color:white;">
+    style="width: 100%; margin-top: 10px; background:#0b66a1; color:white; box-shadow: none;">
     See More
 </button>
 
@@ -439,19 +446,20 @@ foreach ($expirations as $e):
 
 
   </div> <!-- /dashboard-grid -->
-  </div> <!-- /main -->
+  </main>
 
+  <script src="sidebar.js"></script>
   <script>
     $(document).ready(function () {
-      $(".toggle").click(function () {
-        $(".sidebar").toggleClass("hide");
-      });
       //Navigation
+      $("#dashboard").click(function(){ window.location.href = "dashboard.php"; });
       $("#inventory").click(function(){ window.location.href = "Inventory.php";});
-      $("#nav-suppliers").click(function(){ window.location.href ="supplier.php"; });
-      $("#request").click(function(){ window.location.href = "request_list.php"; });
       $("#low-stock").click(function(){ window.location.href = "lowstock.php"; });
-      //Logout
+      $("#request").click(function(){ window.location.href = "request_list.php"; });
+      $("#nav-suppliers").click(function(){ window.location.href ="supplier.php"; });
+      $("#reports").click(function(){ window.location.href = "report.php"; });
+      $("#users").click(function(){ window.location.href = "admin.php"; });
+      $("#settings").click(function(){ window.location.href = "settings.php"; });
       $("#logout").click(function(){ window.location.href = "logout.php"; });
     });
 

@@ -1,0 +1,172 @@
+/* ===================================
+   SIDEBAR.CSS - USE ON ALL PAGES
+   =================================== */
+
+:root {
+    --primary: #043873;
+    --accent: #4f9cf9;
+    --danger: #ff4d4f;
+    --warning: #ffb100;
+    --muted: #777;
+    --bg: #f5f8ff;
+    --card-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+    --radius: 10px;
+    --gap: 22px;
+    --sidebar-width: 240px;
+    --sidebar-collapsed: 70px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: var(--bg);
+    color: var(--primary);
+    line-height: 1.6;
+    display: flex;
+    font-size: 18px;
+}
+
+/* SIDEBAR */
+.sidebar {
+    width: var(--sidebar-width);
+    height: 100vh;
+    background-color: #fefefe;
+    color: #333;
+    position: fixed;
+    left: 0;
+    top: 0;
+    padding-top: 15px;
+    overflow-y: auto;
+    transition: width 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+    border-right: 1px solid #e0e0e0;
+}
+
+.sidebar.hide {
+    width: var(--sidebar-collapsed);
+}
+
+.profile {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px;
+    gap: 10px;
+    min-height: 60px;
+    flex-shrink: 0;
+}
+
+.icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    min-width: 0;
+}
+
+.medisync-logo {
+    height: 50px;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+}
+
+.toggle {
+    background: none;
+    border: none;
+    color: #333;
+    font-size: 22px;
+    cursor: pointer;
+    flex-shrink: 0;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+}
+
+.toggle:hover {
+    color: #4f9cf9;
+}
+
+.title {
+    text-align: center;
+    font-size: 15px;
+    color: #666;
+    margin: 10px 0;
+}
+
+.menu {
+    list-style: none;
+    margin-top: 10px;
+}
+
+.menu li {
+    padding: 14px 20px;
+    margin: 2px 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    border-radius: 6px;
+    min-height: 48px;
+    box-sizing: border-box;
+}
+
+.menu li i {
+    font-size: 22px;
+    width: 22px;
+    min-width: 22px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.menu li span {
+    font-size: 20px;
+    font-weight: 500;
+}
+
+.menu li:hover,
+.menu li.active {
+    background: #e3f2fd;
+    color: #043873;
+}
+
+.sidebar.hide .title,
+.sidebar.hide li span,
+.sidebar.hide .icon {
+    display: none;
+}
+
+.sidebar.hide li {
+    justify-content: center;
+}
+
+.sidebar.hide .profile {
+    justify-content: center;
+}
+
+/* MAIN CONTENT */
+.main {
+    margin-left: var(--sidebar-width);
+    flex: 1;
+    padding: 34px;
+    min-height: 100vh;
+    transition: margin-left 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
+    position: relative;
+}
+
+.sidebar.hide ~ .main {
+    margin-left: var(--sidebar-collapsed);
+}

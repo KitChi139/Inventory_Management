@@ -1,7 +1,11 @@
 <?php
-// suppliers.php (frontend-first demo)
-// This page expects inventory.css (your existing stylesheet) and jQuery to be available.
-// It's frontend-only: demo rows are inserted with JS. Replace demo data with server-side fetch when ready.
+require 'db_connect.php';
+
+// Protect page - require login
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
+  header("Location: login.php");
+  exit();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -17,6 +21,7 @@
 
 
   <!-- Reuse your existing styles -->
+  <link rel="stylesheet" href="sidebar.css" />
   <link rel="stylesheet" href="inventory.css" />
   <link rel="stylesheet" href="notification.css">
 
@@ -25,11 +30,17 @@
     /* Ensure no horizontal scroll from this module */
     .content-grid, .table-wrap, .inventory-table { max-width: 100%; box-sizing: border-box; }
     .sup-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 18px; margin-bottom: 18px; }
+    
+    /* Selected Supplier panel - match Quick Request width from Inventory */
+    .quick-request.box {
+      width: 380px !important;
+      max-width: 380px;
+    }
 
     /* Suppliers table specifics */
     .suppliers-table { width: 100%; border-collapse: collapse; min-width: 900px; }
-    .suppliers-table th, .suppliers-table td { padding: 12px 14px; border-bottom: 1px solid #eee; vertical-align: middle; font-size: 14px; text-align: left; }
-    .suppliers-table thead th { background: #fafafa; color: #444; font-weight: 600; }
+    .suppliers-table th, .suppliers-table td { padding: 12px 14px; border-bottom: 1px solid #eee; vertical-align: middle; font-size: 18px; text-align: left; }
+    .suppliers-table thead th { background: #fafafa; color: #444; font-weight: 600; font-size: 18px; }
 
     /* Status badges */
     .badge { display: inline-block; padding: 6px 8px; border-radius: 999px; font-size: 12px; color: white; font-weight: 600; }
@@ -55,9 +66,34 @@
     .modal .modal-content textarea { min-height:120px; resize:vertical; }
 
     /* small helpers */
-    .muted { color: #777; font-size: 13px; }
+    .muted { color: #777; font-size: 16px; }
     .stat-small { font-size: 22px; font-weight:700; color:#222; }
-    .rating { color: #f6b500; font-weight:700; }
+    .rating { color: #f6b500; font-weight:700; font-size: 18px; }
+    
+    /* Supplier buttons - small and side-by-side */
+    .btn.primary, .btn.secondary {
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: 6px;
+      cursor: pointer;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      width: auto;
+      flex: 0 0 auto;
+    }
+    
+    /* Ensure buttons stay side-by-side in Selected Supplier panel - small and compact */
+    #contact-sel, #restock-sel {
+      padding: 6px 12px !important;
+      font-size: 13px !important;
+      white-space: nowrap;
+      width: auto !important;
+      flex: 0 0 auto !important;
+      min-width: auto !important;
+    }
 
     <style>
 /* (minimal safe styles; keep your inventory.css) */
@@ -74,6 +110,105 @@
 .search-wrapper input[type="search"] { padding:8px 10px; border:1px solid #ddd; border-radius:8px; min-width:260px; }
 .clear-btn { background:#f2f2f2; border:none; padding:6px 10px; border-radius:8px; cursor:pointer; }
 
+/* Contact Modal Overlay Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.modal-box {
+  background: #fff;
+  width: 500px;
+  max-width: 90%;
+  padding: 28px;
+  border-radius: 12px;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.2);
+  animation: popupScale .25s ease-out;
+}
+
+@keyframes popupScale {
+  from { transform: scale(0.85); opacity:0; }
+  to   { transform: scale(1); opacity:1; }
+}
+
+.modal-box h2 {
+  margin-top: 0;
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #043873;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  font-size: 15px;
+  color: #444;
+  margin-bottom: 6px;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 15px;
+  box-sizing: border-box;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.btn-secondary,
+.btn-primary {
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+  font-size: 15px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background: #043873;
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: #4f9cf9;
+}
+
+.btn-secondary {
+  background: #ddd;
+  color: #333;
+}
+
+.btn-secondary:hover {
+  background: #bbb;
+}
 
 .alerts { margin-bottom:12px; }
 .alert { padding:10px 12px; border-radius:8px; margin-bottom:8px; }
@@ -85,36 +220,41 @@
 </head>
 <body>
 
-<aside class="sidebar" aria-label="Primary">
+<aside class="sidebar" id="sidebar">
   <div class="profile">
-    <div class="icon" aria-hidden="true"><i class="fa-solid fa-user"></i></div>
-    <button class="toggle" aria-expanded="true" aria-label="Toggle navigation"><i class="fa-solid fa-bars"></i></button>
+    <div class="icon">
+      <img src="logo.png?v=2" alt="MediSync Logo" class="medisync-logo">
+    </div>
+    <button class="toggle" id="toggleBtn"><i class="fa-solid fa-bars"></i></button>
   </div>
-  <h3 class="title">Navigation</h3>
-  <nav>
-    <ul class="menu">
-      <li id="dashboard"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></li>
-      <li id="inventory"><i class="fa-solid fa-boxes-stacked"></i><span>Inventory</span></li>
-      <li id="low-stock"><i class="fa-solid fa-triangle-exclamation"></i><span>Low Stock</span></li>
-      <li id="request"><i class="fa-solid fa-file-pen"></i><span>Requests</span></li>
-      <li class="active"><i class="fa-solid fa-truck"></i><span>Suppliers</span></li>
-      <li id="reports"><i class="fa-solid fa-file-lines"></i><span>Reports</span></li>
-      <li><i class="fa-solid fa-users"></i><span>Users</span></li>
-      <li><i class="fa-solid fa-gear"></i><span>Settings</span></li>
-      <li id="logout"><i class="fa-solid fa-sign-out"></i><span>Log-Out</span></li>
-    </ul>
-  </nav>
+  <ul class="menu">
+    <li id="dashboard"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></li>
+    <li id="inventory"><i class="fa-solid fa-boxes-stacked"></i><span>Inventory</span></li>
+    <li id="low-stock"><i class="fa-solid fa-triangle-exclamation"></i><span>Low Stock</span></li>
+    <li id="request"><i class="fa-solid fa-file-pen"></i><span>Requests</span></li>
+    <li id="nav-suppliers" class="active"><i class="fa-solid fa-truck"></i><span>Suppliers</span></li>
+    <li id="reports"><i class="fa-solid fa-file-lines"></i><span>Reports</span></li>
+    <?php if ($_SESSION['roleName'] === 'Admin'): ?>
+      <li id="users"><i class="fa-solid fa-users"></i><span>Users</span></li>
+    <?php endif; ?>    
+    <li id="settings"><i class="fa-solid fa-gear"></i><span>Settings</span></li>
+    <li id="logout"><i class="fa-solid fa-sign-out"></i><span>Log-Out</span></li>
+  </ul>
 </aside>
 
 <main class="main">
-  <header class="topbar">
-    <div class="top-left">
-      <h2>Suppliers</h2>
+  <!-- Notification + Profile icon (top-right in main content) -->
+  <div class="topbar-right">
+    <?php include 'notification_component.php'; ?>
+    <div class="profile-icon">
+      <i class="fa-solid fa-user"></i>
     </div>
-    <div class="top-right">
-      <?php include 'notification_component.php'; ?>
-    </div>
-  </header>
+  </div>
+
+  <!-- Heading Bar -->
+  <div class="heading-bar">
+    <h1>Suppliers</h1>   
+  </div>
 
   <!-- Cards -->
   <section class="cards sup-cards">
@@ -189,10 +329,10 @@
     <!-- Right panel (small info) -->
     <aside class="quick-request box" aria-label="Supplier quick info" style="width: var(--right-panel-width);">
       <h4>Selected Supplier</h4>
-      <div id="sel-supplier" class="muted">No supplier selected</div>
-      <div style="margin-top:12px;">
+      <div id="sel-supplier" class="muted" style="margin-bottom: 16px;">No supplier selected</div>
+      <div style="display: flex; flex-direction: row; gap: 5px; align-items: center; justify-content: flex-start;">
         <button class="btn primary" id="contact-sel" disabled><i class="fa-solid fa-envelope"></i> Contact</button>
-        <button class="btn secondary" id="restock-sel" disabled style="margin-left:8px;"><i class="fa-solid fa-boxes-stacked"></i> Restock</button>
+        <button class="btn secondary" id="restock-sel" disabled><i class="fa-solid fa-boxes-stacked"></i> Restock</button>
       </div>
     </aside>
   </section>
@@ -283,8 +423,8 @@
   </div>
 </div>
 
-<!-- CONTACT MODAL -->
-<div class="modal-overlay" id="contact-modal">
+<!-- CONTACT MODAL - Popup Form -->
+<div class="modal-overlay" id="contact-modal" style="display: none;">
     <div class="modal-box">
         <h2>Contact Supplier</h2>
 
@@ -295,17 +435,22 @@
 
             <div class="form-group">
                 <label>Subject</label>
-                <input type="text" name="subject" id="contact-subject" required>
+                <input type="text" name="subject" id="contact-subject-modal" placeholder="Enter subject" required>
             </div>
 
             <div class="form-group">
                 <label>Message</label>
-                <textarea name="message" id="contact-message" rows="5" required></textarea>
+                <textarea name="message" id="contact-message-modal" rows="5" placeholder="Enter your message" required></textarea>
             </div>
 
-            <div class="modal-details">
-                <p><strong>Supplier:</strong> <span id="modal-supplier"></span></p>
-                <p><strong>Batch:</strong> <span id="modal-batch"></span></p>
+            <div class="form-group">
+                <label>Supplier</label>
+                <input type="text" name="supplier" id="contact-supplier-input" placeholder="Enter supplier name" required>
+            </div>
+
+            <div class="form-group">
+                <label>Batch</label>
+                <input type="text" name="batch" id="contact-batch-input" placeholder="Enter batch number">
             </div>
 
             <div class="modal-actions">
@@ -547,9 +692,50 @@ function openRestockModal(id){
 }
 
   // Right panel contact/restock buttons
-  $("#contact-sel").click(()=> {
-    if(!selectedSupplierId) return;
-    openContactModal(selectedSupplierId);
+  $("#contact-sel").click(function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if ($(this).prop("disabled")) {
+      alert("Please select a supplier first.");
+      return false;
+    }
+    
+    const modal = document.getElementById("contact-modal");
+    if (!modal) {
+      console.error("Contact modal not found!");
+      return false;
+    }
+    
+    const selectedSupplier = $("#sel-supplier").text().trim();
+    
+    // Clear form when opening
+    $("#contact-subject-modal").val("");
+    $("#contact-message-modal").val("");
+    
+    // Pre-fill supplier name if available
+    if (selectedSupplier && selectedSupplier !== "No supplier selected") {
+      // Extract just the supplier name (remove any additional text)
+      const supplierName = selectedSupplier.split('\n')[0].trim();
+      $("#contact-supplier-input").val(supplierName);
+      $("#modalSupplierValue").val(supplierName);
+    } else {
+      $("#contact-supplier-input").val("");
+      $("#modalSupplierValue").val("");
+    }
+    
+    $("#contact-batch-input").val("");
+    $("#modalBatchValue").val("");
+    
+    // Show the modal
+    $(modal).css({
+      'display': 'flex',
+      'z-index': '2000'
+    });
+    modal.style.display = "flex";
+    modal.style.zIndex = "2000";
+    console.log("Contact modal opened");
+    return false;
   });
   $("#restock-sel").click(()=> {
     if(!selectedSupplierId) return;
@@ -649,7 +835,23 @@ document.getElementById("contact-modal").addEventListener("click", (e) => {
 document.getElementById("contactForm").addEventListener("submit", function(e) {
     e.preventDefault();
 
-    let f = new FormData(this);
+    // Get values from input fields
+    const subject = document.getElementById("contact-subject-modal").value;
+    const message = document.getElementById("contact-message-modal").value;
+    const supplier = document.getElementById("contact-supplier-input").value;
+    const batch = document.getElementById("contact-batch-input").value;
+
+    if (!subject || !message || !supplier) {
+        alert("Please fill in Subject, Message, and Supplier fields.");
+        return;
+    }
+
+    // Create FormData
+    let f = new FormData();
+    f.append("subject", subject);
+    f.append("message", message);
+    f.append("supplier", supplier);
+    f.append("batch", batch);
 
     fetch("send_message.php", {
         method: "POST",
@@ -660,10 +862,14 @@ document.getElementById("contactForm").addEventListener("submit", function(e) {
         if (data.status === "success") {
             alert("Message sent!");
             document.getElementById("contact-modal").style.display = "none";
-            location.reload();
+            // Clear form
+            document.getElementById("contactForm").reset();
         } else {
-            alert("Error: " + data.error);
+            alert("Error: " + (data.error || "Failed to send message"));
         }
+    })
+    .catch(error => {
+        alert("Error: " + error.message);
     });
 });
 
@@ -676,9 +882,13 @@ document.getElementById("contactForm").addEventListener("submit", function(e) {
 
    // Sidebar navigation
   $("#dashboard").click(()=>window.location.href="dashboard.php");
-  $("#inventory").click(()=>window.location.href="inventory.php");
-  $("#request").click(()=>window.location.href="request_list.php");
+  $("#inventory").click(()=>window.location.href="Inventory.php");
   $("#low-stock").click(()=> window.location.href = "lowstock.php");
+  $("#request").click(()=>window.location.href="request_list.php");
+  $("#nav-suppliers").click(()=>window.location.href="supplier.php");
+  $("#reports").click(()=>window.location.href="report.php");
+  $("#users").click(()=>window.location.href="admin.php");
+  $("#settings").click(()=>window.location.href="settings.php");
   $("#logout").click(()=>window.location.href="logout.php");
 });
 
@@ -686,6 +896,7 @@ document.getElementById("contactForm").addEventListener("submit", function(e) {
 
 </script>
 
+<script src="sidebar.js"></script>
 <script src="notification.js" defer></script>
 
 </body>
