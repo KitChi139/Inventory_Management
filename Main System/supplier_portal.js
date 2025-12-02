@@ -490,6 +490,82 @@ window.addEventListener('click', function (event) {
     if (event.target === notificationsModal) closeNotificationsModal();
 });
 
+document.addEventListener('DOMContentLoaded', () => {
+  const searchInput = document.getElementById('searchInput');
+  const categoryFilter = document.getElementById('categoryFilter');
+  const dateFilter = document.getElementById('dateFilter'); // may be null
+
+  function normalizeDate(dateStr) {
+    const txt = (dateStr || '').trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(txt)) return txt; // ISO already
+    const parts = txt.split('/');
+    if (parts.length === 3) {
+      const [m, d, y] = parts;
+      return `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
+    }
+    return txt;
+  }
+
+  function filterTables() {
+    const searchValue = (searchInput?.value || '').toLowerCase();
+    const categoryValue = (categoryFilter?.value || '').toLowerCase();
+    const dateValue = (dateFilter?.value || ''); // empty if missing or blank
+
+    const tableBodies = document.querySelectorAll('.request-table tbody');
+
+    tableBodies.forEach(tbody => {
+      Array.from(tbody.rows).forEach(row => {
+        const c = row.cells;
+        if (!c || c.length < 6) {
+          row.style.display = '';
+          return;
+        }
+
+        const batchId = (c[1]?.textContent || '').toLowerCase();
+        const itemName = (c[2]?.textContent || '').toLowerCase();
+        const category = (c[3]?.textContent || '').toLowerCase();
+        const quantity = (c[4]?.textContent || '').toLowerCase();
+        const requestDateText = (c[5]?.textContent || '').trim();
+
+        const matchesSearch =
+          batchId.includes(searchValue) ||
+          itemName.includes(searchValue) ||
+          quantity.includes(searchValue);
+
+        const matchesCategory =
+          categoryValue === '' || category.includes(categoryValue);
+
+        const normalized = normalizeDate(requestDateText);
+        const matchesDate =
+          dateValue === '' || normalized === dateValue;
+
+        row.style.display = (matchesSearch && matchesCategory && matchesDate) ? '' : 'none';
+      });
+    });
+  }
+
+  function clearFilters() {
+    if (searchInput) searchInput.value = '';
+    if (categoryFilter) categoryFilter.value = '';
+    if (dateFilter) dateFilter.value = '';
+    filterTables();
+  }
+
+  if (searchInput) searchInput.addEventListener('input', filterTables);
+  if (categoryFilter) categoryFilter.addEventListener('change', filterTables);
+  if (dateFilter) dateFilter.addEventListener('change', filterTables);
+
+  window.clearFilters = clearFilters;
+
+  // Initial run to ensure consistent state
+  filterTables();
+});
+
+
+
+
+
+
 // =====================
 // Logout
 // =====================

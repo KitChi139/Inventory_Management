@@ -182,7 +182,7 @@
     gap: var(--gap);
 }
 
-/* Requests Column */
+Requests Column
 .requests-column {
     display: flex;
     flex-direction: column;

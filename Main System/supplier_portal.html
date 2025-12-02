@@ -207,47 +207,57 @@
     <div class="page-header">
         <h1>Pending Requests</h1>
     </div>
+     <!-- Filter bar -->
+<div class="filter-bar">
+  <input type="text" id="searchInput" placeholder="Search batch ID, item name, or quantity..." />
+  <select id="categoryFilter">
+    <option value="">All Categories</option>
+    <option value="Protective Equipment">Protective Equipment</option>
+    <option value="Antibiotics / Antibacterials">Antibiotics / Antibacterials</option>
+    <option value="Analgesics / Antipyretics">Analgesics / Antipyretics</option>
+    <option value="Antivirals">Antivirals</option>
+    <option value="Antifungals">Antifungals</option>
+    <option value="Antihistamines / Antiallergics">Antihistamines / Antiallergics</option>
+    <option value="Antacids / Antiulcerants">Antacids / Antiulcerants</option>
+  </select>
+  <!-- Optional: include only if you want date filtering -->
+  <input type="date" id="dateFilter" />
+  <button class="btn btn-secondary" onclick="clearFilters()">Clear</button>
+</div>
+        
     <div class="table-container">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th><input type="checkbox" /></th>
-                    <th>Request Batch ID</th>
-                    <th>Item Name</th>
-                    <th>Category</th>
-                    <th>Quantity</th>
-                    <th>Request Date</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><input type="checkbox" /></td>
-                    <td>REQ-001</td>
-                    <td>Face Mask</td>
-                    <td>Protective Equipment</td>
-                    <td>50 boxes</td>
-                    <td>10/04/2025</td>
-                    <td>
-                        <button class="btn btn-success">Approve</button>
-                        <button class="btn btn-danger">Decline</button>
-                    </td>
-                </tr>
-                <tr>
-                    <td><input type="checkbox" /></td>
-                    <td>REQ-001</td>
-                    <td>Medical Gloves</td>
-                    <td>Protective Equipment</td>
-                    <td>30 boxes</td>
-                    <td>10/04/2025</td>
-                    <td>
-                        <button class="btn btn-success">Approve</button>
-                        <button class="btn btn-danger">Decline</button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+  <table class="request-table">
+    <thead>
+      <tr>
+        <th><input type="checkbox" /></th>
+        <th>Request Batch ID</th>
+        <th>Item Name</th>
+        <th>Category</th>
+        <th>Quantity</th>
+        <th>Request Date</th>
+      </tr>
+    </thead>
+    <tbody id="pendingTableBody">
+      <tr>
+        <td><input type="checkbox" /></td>
+        <td>0004</td>
+        <td>Acyclovir 400mg</td>
+        <td>Antivirals</td>
+        <td>25</td>
+        <td>12/2/2025</td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" /></td>
+        <td>0004</td>
+        <td>Amoxicillin 500mg</td>
+        <td>Antibiotics / Antibacterials</td>
+        <td>25</td>
+        <td>12/2/2025</td>
+      </tr>
+    </tbody>
+  </table>
+      
+</div>
 </section>
 
 
@@ -256,6 +266,24 @@
     <div class="page-header">
         <h1>Declined Requests</h1>
     </div>
+    <!-- Filter bar -->
+<div class="filter-bar">
+  <input type="text" id="searchInput" placeholder="Search batch ID, item name, or quantity..." />
+  <select id="categoryFilter">
+    <option value="">All Categories</option>
+    <option value="Protective Equipment">Protective Equipment</option>
+    <option value="Antibiotics / Antibacterials">Antibiotics / Antibacterials</option>
+    <option value="Analgesics / Antipyretics">Analgesics / Antipyretics</option>
+    <option value="Antivirals">Antivirals</option>
+    <option value="Antifungals">Antifungals</option>
+    <option value="Antihistamines / Antiallergics">Antihistamines / Antiallergics</option>
+    <option value="Antacids / Antiulcerants">Antacids / Antiulcerants</option>
+  </select>
+  <!-- Optional: include only if you want date filtering -->
+  <input type="date" id="dateFilter" />
+  <button class="btn btn-secondary" onclick="clearFilters()">Clear</button>
+</div>
+    
     <div class="table-container">
         <table class="data-table">
             <thead>
@@ -269,7 +297,7 @@
                     <th>Declined Date</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="declinedTableBody">
                 <tr>
                     <td><input type="checkbox" /></td>
                     <td>0001</td>
@@ -299,6 +327,24 @@
     <div class="page-header">
         <h1>Approved Requests</h1>
     </div>
+    <!-- Filter bar -->
+<div class="filter-bar">
+  <input type="text" id="searchInput" placeholder="Search batch ID, item name, or quantity..." />
+  <select id="categoryFilter">
+    <option value="">All Categories</option>
+    <option value="Protective Equipment">Protective Equipment</option>
+    <option value="Antibiotics / Antibacterials">Antibiotics / Antibacterials</option>
+    <option value="Analgesics / Antipyretics">Analgesics / Antipyretics</option>
+    <option value="Antivirals">Antivirals</option>
+    <option value="Antifungals">Antifungals</option>
+    <option value="Antihistamines / Antiallergics">Antihistamines / Antiallergics</option>
+    <option value="Antacids / Antiulcerants">Antacids / Antiulcerants</option>
+  </select>
+  <!-- Optional: include only if you want date filtering -->
+  <input type="date" id="dateFilter" />
+  <button class="btn btn-secondary" onclick="clearFilters()">Clear</button>
+</div>
+    
     <div class="table-container">
         <table class="data-table">
             <thead>
@@ -312,7 +358,7 @@
                     <th>Shipping Date</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="approvedTableBody">
                 <tr>
                     <td><input type="checkbox" /></td>
                     <td>0001</td>
@@ -342,6 +388,24 @@
     <div class="page-header">
         <h1>Completed Requests</h1>
     </div>
+     <!-- Filter bar -->
+<div class="filter-bar">
+  <input type="text" id="searchInput" placeholder="Search batch ID, item name, or quantity..." />
+  <select id="categoryFilter">
+    <option value="">All Categories</option>
+    <option value="Protective Equipment">Protective Equipment</option>
+    <option value="Antibiotics / Antibacterials">Antibiotics / Antibacterials</option>
+    <option value="Analgesics / Antipyretics">Analgesics / Antipyretics</option>
+    <option value="Antivirals">Antivirals</option>
+    <option value="Antifungals">Antifungals</option>
+    <option value="Antihistamines / Antiallergics">Antihistamines / Antiallergics</option>
+    <option value="Antacids / Antiulcerants">Antacids / Antiulcerants</option>
+  </select>
+  <!-- Optional: include only if you want date filtering -->
+  <input type="date" id="dateFilter" />
+  <button class="btn btn-secondary" onclick="clearFilters()">Clear</button>
+</div>
+
     <div class="table-container">
         <table class="data-table">
             <thead>
@@ -355,7 +419,7 @@
                     <th>Shipping Completed</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="completedTableBody">
                 <tr>
                     <td><input type="checkbox" /></td>
                     <td>0001</td>
@@ -617,8 +681,7 @@
             </div>
         </div>
     </div>
-</body>
-</html>
+
 
 
         <!-- Messages Section -->
@@ -858,8 +921,10 @@
             </div>
         </div>
     </div>
-</body>
-</html>
+
+
+ 
+
         <!-- Messages Section -->
         <section class="content-section" id="messages-section">
             <div class="page-header">
