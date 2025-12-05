@@ -7,7 +7,7 @@ require_once 'session_config.php';
 $host = 'localhost';
 $user = 'root';
 $pass = '';
-$db   = 'inventory_db';
+$db   = 'inventory_pos';
 
 $conn = new mysqli($host, $user, $pass, $db);
 if ($conn->connect_error) {

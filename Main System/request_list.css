@@ -324,6 +324,7 @@ Requests Column
     background: #fff;
     border-radius: var(--radius);
     padding: 36px;
+    width: 500px;
     width: min(540px, 92vw);
     box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
     display: flex;
@@ -451,3 +452,195 @@ Requests Column
     -webkit-transform: scale(1.5);
     margin: 5px;              /* optional: avoids clipping */
 }
+
+.batch-header {
+    background: #f2f2f2;
+    font-weight: bold;
+}
+.status-completed { color: green; font-weight: bold; }
+.status-approved { color: blue; }
+
+#batch-modal {
+    position: fixed;       /* Fix it on screen */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5); /* Dark semi-transparent overlay */
+    display: none;         /* Hidden by default */
+    z-index: 1000;         /* On top of everything */
+    overflow-y: auto;      /* Scroll if content is tall */
+}
+
+/* Modal content box */
+#batch-modal .modal-content {
+    background: #fff;
+    border-radius: 10px;
+    width: 100%;
+    max-width: 1200px;
+    margin: 50px auto;     /* Center vertically with some top spacing */
+    padding: 20px 30px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    animation: fadeIn 0.3s ease-out;
+    position: relative;
+}
+
+/* Modal header */
+#batch-modal h2 {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+/* Batch items table */
+#batch-items-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+#batch-items-table th, #batch-items-table td {
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+#batch-items-table th {
+    background-color: #f5f5f5;
+    font-weight: 600;
+}
+
+/* Status badge */
+#batch-items-table td .status-completed {
+    color: #fff;
+    background-color: #28a745;
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-size: 0.85rem;
+}
+
+#batch-items-table td .status-pending {
+    color: #fff;
+    background-color: #ffc107;
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-size: 0.85rem;
+}
+
+/* Modal buttons */
+#batch-modal .btn-secondary,
+#batch-modal .btn-primary {
+    padding: 8px 16px;
+    margin-top: 15px;
+    border-radius: 5px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+}
+
+#batch-modal .btn-secondary {
+    background-color: #ccc;
+    color: #333;
+}
+
+#batch-modal .btn-secondary:hover {
+    background-color: #bbb;
+}
+
+#batch-modal .btn-primary {
+    background-color: #007bff;
+    color: #fff;
+    margin-left: 10px;
+}
+
+#batch-modal .btn-primary:hover {
+    background-color: #0069d9;
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+    from {opacity: 0; transform: translateY(-20px);}
+    to {opacity: 1; transform: translateY(0);}
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    #batch-modal .modal-content {
+        padding: 15px 20px;
+    }
+    #batch-items-table th, #batch-items-table td {
+        padding: 8px 10px;
+    }
+}
+
+#close-batch-modal {
+    margin-top: 20px;
+    float: right;
+}
+.modal-table {
+  width: 100%;
+    border-collapse: collapse;
+    min-width: 900px;
+}
+.modal-table thead {
+  background: #eef4ff;
+    color: var(--primary);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+.modal-table th,
+.modal-table td {
+ padding: 16px 14px;
+    text-align: left;
+    font-size: 18px;
+    border-bottom: 1px solid #e7eefc;
+}
+.modal-table tbody tr:hover {
+    background: #f7faff;
+}
+
+/* Warning modal color theme */
+.warning-modal-content {
+    background: #fff;
+    border-radius: 10px;
+    width: 100%;
+    max-width: 420px;
+    margin: 50px auto;     /* Center vertically with some top spacing */
+    margin-top: 100px;
+    padding: 20px 30px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    animation: fadeIn 0.3s ease-out;
+    position: relative;
+    color: #333;
+    border-top: 4px solid #d9534f;
+}
+
+/* Title style for warnings */
+.warning-modal-content .modal-title {
+    color: #d9534f;
+    margin-bottom: 15px;
+}
+
+/* Lightweight glowing animation */
+@keyframes modal-pop {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.warning-modal-content {
+    animation: modal-pop 0.25s ease-out;
+}
+
+    .item-complete-btn, .btn-view-batch {
+        padding: 8px 12px;
+        font-size: 15px;
+        font-weight: 500;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }

@@ -186,7 +186,7 @@ html, body {
 /* Content layout - FIXED to flow naturally */
 .content-grid {
   display: grid;
-  grid-template-columns: 1fr 380px;
+  grid-template-columns: 1fr 400px;
   gap: 12px;
   align-items: start;
   margin-top: 0 !important;
@@ -930,4 +930,16 @@ html, body {
 .status-ok {
     background: rgba(82, 196, 26, 0.15);
     color: #237804;
+}
+.qr-supplier {
+    display:inline-flex; 
+    gap:8px; 
+    align-items:center; 
+    color: #043873;
+    padding:5px; 
+    border-radius:8px; 
+    text-decoration:none; 
+    font-size: 15px;
+    transition: all 0.2s;
+
 }

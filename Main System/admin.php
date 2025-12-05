@@ -24,13 +24,38 @@
       $var1 = trim($_POST['empNameorComName'] ?? '');
       $var2 = trim($_POST['empNumorContPer'] ?? '');
       $contact = trim($_POST['contNum'] ?? '');
-      $email = isset($_POST['eMail']) ? strtolower(trim($_POST['email'])) : null;
+     $email = isset($_POST['eMail']) ? strtolower(trim($_POST['eMail'])) : '';
+
       $pass = $_POST['pass'] ?? '';
 
       // Basic server-side validation
-      if (!$var1 || !$var2 || !$contact || !$email || !$pass || !$userType) {
-          $_SESSION['error'] = 'Please fill all required fields.';
-      } else {
+        $errors = [];
+
+        // Required fields
+        if (!$var1) $errors[] = ($userType === 'employee') ? 'Employee Name is required.' : 'Company Name is required.';
+        if (!$var2) $errors[] = ($userType === 'employee') ? 'Employee Number is required.' : 'Contact Person is required.';
+        if (!$contact) $errors[] = 'Contact Number is required.';
+        if (!$email) $errors[] = 'Email is required.';
+        if (!$pass) $errors[] = 'Password is required.';
+        if (!$userType) $errors[] = 'User Type is required.';
+
+        // Email format
+        if ($email && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors[] = 'Invalid email format.';
+        }
+
+        // Contact number format (digits only, 7-15 digits)
+        if ($contact && !preg_match('/^\d{7,15}$/', $contact)) {
+            $errors[] = 'Contact number must be 7-15 digits.';
+        }
+
+        // Password strength: minimum 6 characters
+        if ($pass && strlen($pass) < 6) {
+            $errors[] = 'Password must be at least 6 characters.';
+        }
+        if (!empty($errors)) {
+            $_SESSION['error'] = implode('<br>', $errors);
+        } else {
           mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
           try {
               $connection->begin_transaction();
@@ -39,12 +64,35 @@
                   $role = "Employee";
                   $status = "Active";
 
+                  $stmt = $connection->prepare("SELECT COUNT(*) FROM email WHERE email=?");
+                  $stmt->bind_param("s", $email);
+                  $stmt->execute();
+                  $stmt->bind_result($count);
+                  $stmt->fetch();
+                  $stmt->close();
+
+                  if ($count > 0) {
+                      $_SESSION['error'] = "Email already exists.";
+                      header("Location: admin.php"); // redirect back
+                      exit(); // stop further execution
+                  }
                   $stmt1 = $connection->prepare("INSERT INTO email (email) VALUES (?)");
                   $stmt1->bind_param("s", $email);
                   $stmt1->execute();
                   $EID = $connection->insert_id;
                   $stmt1->close();
+                  $stmt = $connection->prepare("SELECT COUNT(*) FROM employee WHERE empNum = ?");
+                  $stmt->bind_param("s", $var2);
+                  $stmt->execute();
+                  $stmt->bind_result($empCount);
+                  $stmt->fetch();
+                  $stmt->close();
 
+                  if ($empCount > 0) {
+                      $_SESSION['error'] = "Employee Number already exists.";
+                      header("Location: admin.php");
+                      exit();
+                  }
                   $stmt2 = $connection->prepare("INSERT INTO employee (empNum, empName) VALUES (?, ?)");
                   $stmt2->bind_param("ss", $var2, $var1);
                   $stmt2->execute();
@@ -88,7 +136,20 @@
                   $EID = $connection->insert_id;
                   $stmt1->close();
 
-                  $stmt2 = $connection->prepare("INSERT INTO company (comName, comPerson) VALUES (?, ?)");
+                  $stmt = $connection->prepare("SELECT COUNT(*) FROM email WHERE email=?");
+                  $stmt->bind_param("s", $email);
+                  $stmt->execute();
+                  $stmt->bind_result($count);
+                  $stmt->fetch();
+                  $stmt->close();
+
+                  if ($count > 0) {
+                      $_SESSION['error'] = "Email already exists.";
+                      header("Location: admin.php"); // redirect back
+                      exit(); // stop further execution
+                  }
+
+                  $stmt2 = $connection->prepare("INSERT INTO company (companyName, companyPerson) VALUES (?, ?)");
                   $stmt2->bind_param("ss", $var1, $var2);
                   $stmt2->execute();
                   $EMPID = $connection->insert_id;
@@ -108,10 +169,16 @@
                   $UID = $connection->insert_id;
                   $stmt4->close();
 
-                  $stmt5 = $connection->prepare("INSERT INTO userinfo (userID, comID, emailID, cont_num) VALUES (?, ?, ?, ?)");
-                  $stmt5->bind_param("iiis", $UID, $EMPID, $EID, $contact);
+                  $stmt5 = $connection->prepare("INSERT INTO suppliers (comID, PhoneNumber, Status) VALUES (?, ?, 'Active')");
+                  $stmt5->bind_param("is", $EMPID, $contact);
                   $stmt5->execute();
+                  $SupplierID = $connection->insert_id;
                   $stmt5->close();
+
+                  $stmt6 = $connection->prepare("INSERT INTO userinfo (userID, SupplierID, emailID, cont_num) VALUES (?, ?, ?, ?)");
+                  $stmt6->bind_param("iiis", $UID, $SupplierID, $EID, $contact);
+                  $stmt6->execute();
+                  $stmt6->close();
 
                   $newUserData = [
                       'name' => $var1,
@@ -133,88 +200,159 @@
   }
   if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_submit'])) {
 
-      $id = intval($_POST['userID']);
-      $name = trim($_POST['editFullName']);
-      $empNumber = trim($_POST['editEmpNumber']);
-      $contact = trim($_POST['editContact']);
-      $email = trim($_POST['editEmail']);
+    $id = intval($_POST['userID']);
+    $name = trim($_POST['editFullName']);
+    $empNumber = trim($_POST['editEmpNumber']);
+    $contact = trim($_POST['editContact']);
+    $email = trim($_POST['editEmail']);
+    $role = trim($_POST['editRole']); // Add hidden input in modal
 
-      try {
-          $connection->begin_transaction();
+    $errors = [];
+    if (!$id) $errors[] = 'Invalid user ID.';
+    if (!$name) $errors[] = 'Name is required.';
+    if (!$empNumber) $errors[] = 'Employee/Company Number is required.';
+    if (!$contact || !preg_match('/^\d{7,15}$/', $contact)) $errors[] = 'Contact number must be 7-15 digits.';
+    if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'Invalid email format.';
 
-          // Update email
-          $stmt = $connection->prepare("
-    UPDATE email e
-    JOIN userinfo ui ON ui.emailID = e.emailID
-    JOIN users u ON u.userID = ui.userID
-    SET e.email = ?, u.username = ?
-    WHERE ui.userID = ?
-");
-$stmt->bind_param("ssi", $email, $email, $id); // <-- same value for both
-$stmt->execute();
-$stmt->close();
+    if (!empty($errors)) {
+        $_SESSION['error'] = implode('<br>', $errors);
+        header("Location: admin.php");
+        exit();
+    }
 
+    try {
+        $connection->begin_transaction();
 
-          // Update employee/supplier name & ID
-          $stmt = $connection->prepare("
-            UPDATE employee emp
-            JOIN userinfo ui ON ui.empID = emp.empID
-            SET emp.empName = ?, emp.empNum = ?
+        // Validate unique email except current user
+        $stmt = $connection->prepare("
+            SELECT COUNT(*) FROM email e
+            JOIN userinfo ui ON e.emailID = ui.emailID
+            WHERE e.email = ? AND ui.userID != ?
+        ");
+        $stmt->bind_param("si", $email, $id);
+        $stmt->execute();
+        $stmt->bind_result($emailCount);
+        $stmt->fetch();
+        $stmt->close();
+
+        if ($emailCount > 0) {
+            $_SESSION['error'] = "Email already exists.";
+            $connection->rollback();
+            header("Location: admin.php");
+            exit();
+        }
+
+        // Update email & username
+        $stmt = $connection->prepare("
+            UPDATE email e
+            JOIN userinfo ui ON ui.emailID = e.emailID
+            JOIN users u ON u.userID = ui.userID
+            SET e.email = ?, u.username = ?
             WHERE ui.userID = ?
-          ");
-          $stmt->bind_param("ssi", $name, $empNumber, $id);
-          $stmt->execute();
-          $stmt->close();
+        ");
+        $stmt->bind_param("ssi", $email, $email, $id);
+        $stmt->execute();
+        $stmt->close();
 
-          // Update userinfo contact
-          $stmt = $connection->prepare("
+        if ($role === 'Employee') {
+            // Update employee info
+            $stmt = $connection->prepare("
+                UPDATE employee emp
+                JOIN userinfo ui ON ui.empID = emp.empID
+                SET emp.empName = ?, emp.empNum = ?
+                WHERE ui.userID = ?
+            ");
+        } else { 
+            // Supplier updates company + phone number
+            $stmt = $connection->prepare("
+                UPDATE company c
+                JOIN suppliers s ON s.comID = c.comID
+                JOIN userinfo ui ON ui.SupplierID = s.SupplierID
+                SET c.companyName = ?, c.companyPerson = ?
+                WHERE ui.userID = ?
+            ");
+        }
+        $stmt->bind_param("ssi", $name, $empNumber, $id);
+        $stmt->execute();
+        $stmt->close();
+
+        // Update contact
+        $stmt = $connection->prepare("
             UPDATE userinfo SET cont_num=? WHERE userID=?
-          ");
-          $stmt->bind_param("si", $contact, $id);
-          $stmt->execute();
-          $stmt->close();
+        ");
+        $stmt->bind_param("si", $contact, $id);
+        $stmt->execute();
+        $stmt->close();
 
-          $connection->commit();
-          $_SESSION['success'] = "Account updated";
+        $connection->commit();
+        $_SESSION['success'] = "Account updated successfully";
 
-      } catch (Exception $e) {
-          $connection->rollback();
-          $_SESSION['error'] = $e->getMessage();
-      }
+    } catch (Exception $e) {
+        $connection->rollback();
+        $_SESSION['error'] = $e->getMessage();
+    }
 
-      header("Location: admin.php");
-      exit();
-  }
+    header("Location: admin.php");
+    exit();
+}
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deactivate_user'])) {
+    $userID = intval($_POST['userID']);
+    if ($userID > 0) {
+        $stmt = $connection->prepare("UPDATE users SET status='Disabled' WHERE userID=?");
+        $stmt->bind_param("i", $userID);
+        $stmt->execute();
+        $stmt->close();
+    }
+    exit('success');
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reactivate_user'])) {
+    $userID = intval($_POST['userID']);
+    if ($userID > 0) {
+        $stmt = $connection->prepare("UPDATE users SET status='Active' WHERE userID=?");
+        $stmt->bind_param("i", $userID);
+        $stmt->execute();
+        $stmt->close();
+    }
+    exit('success');
+}
   /* ---------- Fetch existing accounts for display in table ---------- */
   $accounts = [];
   try {
-    $sql = "
-  SELECT u.userID, u.username, ur.roleName, ui.cont_num,
-        emp.empName, emp.empNum, com.comName
-  FROM users u
-  JOIN userroles ur ON u.roleID = ur.roleID
-  LEFT JOIN userinfo ui ON u.userID = ui.userID
-  LEFT JOIN employee emp ON ui.empID = emp.empID
-  LEFT JOIN company com ON ui.comID = com.comID
-  WHERE ur.roleName != 'admin'
-  ORDER BY u.userID DESC
-  ";
+$sql = "
+SELECT u.userID, u.username, u.status, ur.roleName, ui.cont_num,
+       emp.empName, emp.empNum, com.companyName
+FROM users u
+JOIN userroles ur ON u.roleID = ur.roleID
+LEFT JOIN userinfo ui ON u.userID = ui.userID
+LEFT JOIN employee emp ON ui.empID = emp.empID
+LEFT JOIN suppliers s ON ui.SupplierID = s.SupplierID
+LEFT JOIN company com ON s.comID = com.comID
+WHERE ur.roleName != 'admin' AND ur.roleName != 'supplier'
+ORDER BY u.userID DESC
+";
+            $res = $connection->query($sql);
+            if ($res) {
+                while ($r = $res->fetch_assoc()) {
+          $displayName = $r['empName'] ?? $r['companyName'] ?? '';
+          $empNumber = $r['empNum'] ?? '';
+          $status = $r['status'] ?? 'Active';
 
-      $res = $connection->query($sql);
-      if ($res) {
-          while ($r = $res->fetch_assoc()) {
-              $displayName = $r['empName'] ?? $r['comName'] ?? '';
-              $empNumber = $r['empNum'] ?? '';
-              $accounts[] = [
-                  'userID' => $r['userID'],
-                  'name' => $displayName,
-                  'empNumber' => $empNumber,
-                  'contact' => $r['cont_num'] ?? '',
-                  'email' => $r['username'],
-                  'role' => ucfirst($r['roleName'])
-              ];
-          }
+          // determine class
+          $rowClass = ($status === 'Disabled') ? 'disabled-row' : '';
+
+          $accounts[] = [
+              'userID' => $r['userID'],
+              'name' => $displayName,
+              'empNumber' => $empNumber,
+              'contact' => $r['cont_num'] ?? '',
+              'email' => $r['username'],
+              'role' => ucfirst($r['roleName']),
+              'status' => $status,
+              'rowClass' => $rowClass   // add this to the array
+          ];
+      }
           $res->free();
       }
   } catch (Exception $e) {
@@ -236,6 +374,39 @@ $stmt->close();
     <link rel="stylesheet" href="dashboard.css" />
     <link rel="stylesheet" href="notification.css">
       <style>
+          .has-dropdown {
+  position: relative;
+}
+
+.has-dropdown .dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: white;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 220px;
+  border-radius: var(--radius);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  z-index: 10;
+}
+
+.has-dropdown:hover .dropdown-menu {
+  display: block;
+}
+
+.has-dropdown .dropdown-menu li {
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.has-dropdown .dropdown-menu li:hover {
+  background-color: #f0f6ff;
+}
+
       /* Minimal styling for registration toggle inside modal to match registration.php look */
       .button-group { display:flex; gap:8px; margin-bottom:12px; }
       .button-group button { padding:8px 12px; border:1px solid #ccc; background:#fff; cursor:pointer; border-radius:6px; }
@@ -265,10 +436,16 @@ $stmt->close();
       <ul class="menu">
         <li id="dashboard"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></li>
         <li id="inventory"><i class="fa-solid fa-boxes-stacked"></i><span>Inventory</span></li>
-        <li id="low-stock"><i class="fa-solid fa-triangle-exclamation"></i><span>Low Stock</span></li>
         <li id="request"><i class="fa-solid fa-file-pen"></i><span>Requests</span></li>
-        <li id="nav-suppliers"><i class="fa-solid fa-truck"></i><span>Suppliers</span></li>
-        <li id="reports"><i class="fa-solid fa-file-lines"></i><span>Reports</span></li>
+          <li class="has-dropdown">
+  <i class="fa-solid fa-file-lines"></i>
+  <span>Reports</span>
+  <ul class="dropdown-menu">
+    <li class="report-link" data-view="inventory-management">Inventory Management</li>
+    <!-- <li class="report-link" data-view="pos-requests">POS Exchange</li> -->
+    <li class="report-link" data-view="expiration-wastage">Expiration / Wastage</li>
+</ul>
+</li>
         <li id="users" class="active"><i class="fa-solid fa-users"></i><span>Users</span></li>
         <li id="settings"><i class="fa-solid fa-gear"></i><span>Settings</span></li>
         <li id="logout"><i class="fa-solid fa-sign-out"></i><span>Log-Out</span></li>
@@ -278,20 +455,22 @@ $stmt->close();
 
     <div class="main">
           <!-- Notification + Profile icon (top-right in main content) -->
-      <div class="topbar-right">
+          <div class="heading-bar">
+        <h1>Accounts Overview</h1><div class="topbar-right">
         <?php include 'notification_component.php'; ?>
         <div class="profile-icon">
           <i class="fa-solid fa-user"></i>
         </div>
-      </div>
-          <div class="heading-bar">
-        <h1>Accounts Overview</h1>   
+      </div>   
       </div>
 
     <div class="container">
     <div class="container-header">
         <h2>Accounts</h2>
-        <button class="add-btn" id="openModalBtn">Add Account</button>
+        <a href="#" class="btn add-account" id="openModalBtn">
+  <i class="fa-solid fa-plus"></i> Add Account
+</a>
+
       </div>
       
       <div class="search-bar">
@@ -303,28 +482,41 @@ $stmt->close();
           <tr>
             <th>Name</th>
             <th>Email</th>
+            <th>Contact</th>
+            <th>Employee Number</th>
             <th>Role</th>
+            <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody id="accountsTbody">
           <!-- Pre-populated server-side rows -->
           <?php foreach ($accounts as $acc): ?>
-            <tr data-id="<?=$acc['userID']?>"
-                data-full-name="<?= htmlspecialchars($acc['name']) ?>"
-                data-emp-number="<?= htmlspecialchars($acc['empNumber']) ?>"
-                data-contact="<?= htmlspecialchars($acc['contact']) ?>"
-                data-email="<?= htmlspecialchars($acc['email']) ?>"
-                data-role="<?= htmlspecialchars($acc['role']) ?>">
-              <td class="cell-name"><?= htmlspecialchars($acc['name']) ?></td>
-              <td class="cell-email"><?= htmlspecialchars($acc['email']) ?></td>
-              <td class="cell-role"><?= htmlspecialchars($acc['role']) ?></td>
-              <td>
-                <button class="action-btn edit-btn">Edit</button>
-                <button class="action-btn delete-btn">Delete</button>
-              </td>
-            </tr>
+          <tr class="<?= $acc['rowClass'] ?>"
+              data-id="<?= $acc['userID'] ?>"
+              data-full-name="<?= htmlspecialchars($acc['name']) ?>"
+              data-emp-number="<?= htmlspecialchars($acc['empNumber']) ?>"
+              data-contact="<?= htmlspecialchars($acc['contact']) ?>"
+              data-email="<?= htmlspecialchars($acc['email']) ?>"
+              data-role="<?= htmlspecialchars($acc['role']) ?>"
+              data-status="<?= htmlspecialchars($acc['status'] ?? 'Active') ?>">
+            <td class="cell-name"><?= htmlspecialchars($acc['name']) ?></td>
+            <td class="cell-email"><?= htmlspecialchars($acc['email']) ?></td>
+            <td class="cell-email"><?= htmlspecialchars($acc['contact']) ?></td>
+            <td class="cell-email"><?= htmlspecialchars($acc['empNumber'] ?? '--') ?></td>
+            <td class="cell-role"><?= htmlspecialchars($acc['role']) ?></td>
+            <td class="cell-status"><?= htmlspecialchars($acc['status'] ?? 'Active') ?></td>
+            <td>
+            <?php if($acc['status'] === 'Disabled'): ?>
+                <button class="action-btn reactivate-btn">Reactivate</button>
+            <?php else: ?>
+                <button class="action-btn edit-btn"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
+                <button class="action-btn delete-btn"><i class="fa-solid fa-trash"></i> Delete</button>
+            <?php endif; ?>
+            </td>
+          </tr>
           <?php endforeach; ?>
+
         </tbody>
       </table>
     </div>
@@ -338,7 +530,9 @@ $stmt->close();
         <div class="form-box">
           <div class="button-group">
             <button id="employeeBtn" type="button" class="active">Employee</button>
+            
             <button id="supplierBtn" type="button">Supplier</button>
+           
           </div>
 
           <form id="registrationForm" method="post" action="admin.php">
@@ -415,14 +609,14 @@ $stmt->close();
         </div>
           </form>
 
-        <!-- <div class="single-field">
+        <div class="single-field">
           <label class="field-label" for="editRole">Role:</label>
           <select id="editRole">
             <option value="">Select Role</option>
             <option value="Employee">Employee</option>
             <option value="Supplier">Supplier</option>
           </select>
-        </div> -->
+        </div>
 
         <div class="modal-actions">
           <button class="cancel-btn" id="closeEditModal">Cancel</button>
@@ -443,6 +637,15 @@ $stmt->close();
       </div>
     </div>
 
+  <div class="modal" id="errorModal" aria-hidden="true" role="dialog" aria-modal="true" style="display:none;">
+    <div class="modal-content">
+      <h3>Error</h3>
+      <p id="errorMessage" style="color:#b00;"></p>
+      <div class="modal-actions">
+        <button class="save-btn" id="closeErrorModal" style="background-color:#007bff;">OK</button>
+      </div>
+    </div>
+  </div>
     <!-- Success Popup -->
     <div id="popup" class="popup">
       <div class="popup-content">
@@ -452,10 +655,33 @@ $stmt->close();
     </div>
 
     <?php if (isset($_SESSION['error'])): ?>
-      <div class="error-message"><?php echo $_SESSION['error']; unset($_SESSION['error']); ?></div>
-    <?php endif; ?>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const errorModal = document.getElementById('errorModal');
+    const errorMessage = document.getElementById('errorMessage');
+    const closeErrorBtn = document.getElementById('closeErrorModal');
 
-      <script src="sidebar.js"></script>
+    errorMessage.innerHTML = <?= json_encode($_SESSION['error']) ?>;
+    errorModal.style.display = 'flex';
+    errorModal.setAttribute('aria-hidden', 'false');
+
+    closeErrorBtn.addEventListener('click', () => {
+      errorModal.style.display = 'none';
+      errorModal.setAttribute('aria-hidden', 'true');
+    });
+
+    // optional: click outside modal to close
+    window.addEventListener('click', (e) => {
+      if (e.target === errorModal) {
+        errorModal.style.display = 'none';
+        errorModal.setAttribute('aria-hidden', 'true');
+      }
+    });
+  });
+</script>
+<?php unset($_SESSION['error']); endif; ?>
+
+    <script src="sidebar.js"></script>
 
     <script>
       // DOM refs
@@ -583,49 +809,92 @@ $stmt->close();
 
       // event delegation for edit/delete buttons inside tbody
       accountsTbody.addEventListener('click', (e) => {
-        const tr = e.target.closest('tr');
-        if (!tr) return;
+    const tr = e.target.closest('tr');
+    if (!tr) return;
+    const userID = tr.dataset.id;
+    const actionsCell = tr.querySelector('td:last-child');
+    const statusCell = tr.querySelector('.cell-status');
 
-        if (e.target.classList.contains('edit-btn')) {
-          // fill edit form
-          editingRow = tr;
-          document.getElementById('editUserID').value = tr.dataset.id;
-          editFullName.value = tr.dataset.fullName || '';
-          editEmpNumber.value = tr.dataset.empNumber || '';
-          editContact.value = tr.dataset.contact || '';
-          editEmail.value = tr.dataset.email || '';
-          // editRole.value = tr.dataset.role || '';
-          openModal(editModal);
-        }
+    // EDIT
+    if (e.target.classList.contains('edit-btn')) {
+        editingRow = tr;
+        document.getElementById('editUserID').value = tr.dataset.id;
+        editFullName.value = tr.dataset.fullName || '';
+        editEmpNumber.value = tr.dataset.empNumber || '';
+        editContact.value = tr.dataset.contact || '';
+        editEmail.value = tr.dataset.email || '';
+        openModal(editModal);
+    }
 
-        if (e.target.classList.contains('delete-btn')) {
-          deletingRow = tr;
-          openModal(deleteModal);
-        }
-      });
+    // DELETE / DEACTIVATE
+    if (e.target.classList.contains('delete-btn')) {
+        if (!confirm("Are you sure you want to deactivate this account?")) return;
+        fetch('admin.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: `deactivate_user=1&userID=${userID}`
+        })
+        .then(res => res.text())
+        .then(data => {
+            if (data.trim() === 'success') {
+                statusCell.textContent = 'Disabled';
+                tr.classList.add('disabled-row');
 
+                // Swap buttons: replace Edit/Delete with Reactivate
+                actionsCell.innerHTML = `<button class="action-btn reactivate-btn">Reactivate</button>`;
+            } else {
+                alert('Error deactivating account: ' + data);
+            }
+        }).catch(err => { console.error(err); alert('Error deactivating account.'); });
+    }
+
+    // REACTIVATE
+    if (e.target.classList.contains('reactivate-btn')) {
+        if (!confirm("Are you sure you want to reactivate this account?")) return;
+        fetch('admin.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: `reactivate_user=1&userID=${userID}`
+        })
+        .then(res => res.text())
+        .then(data => {
+            if (data.trim() === 'success') {
+                statusCell.textContent = 'Active';
+                tr.classList.remove('disabled-row');
+
+                // Swap buttons: replace Reactivate with Edit/Delete
+                actionsCell.innerHTML = `
+                    <button class="action-btn edit-btn">Edit</button>
+                    <button class="action-btn delete-btn">Delete</button>
+                `;
+            } else {
+                alert('Failed to reactivate user: ' + data);
+            }
+        }).catch(err => { console.error(err); alert('Error reactivating user.'); });
+    }
+});
       // save edit
-      // editSaveBtn.addEventListener('click', () => {
-      //   if (!editingRow) return;
-      //   // basic validation
-      //   if (!editFullName.value.trim()) { alert('Please enter full name'); editFullName.focus(); return; }
-      //   if (!editEmail.value.trim()) { alert('Please enter email'); editEmail.focus(); return; }
-      //   // if (!editRole.value) { alert('Please select a role'); editRole.focus(); return; }
+      editSaveBtn.addEventListener('click', () => {
+        if (!editingRow) return;
+        // basic validation
+        if (!editFullName.value.trim()) { alert('Please enter full name'); editFullName.focus(); return; }
+        if (!editEmail.value.trim()) { alert('Please enter email'); editEmail.focus(); return; }
+        // if (!editRole.value) { alert('Please select a role'); editRole.focus(); return; }
 
-      //   // update cells and dataset
-      //   editingRow.dataset.fullName = editFullName.value.trim();
-      //   editingRow.dataset.empNumber = editEmpNumber.value.trim();
-      //   editingRow.dataset.contact = editContact.value.trim();
-      //   editingRow.dataset.email = editEmail.value.trim();
-      //   // editingRow.dataset.role = editRole.value;
+        // update cells and dataset
+        editingRow.dataset.fullName = editFullName.value.trim();
+        editingRow.dataset.empNumber = editEmpNumber.value.trim();
+        editingRow.dataset.contact = editContact.value.trim();
+        editingRow.dataset.email = editEmail.value.trim();
+        // editingRow.dataset.role = editRole.value;
 
-      //   editingRow.querySelector('.cell-name').textContent = editingRow.dataset.fullName;
-      //   editingRow.querySelector('.cell-email').textContent = editingRow.dataset.email;
-      //   editingRow.querySelector('.cell-role').textContent = editingRow.dataset.role;
+        editingRow.querySelector('.cell-name').textContent = editingRow.dataset.fullName;
+        editingRow.querySelector('.cell-email').textContent = editingRow.dataset.email;
+        editingRow.querySelector('.cell-role').textContent = editingRow.dataset.role;
 
-      //   editingRow = null;
-      //   closeModal(editModal);
-      // });
+        editingRow = null;
+        closeModal(editModal);
+      });
       editSaveBtn.addEventListener('click', () => {
           const editForm = document.getElementById('editForm');
 
@@ -648,12 +917,35 @@ $stmt->close();
 
       // delete confirm
       confirmDeleteBtn.addEventListener('click', () => {
-        if (!deletingRow) return;
-        deletingRow.remove();
+    if (!deletingRow) return;
+    
+    const userID = deletingRow.dataset.id;
+
+    fetch('admin.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: `deactivate_user=1&userID=${userID}`
+    })
+    .then(res => res.text())
+    .then(data => {
+        if (data.trim() === 'success') {
+            // only now update UI
+    if (data.trim() === 'success') {
+        deletingRow.querySelector('.cell-status').textContent = 'Disabled';
+        deletingRow.classList.add('disabled-row'); // add the gray-out class
+    }        
+    } else {
+            alert('Error deactivating account: ' + data);
+        }
         deletingRow = null;
         closeModal(deleteModal);
-      });
-      closeDeleteBtn.addEventListener('click', () => { deletingRow = null; closeModal(deleteModal); });
+    })
+    .catch(err => {
+        alert('Error deactivating account');
+        console.error(err);
+    });
+});
+            closeDeleteBtn.addEventListener('click', () => { deletingRow = null; closeModal(deleteModal); });
 
       // click outside modal to close
       window.addEventListener('click', (e) => {
@@ -719,6 +1011,51 @@ $stmt->close();
         // Close the add modal if it's open
         closeModal(addModal);
       });
+      // Toggle dropdown
+$("#reports").click(function(e){
+    e.stopPropagation();
+    $(this).toggleClass("active");
+});
+
+// Close dropdown when clicking outside
+$(document).click(function(e){
+    if(!$(e.target).closest("#reports").length){
+        $("#reports").removeClass("active");
+    }
+});
+
+// Report item click loads the view
+$(".report-link").click(function(){
+    const view = $(this).data("view");
+    $("#view-title").text($(this).text());
+    $("#view-content").removeClass("cards-container").html(views[view]);
+    validateInventoryReport();
+    $("#reports").removeClass("active"); // close dropdown
+});
+// Report item click loads the view directly in main content
+$(".report-link").click(function(e){
+    e.stopPropagation(); // prevent bubbling
+    const view = $(this).data("view");
+    $("#view-title").text($(this).text());
+    $("#view-content").removeClass("cards-container").html(views[view]);
+    validateInventoryReport(); // update summary colors if needed
+});
+// Map data-view values to report URLs
+const reportLinks = {
+    "inventory-management": "report_inventory.php",
+    "pos-requests": "report_pos.php",
+    "expiration-wastage": "report_expiration.php"
+};
+
+// Attach click event
+document.querySelectorAll(".report-link").forEach(link => {
+    link.addEventListener("click", () => {
+        const view = link.dataset.view;
+        const href = reportLinks[view];
+        if(href) window.location.href = href;
+    });
+});
+
     </script>
 
   </body>

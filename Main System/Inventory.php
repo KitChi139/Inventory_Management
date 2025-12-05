@@ -379,6 +379,42 @@ try {
 .alert.success { background:#e8fff4; color:#0d6b4d; }
 .alert.error { background:#ffe9e9; color:#a10f1d; }
 .alert.warning { background:#fff7e5; color:#8a6a00; }
+/* Universal dropdown for Reports */
+  .has-dropdown {
+    position: relative;
+  }
+
+  /* Dropdown menu hidden by default */
+  .has-dropdown .dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%; /* Below the nav item */
+    left: 0;
+    background: white;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    min-width: 220px;
+    border-radius: var(--radius);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    z-index: 10;
+  }
+
+  /* Show dropdown on hover */
+  .has-dropdown:hover .dropdown-menu {
+    display: block;
+  }
+
+  /* Dropdown items */
+  .has-dropdown .dropdown-menu li {
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  .has-dropdown .dropdown-menu li:hover {
+    background-color: #f0f6ff;
+  }
 </style>
 </head>
 <body>
@@ -390,33 +426,48 @@ try {
     </div>
     <button class="toggle" id="toggleBtn"><i class="fa-solid fa-bars"></i></button>
   </div>
-  <ul class="menu">
-    <li id="dashboard"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></li>
-    <li id="inventory" class="active"><i class="fa-solid fa-boxes-stacked"></i><span>Inventory</span></li>
-    <li id="low-stock"><i class="fa-solid fa-triangle-exclamation"></i><span>Low Stock</span></li>
-    <li id="request"><i class="fa-solid fa-file-pen"></i><span>Requests</span></li>
-    <li id="nav-suppliers"><i class="fa-solid fa-truck"></i><span>Suppliers</span></li>
-    <li id="reports"><i class="fa-solid fa-file-lines"></i><span>Reports</span></li>
-    <?php if ($_SESSION['roleName'] === 'Admin'): ?>
-      <li id="users"><i class="fa-solid fa-users"></i><span>Users</span></li>
-    <?php endif; ?>    <li id="settings"><i class="fa-solid fa-gear"></i><span>Settings</span></li>
-    <li id="logout"><i class="fa-solid fa-sign-out"></i><span>Log-Out</span></li>
-  </ul>
+      <ul class="menu">
+        <li id="dashboard"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></li>
+        <li id="inventory" class="active"><i class="fa-solid fa-boxes-stacked"></i><span>Inventory</span></li>
+            <li id="request"><i class="fa-solid fa-file-pen"></i><span>Requests</span></li>
+    <li class="nav-reports has-dropdown">
+    <i class="fa-solid fa-file-lines"></i><span>Reports</span>
+    <ul class="dropdown-menu" >
+  <li id="inventorymanagement">
+    <a class="report-link">Inventory Management</a>
+  </li>
+  <!-- <li>
+    <a class="report-link" href="report_pos.php">POS Exchange</a>
+  </li> -->
+  <li id="expirationwastage">
+    <a class="report-link">Expiration / Wastage</a>
+  </li>
+
+
+    </ul>
+  </li>
+
+        <?php if ($_SESSION['roleName'] === 'Admin'): ?>
+        <li id="users"><i class="fa-solid fa-users"></i><span>Users</span></li>
+        <?php endif; ?>
+        <li id="settings"><i class="fa-solid fa-gear"></i><span>Settings</span></li>
+        <li id="logout"><i class="fa-solid fa-sign-out"></i><span>Log-Out</span></li>
+      </ul>
 </aside>
 
 <main class="main">
-  <!-- Notification + Profile icon (top-right in main content) -->
-  <div class="topbar-right">
+
+
+  <!-- Heading Bar -->
+  <div class="heading-bar">
+    <h1>Inventory</h1>
+    
+     <div class="topbar-right">
     <?php include 'notification_component.php'; ?>
     <div class="profile-icon">
       <i class="fa-solid fa-user"></i>
     </div>
   </div>
-
-  <!-- Heading Bar -->
-  <div class="heading-bar">
-    <h1>Inventory</h1>
-    <a href="#" class="btn add-item"><i class="fa-solid fa-plus"></i> Add Item</a>
   </div>
 
   <!-- flash alerts -->
@@ -426,7 +477,7 @@ try {
     <?php endforeach; $_SESSION['flash']=[]; ?>
   </div>
 
-  <section class="cards" style="margin-top: 0;">
+  <!-- <section class="cards" style="margin-top: 0;">
     <div class="card"><h4>Total Items per Product</h4><p><?= (int)$total_items ?></p></div>
 <div class="card red">
       <h4>Low Stock Alerts</h4>
@@ -437,7 +488,7 @@ try {
       <p><?= (int)($total_low_and_out - $low_stock) ?></p>
     </div>
     <div class="card yellow"><h4>Pending Requests</h4><p><?= (int)$pending_requests ?></p></div>
-  </section>
+  </section> -->
 
   <section class="content-grid" style="margin-top: 20px;">
     <div class="table-panel box">
@@ -608,8 +659,9 @@ try {
         <p style="font-size: 18px;">Select items and submit requests for your department.</p>
 
         <table id="qr-table" class="qr-table">
-          <thead><tr><th>Item</th><th>Quantity</th><th>Action</th></tr></thead>
+          <thead><tr><th>Item</th><th>Quantity</th><th>Supplier</th><th>Action</th></tr></thead>
           <tbody id="qr-items"><tr class="empty"><td colspan="3" style="text-align:center;color:#999; font-size: 16px;">No items selected</td></tr></tbody>
+            
         </table>
         <div class="qr-summary">
           <p><strong>Total Items:</strong> <span id="qr-total">0</span></p>
@@ -940,11 +992,26 @@ function filterTable() {
       $tbody.append(`<tr class="empty"><td colspan="3" style="text-align:center;color:#999;">No items selected</td></tr>`);
     } else {
       qrItems.forEach(item => {
+        const supplierOptions = `<?php
+          $supRes = $conn->query("SELECT s.SupplierID, c.CompanyName FROM suppliers s JOIN company c ON s.comID = c.comID WHERE s.Status='active' ORDER BY c.CompanyName");
+          $opts = '';
+          while ($sup = $supRes->fetch_assoc()) {
+            $opts .= "<option value='{$sup['SupplierID']}'" . ($sup['SupplierID'] == "'+item.supplier+'"? ' selected':'') . ">{$sup['CompanyName']}</option>";
+          }
+          echo $opts;
+        ?>`;
+
         $tbody.append(`
           <tr data-productid="${item.productId}">
             <td>${item.name}</td>
             <td><input type="number" min="1" value="${item.quantity}" class="qr-qty"></td>
-            <td><button class="btn small danger remove-qr"><i class="fa-solid fa-xmark"></i></button></td>
+            <td>
+              <select class="qr-supplier" required>
+                <option value="">Select Supplier</option>
+                ${supplierOptions}
+              </select>
+            </td>
+            <td>...</td>
           </tr>
         `);
       });
@@ -960,18 +1027,24 @@ function filterTable() {
     if (this.checked) {
         // Add to QR if not already there
         if (!qrItems.some(i => i.productId === productId)) {
-            qrItems.push({ productId, name: productName, quantity: 1 });
-        }
+        // Add default supplier as empty string
+        qrItems.push({ productId, name: productName, quantity: 1, supplier: '' });
+      }
     } else {
         // Remove from QR
         qrItems = qrItems.filter(i => i.productId !== productId);
     }
-
     refreshQRTable();
     const all = document.querySelectorAll(".item-check");
     const checked = document.querySelectorAll(".item-check:checked");
     document.getElementById("select-all").checked = all.length === checked.length;
   });
+      // Update supplier on change
+    $(document).on("change", ".qr-supplier", function() {
+      const productId = $(this).closest("tr").data("productid");
+      const supplierId = $(this).val();
+      qrItems = qrItems.map(i => i.productId === productId ? { ...i, supplier: supplierId } : i);
+    });
 
     // Toggle all checkboxes when "Select All" is clicked
   document.getElementById("select-all").addEventListener("change", function () {
@@ -1033,29 +1106,71 @@ $("#clear-qr").click(() => {
     $(".item-check, #select-all").prop("checked", false);
     refreshQRTable();
 });
+  // $("#submit-qr").click(() => {
+  //   if (!qrItems.length) return alert("Please select at least one item.");
+  //   if (!confirm("Submit this request?")) return;
+  //   $.post("quick_request.php", { items: JSON.stringify(qrItems) }, res => {
+  //     // try { res = JSON.parse(res); } catch (e) { return alert("Unexpected response."); } 
+  //     if (res.success) { alert("Request submitted successfully!"); qrItems = []; refreshQRTable(); }
+  //     else alert("Error: " + (res.message || "failed"));
+  //   }).fail(() => alert("Failed to send request."));
+  // });
   $("#submit-qr").click(() => {
+    for (let i of qrItems) {
+    if (!i.supplier) {
+      return alert(`Please select a supplier for ${i.name}`);
+    }
+  }
+
     if (!qrItems.length) return alert("Please select at least one item.");
     if (!confirm("Submit this request?")) return;
+    
     $.post("quick_request.php", { items: JSON.stringify(qrItems) }, res => {
-      // try { res = JSON.parse(res); } catch (e) { return alert("Unexpected response."); } 
-      if (res.success) { alert("Request submitted successfully!"); qrItems = []; refreshQRTable(); }
-      else alert("Error: " + (res.message || "failed"));
+      if (res.success) { 
+        alert("Request submitted successfully!"); 
+        qrItems = []; 
+        refreshQRTable(); 
+      } else alert("Error: " + (res.message || "failed"));
     }).fail(() => alert("Failed to send request."));
   });
   refreshQRTable();
 
   // Nav
-  $("#dashboard").click(function(){ window.location.href = "dashboard.php"; });
-  $("#inventory").click(function(){ window.location.href = "Inventory.php"; });
-  $("#low-stock").click(function(){ window.location.href = "lowstock.php"; });
-  $("#request").click(function(){ window.location.href = "request_list.php"; });
-  $("#nav-suppliers").click(function(){ window.location.href = "supplier.php"; });
-  $("#reports").click(function(){ window.location.href = "report.php"; });
-  $("#users").click(function(){ window.location.href = "admin.php"; });
-  $("#settings").click(function(){ window.location.href = "settings.php"; });
-  $("#logout").click(function(){ window.location.href = "logout.php"; });
+      $(document).ready(function () {
+        //Navigation
+        $("#dashboard").click(function(){ window.location.href = "dashboard.php"; });
+        $("#inventory").click(function(){ window.location.href = "Inventory.php";});
+        $("#request").click(function(){ window.location.href = "request_list.php";});
+        $("#inventorymanagement").click(function(){ window.location.href = "report_inventory.php";});
+        $("#expirationwastage").click(function(){ window.location.href = "report_expiration.php";});
+  $(document).ready(function(){
+    const current = window.location.pathname.split("/").pop(); // e.g., report_inventory.php
 
-      
+    $(".report-link").each(function(){
+      const link = $(this).attr("href");
+      if(link === current){
+        $(this).addClass("active");
+        $("#reports").addClass("active"); // open dropdown
+      }
+    });
+  });
+
+        $("#users").click(function(){ window.location.href = "admin.php"; });
+        $("#settings").click(function(){ window.location.href = "settings.php"; });
+        $("#logout").click(function(){ window.location.href = "logout.php"; });
+      });
+
+       $(document).on("click", ".report-link", function(e){
+      e.stopPropagation();
+      const view = $(this).data("view");
+      $("#view-title").text($(this).text());
+      $("#view-content").removeClass("cards-container").html(views[view]);
+      validateInventoryReport(); // optional for Inventory report
+  }); 
+$("#reports").click(function(e){
+    e.stopPropagation();
+    $(this).toggleClass("active");
+});
 
 });
 document.addEventListener('DOMContentLoaded', () => {

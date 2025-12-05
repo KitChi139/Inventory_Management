@@ -49,14 +49,14 @@
   justify-content: space-between;
   align-items: center;
   background: #fff;
-  padding: 22px 26px;
+  padding: 16px 20px;   /* reduced padding */
   border-radius: var(--radius);
   box-shadow: var(--card-shadow);
-  margin-bottom: var(--gap);
+  margin-bottom: 15px;  /* reduced margin */
 }
 
 .heading-bar h1 {
-  font-size: 42px;
+  font-size: 32px;      /* slightly smaller */
   font-weight: 700;
   color: var(--primary);
 }
@@ -64,29 +64,30 @@
 /* DASHBOARD CARDS */
 .cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: var(--gap);
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 15px;            /* reduced gap */
+  margin-bottom: 20px;  /* add bottom spacing for separation */
 }
 
 .card {
   background: white;
   border-radius: var(--radius);
-  padding: 24px;
+  padding: 18px;        /* reduced padding */
   box-shadow: var(--card-shadow);
-  border-top: 4px solid #043873;
+  border-top: 3px solid #043873;
 }
 
 .card.red { border-top-color: #ff4d4f; }
 .card.yellow { border-top-color: #ffb100; }
 
 .card h4 {
-  font-size: 20px;
+  font-size: 14px;
   color: #666;
-  margin-bottom: 10px;
+  margin-bottom: 6px;   /* tighter spacing */
 }
 
 .card p {
-  font-size: 52px;
+  font-size: 26px;      /* slightly smaller */
   font-weight: 700;
   color: #043873;
 }
@@ -102,34 +103,38 @@
 .box {
   background: white;
   border-radius: var(--radius);
-  padding: 24px;
+  padding: 18px;        /* reduced padding */
   box-shadow: var(--card-shadow);
-  min-height: 330px;  /* Makes boxes taller and even */
+  min-height: 280px;    /* reduced height */
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
 }
 
 .box.expiration {
-    justify-content: flex-start !important;
-    min-height: auto !important;
+  justify-content: flex-start !important;
+  min-height: auto !important;
+  padding: 18px;              /* reduce padding */
+}
+
+.box.expiration h4 {
+  margin-bottom: 8px;         /* tighter spacing */
 }
 
 .box.expiration p {
-    margin-bottom: 6px !important;
+  margin-bottom: 4px;         /* reduce gap below description */
+  font-size: 16px;
 }
-
 .box h4 {
   color: #043873;
-  margin-bottom: 10px;
-  font-size: 24px;
+  margin-bottom: 8px;   /* tighter spacing */
+  font-size: 20px;
   font-weight: 600;
 }
-
 .box p {
-  font-size: 18px;
+  font-size: 16px;
   color: #666;
-  margin-bottom: 8px;
+  margin-bottom: 6px;   /* tighter spacing */
 }
 
 
@@ -179,10 +184,10 @@
   background: #043873;
   color: white;
   text-align: center;
-  padding: 10px 16px;
-  margin-top: 12px;
+  padding: 8px 14px;    /* reduced padding */
+  margin-top: 8px;      /* reduced margin */
   border-radius: 6px;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 500;
   text-decoration: none;
   transition: background 0.3s;
@@ -197,11 +202,10 @@
 
 /* === DASHBOARD 2x2 GRID === */
 .dashboard-grid {
-    display: grid;
-  grid-template-columns: repeat(2, 1fr); /* Two columns */
-  grid-template-rows: repeat(2, 1fr);    /* Two rows */
-  gap: 25px;
-  margin-top: 25px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;            /* reduced gap */
+  margin-top: 20px;     /* reduced margin */
 }
 
 /* STOCK STATUS SECTION */
@@ -221,7 +225,7 @@
 }
 
 .stock-status .status-item {
-  margin-bottom: 18px;
+  margin-bottom: 12px;  /* reduced spacing */
 }
 
 .stock-status .status-label {
@@ -231,8 +235,9 @@
   font-size: 18px;
   font-weight: 600;
   color: #222;
-  margin-bottom: 6px;
+  margin-bottom: 4px;   /* tighter spacing */
 }
+
 
 .stock-status .details {
   font-size: 14px;
@@ -291,3 +296,43 @@
     border-radius: 50%;
     font-weight: bold;
 }
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 cards per row */
+  gap: 25px; /* spacing between cards */
+}
+
+.tag-urgent {
+  background: #c4162e;
+  color: #fff;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin-left: 6px;
+}
+
+@media (max-width: 1200px) {
+  .cards {
+    grid-template-columns: repeat(2, 1fr); /* 2 cards per row on medium screens */
+  }
+}
+
+@media (max-width: 700px) {
+  .cards {
+    grid-template-columns: 1fr; /* 1 card per row on small screens */
+  }
+}
+
+.tag {
+    padding:3px 8px;
+    border-radius:6px;
+    font-size:12px;
+    font-weight:600;
+    color:white;
+}
+
+.tag.good { background:#2ecc71; }   /* Green */
+.tag.low  { background:#f39c12; }   /* Yellow / Orange */
+.tag.out  { background:#e74c3c; }   /* Red */
