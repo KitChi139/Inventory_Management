@@ -367,12 +367,12 @@ ORDER BY u.userID DESC
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Dashboard</title>
-    <link rel="stylesheet" href="admin.css" />
+    <link rel="stylesheet" href="styles/admin.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <link rel="stylesheet" href="sidebar.css" />
-    <link rel="stylesheet" href="dashboard.css" />
-    <link rel="stylesheet" href="notification.css">
+    <link rel="stylesheet" href="styles/sidebar.css" />
+    <link rel="stylesheet" href="styles/dashboard.css" />
+    <link rel="stylesheet" href="styles/notification.css">
       <style>
           .has-dropdown {
   position: relative;
@@ -406,7 +406,25 @@ ORDER BY u.userID DESC
 .has-dropdown .dropdown-menu li:hover {
   background-color: #f0f6ff;
 }
+.profile-icon {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
 
+.profile-icon i {
+    font-size: 30px;
+    color: #007bff;
+}
+
+.profile-info p {
+    margin: 0;
+    font-weight: 600;
+}
+
+.profile-info small {
+    color: #666;
+}
       /* Minimal styling for registration toggle inside modal to match registration.php look */
       .button-group { display:flex; gap:8px; margin-bottom:12px; }
       .button-group button { padding:8px 12px; border:1px solid #ccc; background:#fff; cursor:pointer; border-radius:6px; }
@@ -457,10 +475,12 @@ ORDER BY u.userID DESC
           <!-- Notification + Profile icon (top-right in main content) -->
           <div class="heading-bar">
         <h1>Accounts Overview</h1><div class="topbar-right">
-        <?php include 'notification_component.php'; ?>
-        <div class="profile-icon">
-          <i class="fa-solid fa-user"></i>
-        </div>
+        <div class="profile-container">
+      <i class="fa-solid fa-user profile-icon"></i>
+      <div class="profile-info">
+        <small><?= htmlspecialchars(ucfirst($_SESSION['role'] ?? 'employee')) ?></small>
+      </div>
+    </div>
       </div>   
       </div>
 

@@ -203,7 +203,6 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <link rel="stylesheet" href="styles/sidebar.css" />
     <link rel="stylesheet" href="styles/dashboard.css" />
-    <link rel="stylesheet" href="styles/notification.css">
 
 
     <style>
@@ -305,17 +304,18 @@
     </aside>
 
     <main class="main">
-      <!-- Notification + Profile icon (top-right in main content) -->
 
 
       <!-- Heading Bar -->
       <div class="heading-bar">
         <h1>Dashboard Overview</h1>
         <div class="topbar-right">
-        <?php include 'notification_component.php'; ?>
-        <div class="profile-icon">
-          <i class="fa-solid fa-user"></i>
-        </div>
+        <div class="profile-container">
+      <i class="fa-solid fa-user profile-icon"></i>
+      <div class="profile-info">
+        <small><?= htmlspecialchars(ucfirst($_SESSION['role'] ?? 'employee')) ?></small>
+      </div>
+    </div>
       </div>   
       </div>
 
@@ -674,7 +674,6 @@
   });
 
     </script>
-    <script src="notification.js" defer></script>
 
   </body>
   </html>

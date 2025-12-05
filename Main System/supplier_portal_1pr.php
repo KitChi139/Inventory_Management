@@ -130,7 +130,7 @@ if (isset($_POST['decline_request'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Supplier Portal - MediSync</title>
-    <link rel="stylesheet" href="supplier_portal.css">
+    <link rel="stylesheet" href="styles/supplier_portal.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 </head>
@@ -208,8 +208,6 @@ if (isset($_POST['decline_request'])) {
             <option value="Antihistamines / Antiallergics">Antihistamines / Antiallergics</option>
             <option value="Antacids / Antiulcerants">Antacids / Antiulcerants</option>
         </select>
-        <!-- Optional: include only if you want date filtering -->
-        <input type="date" id="dateFilter" />
         <button class="btn btn-secondary" onclick="clearFilters()">Clear</button>
         </div>
                 

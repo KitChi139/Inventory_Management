@@ -10,11 +10,12 @@
 
 /* TOPBAR Right */
 .topbar-right {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 10px;
-    justify-content: flex-end;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+  flex-shrink: 0;
 }
 
 .messages-btn {
@@ -56,23 +57,22 @@
 }
 
 .profile-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: #043873;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    cursor: pointer;
-    transition: 0.2s;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #043873;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+  transition: 0.2s;
 }
 
 .profile-icon:hover {
-    background: #4f9cf9;
+  background: #4f9cf9;
 }
-
 /* Main Content styles are in sidebar.css */
 
 /* Top Bar */
