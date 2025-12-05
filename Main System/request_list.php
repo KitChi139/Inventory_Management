@@ -168,17 +168,18 @@ $suppliers = $conn->query("SELECT DISTINCT CompanyName FROM company WHERE Compan
     <!-- Main Content -->
     <main class="main">
 
-        <div class="heading-bar">
-            <h1>Request List</h1>   
-            <div class="topbar-right">
-            <div class="profile-container">
-            <i class="fa-solid fa-user profile-icon"></i>
-            <div class="profile-info">
-                <small><?= htmlspecialchars(ucfirst($_SESSION['role'] ?? 'employee')) ?></small>
-            </div>
-            </div>
-        </div>
-        </div>
+          <div class="heading-bar">
+    <h1>Request List</h1>
+    
+     <div class="topbar-right">
+     <div class="profile-container">
+      <i class="fa-solid fa-user profile-icon"></i>
+      <div class="profile-info">
+        <small><?= htmlspecialchars(ucfirst($_SESSION['role'] ?? 'employee')) ?></small>
+      </div>
+    </div>
+  </div>
+  </div>
 
         <!-- Statistics Cards -->
         <section class="stats-cards">
