@@ -1,7 +1,6 @@
 <?php
 require 'db_connect.php';
 
-// Get latest counts
 $newMessages = (int)$conn->query("SELECT COUNT(*) AS total FROM messages WHERE status='Pending'")->fetch_assoc()['total'];
 $lowStock    = (int)$conn->query("SELECT COUNT(*) AS total FROM inventory WHERE Quantity <= 5")->fetch_assoc()['total'];
 

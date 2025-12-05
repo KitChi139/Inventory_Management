@@ -2,20 +2,16 @@
 require_once 'db_connect.php';
 if (session_status() == PHP_SESSION_NONE) session_start();
 
-// Protect page - require login
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
     header("Location: login.php");
     exit();
 }
 
-// Fetch popup message if any
 $popupMessage = $_SESSION['popupMessage'] ?? '';
 unset($_SESSION['popupMessage']);
 
-// Fetch categories
 $categories = $conn->query("SELECT CategoryID, Category_Name FROM categories ORDER BY Category_Name")->fetch_all(MYSQLI_ASSOC);
 
-// Fetch units
 $units = $conn->query("SELECT UnitID, UnitName FROM units ORDER BY UnitName")->fetch_all(MYSQLI_ASSOC);
 ?>
 <!DOCTYPE html>
@@ -29,21 +25,17 @@ $units = $conn->query("SELECT UnitID, UnitName FROM units ORDER BY UnitName")->f
 <link rel="stylesheet" href="styles/notification.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
-/* Scrollable table */
+
 .table-container { max-height:400px; overflow-y:auto; border:1px solid #ccc; border-radius:8px; margin-top:10px; }
 .table-container table { width:100%; border-collapse:collapse; }
 .table-container thead th { position:sticky; top:0; background:#f1f1f1; z-index:10; padding:10px; text-align:left; }
 .table-container tbody td { padding:10px; border-bottom:1px solid #ddd; }
 .table-container tbody tr:hover { background:#f5f5f5; }
-
-/* Tabs */
 .tab { display:none; }
 .tab.active { display:block; }
 .tab-buttons { margin:20px 0; }
 .tab-btn { padding:8px 16px; margin-right:5px; cursor:pointer; border:none; background:#f1f1f1; border-radius:5px; font-weight:600; }
 .tab-btn.active { background:#0b66a1; color:white; }
-
-/* Buttons */
 .add-btn { background:#0b66a1; color:#fff; padding:8px 16px; border:none; border-radius:6px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px; margin-bottom:10px; }
 .edit-btn:hover {
   background-color: #218838;
@@ -71,7 +63,6 @@ $units = $conn->query("SELECT UnitID, UnitName FROM units ORDER BY UnitName")->f
   background-color: #c82333;
 }
 
-/* Modals */
 .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.35); justify-content:center; align-items:center; z-index:2000; }
 .modal-content { background:white; width:400px; padding:20px; border-radius:12px; }
 .modal-content form { display:flex; flex-direction:column; gap:12px; }
@@ -81,8 +72,6 @@ $units = $conn->query("SELECT UnitID, UnitName FROM units ORDER BY UnitName")->f
 .save-btn:hover { background:#095086; }
 .close-btn { background:#444; color:white; border:none; padding:6px 12px; border-radius:5px; cursor:pointer; }
 .close-btn:hover { background:#222; }
-
-/* Dropdown */
 .has-dropdown { position: relative; }
 .has-dropdown > a { display: flex; align-items: center; }
 .has-dropdown .dropdown-menu { display:none; position:absolute; top:100%; left:0; background:#fff; list-style:none; padding:8px 0; margin:0; width:220px; border-radius:8px; box-shadow:0 4px 10px rgba(0,0,0,0.1); z-index:100; }
@@ -92,11 +81,8 @@ $units = $conn->query("SELECT UnitID, UnitName FROM units ORDER BY UnitName")->f
 .has-dropdown .dropdown-menu li:hover { background:#f0f6ff; }
 .has-dropdown .dropdown-menu li.active-link { background:#e3f2fd; }
 .has-dropdown .dropdown-menu li.active-link a { color:#043873; font-weight: 600; }
-
-/* Active link highlight */
 .menu li.active-link { background:#e3f2fd; color:black; }
 .menu li.active-link i, .menu li.active-link span { color:#043873; }
-/* Shift nav labels to the right by 1 inch */
 .menu li a span {
     display: inline-block;
     margin-left: 0.5mm;
@@ -134,7 +120,7 @@ $units = $conn->query("SELECT UnitID, UnitName FROM units ORDER BY UnitName")->f
 
 .card-header {
   display: flex;
-  justify-content: space-between; /* pushes button to the right */
+  justify-content: space-between; 
   align-items: center;
   margin-bottom: 12px;
 }
@@ -142,8 +128,8 @@ $units = $conn->query("SELECT UnitID, UnitName FROM units ORDER BY UnitName")->f
 .add-btn {
   background: #043873;
   color: #fff;
-  padding: 14px 22px;   /* bigger size */
-  font-size: 18px;      /* larger text */
+  padding: 14px 22px;  
+  font-size: 18px;     
   font-weight: 600;
   border: none;
   border-radius: 8px;
@@ -183,7 +169,6 @@ $units = $conn->query("SELECT UnitID, UnitName FROM units ORDER BY UnitName")->f
             <a href="#"><i class="fa-solid fa-file-lines"></i><span>Reports</span></a>
             <ul class="dropdown-menu">
                 <li class="<?= basename($_SERVER['PHP_SELF'])=='report_inventory.php'?'active-link':'' ?>"><a href="report_inventory.php">Inventory Management</a></li>
-                <!-- <li class="<?= basename($_SERVER['PHP_SELF'])=='report_pos.php'?'active-link':'' ?>"><a href="report_pos.php">POS Exchange</a></li> -->
                 <li class="<?= basename($_SERVER['PHP_SELF'])=='report_expiration.php'?'active-link':'' ?>"><a href="report_expiration.php">Expiration / Wastage</a></li>
             </ul>
         </li>
@@ -205,7 +190,6 @@ $units = $conn->query("SELECT UnitID, UnitName FROM units ORDER BY UnitName")->f
         <div class="profile-icon"><i class="fa-solid fa-user"></i></div>
     </div></div>
 
-    <!-- Tabs -->
     <div class="tab-buttons">
         <button class="tab-btn active" onclick="switchTab('category', event)">
             <i class="fa-solid fa-layer-group"></i> Category Table
@@ -215,7 +199,6 @@ $units = $conn->query("SELECT UnitID, UnitName FROM units ORDER BY UnitName")->f
         </button>
     </div>
 
-    <!-- Category Tab -->
     <div id="category" class="tab active">
         <div class="card">
             <div class="card-header">
@@ -247,7 +230,6 @@ $units = $conn->query("SELECT UnitID, UnitName FROM units ORDER BY UnitName")->f
         </div>
     </div>
 
-    <!-- Unit Tab -->
     <div id="unit" class="tab">
         <div class="card">
             <div class="card-header">
@@ -280,7 +262,6 @@ $units = $conn->query("SELECT UnitID, UnitName FROM units ORDER BY UnitName")->f
     </div>
 </main>
 
-<!-- Modals -->
 <?php
 $modals = [
     ['id'=>'addCategoryModal','title'=>'Add Category','action'=>'add_category'],
@@ -327,16 +308,14 @@ function openEditModal(modalId, name, id){
 }
 
 document.addEventListener("DOMContentLoaded", function(){
-    // Check URL hash to open correct tab
+
     const hash = window.location.hash.substring(1);
     if (hash === 'unit') {
         switchTab('unit', {currentTarget: document.querySelectorAll('.tab-btn')[1]});
     }
 
-    // Highlight active report submenu and handle dropdown
     const reportsItem = document.getElementById("reports");
-    
-    // Check if any report page is active
+
     reportsItem.querySelectorAll(".dropdown-menu li").forEach(li => {
         const a = li.querySelector("a");
         if(a && a.href === window.location.href) {
@@ -344,14 +323,12 @@ document.addEventListener("DOMContentLoaded", function(){
         }
     });
 
-    // Toggle dropdown on click
     reportsItem.querySelector("a").addEventListener("click", function(e){
         e.preventDefault();
         e.stopPropagation();
         reportsItem.classList.toggle("active");
     });
 
-    // Also show dropdown on hover
     reportsItem.addEventListener("mouseenter", function(){
         reportsItem.classList.add("active");
     });
@@ -360,7 +337,6 @@ document.addEventListener("DOMContentLoaded", function(){
         reportsItem.classList.remove("active");
     });$s
 
-    // Close dropdown when clicking outside
     document.addEventListener("click", function(e){
         if(!reportsItem.contains(e.target)) {
             reportsItem.classList.remove("active");

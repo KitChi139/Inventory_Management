@@ -1,7 +1,6 @@
 <?php
 require 'db_connect.php';
 
-// Protect page - require login
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
   header("Location: login.php");
   exit();
@@ -51,9 +50,6 @@ body {
   font-size: 18px;
 }
 
-/* Sidebar CSS moved to sidebar.css */
-
-/* TOPBAR Right (Notification + Profile) */
 .topbar-right {
   display: flex;
   align-items: center;
@@ -64,7 +60,6 @@ body {
   z-index: 100;
 }
 
-/* Notification component is handled by notification.css */
 .notif-wrap {
   position: relative;
   display: inline-block;
@@ -88,7 +83,6 @@ body {
   background: var(--accent);
 }
 
-/* Heading Bar */
 .heading-bar {
   display: flex;
   justify-content: space-between;
@@ -106,7 +100,6 @@ body {
   color: var(--primary);
 }
 
-/* CARDS */
 .cards-container {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -133,7 +126,6 @@ body {
   margin-bottom: 10px;
 }
 
-/* REPORT CONTAINER */
 .report-container {
   background: white;
   padding: 20px 25px;
@@ -144,7 +136,6 @@ body {
   max-width: 100%;
 }
 
-/* Report header flex & spacing */
 .report-header {
   display: flex;
   flex-wrap: wrap;
@@ -230,7 +221,6 @@ body {
   background-color: #b3b3b3;
 }
 
-/* report body for charts and summary */
 .report-body {
   display: flex;
   gap: 25px;
@@ -251,7 +241,6 @@ body {
   font-size: 18px;
 }
 
-/* Report titles */
 .report-title {
   margin-bottom: 14px;
   font-weight: 700;
@@ -261,7 +250,6 @@ body {
   padding-bottom: 8px;
 }
 
-/* Bars */
 .bar-group {
   margin-bottom: 14px;
 }
@@ -284,7 +272,6 @@ body {
   background: #7ebaff;
 }
 
-/* Donut chart */
 .donut {
   width: 120px;
   height: 120px;
@@ -309,7 +296,6 @@ body {
   border-radius: 50%;
 }
 
-/* Timeline rows */
 .timeline-row {
   display: flex;
   align-items: center;
@@ -324,7 +310,6 @@ body {
   flex-grow: 1;
 }
 
-/* Tables */
 table {
   width: 100%;
   border-collapse: separate;
@@ -349,7 +334,6 @@ td {
   word-wrap: break-word;
 }
 
-/* Profile icon */
 .profile-icon {
   width: 36px;
   height: 36px;
@@ -368,7 +352,6 @@ td {
   background: var(--accent);
 }
 
-/* ===== SUPPLIER BARS ===== */
 .supplier-bars {
   width: 100%;
   margin-top: 10px;
@@ -413,7 +396,6 @@ td {
   color: var(--primary);
 }
 
-/* ===== EXPIRATION TIMELINE CARDS ===== */
 .expire-list {
   margin-top: 15px;
 }
@@ -455,7 +437,6 @@ td {
 
 <body>
 
-  <!-- SIDEBAR -->
   <aside class="sidebar" id="sidebar">
     <div class="profile">
       <div class="icon">
@@ -479,11 +460,11 @@ td {
     </ul>
   </aside>
 
-  <!-- MAIN -->
+  
   <main class="main">
-    <!-- Notification + Profile icon (top-right in main content) -->
+ 
     <div class="topbar-right">
-      <!-- 🔔 NOTIFICATION SYSTEM -->
+
       <div class="notif-wrap" id="notifWrap">
           <button class="notif-btn" id="notifBtn" aria-expanded="false">
               <i class="fa-solid fa-bell"></i>
@@ -514,12 +495,11 @@ td {
       </div>
     </div>
 
-    <!-- Heading Bar -->
+
     <div class="heading-bar">
       <h1 id="view-title">Report</h1>   
     </div>
 
-    <!-- CARDS -->
     <div id="view-content" class="cards-container">
       <div class="card" data-view="inventory-management">
         <div class="emoji">📦</div>
@@ -544,7 +524,7 @@ td {
   </main>
 
 <script>
-/* PURE CSS REPORTS WITH BACK BUTTON ------------- */
+
 
 const backBtn = `
 <button class="back-btn" onclick="goBack()">
@@ -553,7 +533,7 @@ const backBtn = `
 `;
 
 function goBack() {
-  location.reload(); // resets view without refreshing whole page context
+  location.reload(); 
 }
 
 const views = {
@@ -774,7 +754,6 @@ ${backBtn}
     <button class="export-btn"><i class="fa-solid fa-file-export"></i> Export</button>
   </div>
 
-  <!-- EXPIRATION TIMELINE -->
   <div class="report-container">
     <div class="report-title">Expiration Timeline</div>
 
@@ -797,7 +776,6 @@ ${backBtn}
     </div>
   </div>
 
-  <!-- SUMMARY (RESTORED) -->
   <div class="summary" style="margin-top:20px;">
     <div class="report-title">Summary</div>
     <p>Near Expiry: <strong>50</strong></p>
@@ -805,7 +783,6 @@ ${backBtn}
     <p>Total Risk Items: <strong>70</strong></p>
   </div>
 
-  <!-- EXPIRATION TABLE -->
   <div style="margin-top:20px;">
     <div class="report-title">Expiration List</div>
     <table>
@@ -823,21 +800,19 @@ ${backBtn}
 
 };
 
-/* VIEW SWITCHING ------------------- */
 $(".card").on("click", function() {
   const view = $(this).data("view");
   $("#view-title").text($(this).find("h3").text());
   $("#view-content").removeClass("cards-container").html(views[view]);
 });
 
-/* VALIDATE INVENTORY REPORT SUMMARY */
+
 function validateInventoryReport() {
-  // Validate summary values
+
   const stockIn = parseInt(document.getElementById('stock-in')?.textContent || '650');
   const stockOut = parseInt(document.getElementById('stock-out')?.textContent || '750');
   const netChange = parseInt(document.getElementById('net-change')?.textContent || '-100');
-  
-  // Mark as invalid if negative
+
   if (stockIn < 0 || stockOut < 0 || netChange < 0) {
     if (stockIn < 0) {
       const el = document.getElementById('stock-in');
@@ -861,7 +836,7 @@ function validateInventoryReport() {
       }
     }
   } else {
-    // Remove + sign from positive net change
+
     if (netChange > 0) {
       const el = document.getElementById('net-change');
       if (el) {
@@ -869,25 +844,21 @@ function validateInventoryReport() {
       }
     }
   }
-  
-  // Validate table rows
+
   document.querySelectorAll('.stock-in, .stock-out, .net-change').forEach(cell => {
     const value = parseInt(cell.textContent);
     if (value < 0) {
       cell.style.color = '#dc3545';
       cell.textContent = 'Invalid';
     } else if (cell.classList.contains('net-change') && value > 0) {
-      // Remove + sign from positive net change
+
       cell.textContent = value.toString();
     }
   });
 }
 
-/* NAVIGATION HANDLERS */
 $(document).ready(function() {
-  // Sidebar toggle handled by sidebar.js
 
-  // Navigation handlers
   $("#dashboard").click(function(){ window.location.href = "dashboard.php"; });
   $("#inventory").click(function(){ window.location.href = "Inventory.php"; });
   $("#low-stock").click(function(){ window.location.href = "lowstock.php"; });
@@ -897,8 +868,7 @@ $(document).ready(function() {
   $("#users").click(function(){ window.location.href = "admin.php"; });
       $("#settings").click(function(){ window.location.href = "settings.php"; });
   $("#logout").click(function(){ window.location.href = "logout.php"; });
-  
-  // Validate inventory report when view is loaded
+
   $(".card").on("click", function() {
     setTimeout(validateInventoryReport, 100);
   });
@@ -907,7 +877,7 @@ $(document).ready(function() {
 <script src="sidebar.js"></script>
 <script src="notification.js" defer></script>
 <script>
-// 🔽 OPEN/CLOSE DROPDOWN
+
 $(document).on("click", "#notifBtn", function(e) {
     e.stopPropagation();
     $("#notifDropdown").toggleClass("show");
@@ -917,14 +887,12 @@ $(document).on("click", "#notifBtn", function(e) {
     }
 });
 
-// Close dropdown when clicking outside
 $(document).click(function(e) {
     if (!$(e.target).closest("#notifWrap").length) {
         $("#notifDropdown").removeClass("show");
     }
 });
 
-// 🔄 AUTO UPDATE BADGE
 function loadNotifications() {
     $.ajax({
         url: "get_notifications.php",
@@ -942,7 +910,6 @@ function loadNotifications() {
     });
 }
 
-// 🔽 LOAD 3 MOST RECENT ITEMS INSIDE DROPDOWN
 function loadNotificationDropdown() {
     $.ajax({
         url: "get_notification_items.php",
@@ -953,7 +920,6 @@ function loadNotificationDropdown() {
     });
 }
 
-// Auto-refresh notifications every 10 seconds
 loadNotifications();
 setInterval(loadNotifications, 10000);
 </script>

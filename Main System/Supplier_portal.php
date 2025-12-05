@@ -9,7 +9,7 @@
     <script src="supplier_portal.js" defer></script>
 </head>
 <body>
-    <!-- Top Navigation Bar -->
+
     <header class="top-nav">
         <div class="nav-left">
             <div class="logo-container">
@@ -30,7 +30,6 @@
         </div>
     </header>
 
-    <!-- Secondary Navigation Tabs -->
     <nav class="tab-navigation">
         <button class="tab-link active" data-tab="dashboard">
             <i class="fas fa-chart-line"></i>
@@ -62,15 +61,13 @@
         </button>
     </nav>
 
-    <!-- Main Content Area -->
     <main class="main-content">
-        <!-- Dashboard Section -->
+
         <section class="content-section active" id="dashboard-section">
             <div class="page-header">
                 <h1>Dashboard Overview</h1>
             </div>
 
-            <!-- Summary Cards -->
             <div class="summary-grid">
                 <div class="stat-card blue-card">
                     <div class="stat-header">
@@ -106,7 +103,6 @@
                 </div>
             </div>
 
-            <!-- Dashboard Widgets -->
             <div class="widgets-grid">
                 <div class="widget-card">
                     <h3 class="widget-title">Request Status Overview</h3>
@@ -202,12 +198,11 @@
         </section>
 
 
-        <!-- Pending Requests Section -->
        <section class="content-section" id="pending-requests-section">
     <div class="page-header">
         <h1>Pending Requests</h1>
     </div>
-     <!-- Filter bar -->
+
 <div class="filter-bar">
   <input type="text" id="searchInput" placeholder="Search batch ID, item name, or quantity..." />
   <select id="categoryFilter">
@@ -220,7 +215,7 @@
     <option value="Antihistamines / Antiallergics">Antihistamines / Antiallergics</option>
     <option value="Antacids / Antiulcerants">Antacids / Antiulcerants</option>
   </select>
-  <!-- Optional: include only if you want date filtering -->
+
   <input type="date" id="dateFilter" />
   <button class="btn btn-secondary" onclick="clearFilters()">Clear</button>
 </div>
@@ -261,73 +256,11 @@
 </section>
 
 
-        <!-- Declined Requests Section -->
-        <!-- <section class="content-section" id="declined-requests-section">
-    <div class="page-header">
-        <h1>Declined Requests</h1>
-    </div> -->
-    <!-- Filter bar -->
-<!-- <div class="filter-bar">
-  <input type="text" id="searchInput" placeholder="Search batch ID, item name, or quantity..." />
-  <select id="categoryFilter">
-    <option value="">All Categories</option>
-    <option value="Protective Equipment">Protective Equipment</option>
-    <option value="Antibiotics / Antibacterials">Antibiotics / Antibacterials</option>
-    <option value="Analgesics / Antipyretics">Analgesics / Antipyretics</option>
-    <option value="Antivirals">Antivirals</option>
-    <option value="Antifungals">Antifungals</option>
-    <option value="Antihistamines / Antiallergics">Antihistamines / Antiallergics</option>
-    <option value="Antacids / Antiulcerants">Antacids / Antiulcerants</option>
-  </select> -->
-  <!-- Optional: include only if you want date filtering -->
-  <!-- <input type="date" id="dateFilter" />
-  <button class="btn btn-secondary" onclick="clearFilters()">Clear</button>
-</div>
-    
-    <div class="table-container">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th><input type="checkbox" /></th>
-                    <th>Request Batch ID</th>
-                    <th>Item Name</th>
-                    <th>Category</th>
-                    <th>Quantity</th>
-                    <th>Request Date</th>
-                    <th>Declined Date</th>
-                </tr>
-            </thead>
-            <tbody id="declinedTableBody">
-                <tr>
-                    <td><input type="checkbox" /></td>
-                    <td>0001</td>
-                    <td>Amoxicillin</td>
-                    <td>Analgesics/Antipyretics</td>
-                    <td>50</td>
-                    <td>12/2/2025</td>
-                    <td>12/2/2025 6:09 PM</td>
-                </tr>
-                <tr>
-                    <td><input type="checkbox" /></td>
-                    <td>0001</td>
-                    <td>Paracetamol</td>
-                    <td>Antibiotics/Antibacterials</td>
-                    <td>25</td>
-                    <td>12/2/2025</td>
-                    <td>12/2/2025 6:09 PM</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</section> -->
-
-
-        <!-- Approved Requests Section -->
         <section class="content-section" id="approved-requests-section">
     <div class="page-header">
         <h1>Approved Requests</h1>
     </div>
-    <!-- Filter bar -->
+
 <div class="filter-bar">
   <input type="text" id="searchInput" placeholder="Search batch ID, item name, or quantity..." />
   <select id="categoryFilter">
@@ -340,7 +273,7 @@
     <option value="Antihistamines / Antiallergics">Antihistamines / Antiallergics</option>
     <option value="Antacids / Antiulcerants">Antacids / Antiulcerants</option>
   </select>
-  <!-- Optional: include only if you want date filtering -->
+
   <input type="date" id="dateFilter" />
   <button class="btn btn-secondary" onclick="clearFilters()">Clear</button>
 </div>
@@ -383,12 +316,11 @@
 </section>
 
 
-        <!-- Completed Requests Section -->
         <section class="content-section" id="completed-requests-section">
     <div class="page-header">
         <h1>Completed Requests</h1>
     </div>
-     <!-- Filter bar -->
+
 <div class="filter-bar">
   <input type="text" id="searchInput" placeholder="Search batch ID, item name, or quantity..." />
   <select id="categoryFilter">
@@ -401,7 +333,7 @@
     <option value="Antihistamines / Antiallergics">Antihistamines / Antiallergics</option>
     <option value="Antacids / Antiulcerants">Antacids / Antiulcerants</option>
   </select>
-  <!-- Optional: include only if you want date filtering -->
+
   <input type="date" id="dateFilter" />
   <button class="btn btn-secondary" onclick="clearFilters()">Clear</button>
 </div>
@@ -443,8 +375,6 @@
     </div>
 </section>
 
-
-        <!-- Messages Section -->
         <section class="content-section" id="messages-section">
             <div class="page-header">
                 <h1>Messages</h1>
@@ -511,13 +441,11 @@
             </div>
         </section>
 
-        <!-- Company Profile Section -->
         <section class="content-section" id="company-profile-section">
             <div class="page-header">
                 <h1>Company Profile</h1>
             </div>
 
-            <!-- Contact Information -->
             <div class="profile-card">
                 <div class="profile-card-header">
                     <h3>Contact Information</h3>
@@ -561,7 +489,6 @@
                 </div>
             </div>
 
-            <!-- Mission Statement -->
             <div class="profile-card">
                 <div class="profile-card-header">
                     <h3>Mission Statement</h3>
@@ -574,7 +501,6 @@
                 </div>
             </div>
 
-            <!-- History -->
             <div class="profile-card">
                 <div class="profile-card-header">
                     <h3>History</h3>
@@ -587,7 +513,6 @@
                 </div>
             </div>
 
-            <!-- Items/Stock/Status -->
             <div class="profile-card">
                 <div class="profile-card-header">
                     <h3>Items / Stock / Status</h3>
@@ -607,7 +532,6 @@
                                 </tr>
                             </thead>
                             <tbody id="inventoryTableBody">
-                                <!-- Populated by supplier_portal.js -->
                             </tbody>
                         </table>
                     </div>
@@ -616,7 +540,7 @@
         </section>
     </main>
 
-    <!-- Edit Modal -->
+
     <div id="editModal" class="modal-overlay">
         <div class="modal-container">
             <div class="modal-header">
@@ -624,7 +548,7 @@
                 <button class="close-modal-btn" onclick="closeEditModal()">&times;</button>
             </div>
             <div class="modal-body" id="modalBody">
-                <!-- Dynamic content -->
+
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
@@ -633,7 +557,6 @@
         </div>
     </div>
 
-    <!-- Message View Modal -->
     <div id="messageModal" class="modal-overlay">
         <div class="modal-container">
             <div class="modal-header">
@@ -641,7 +564,6 @@
                 <button class="close-modal-btn" onclick="closeMessageModal()">&times;</button>
             </div>
             <div class="modal-body" id="messageModalBody">
-                <!-- Dynamic content -->
             </div>
             <div class="modal-footer">
                 <button class="btn btn-primary" onclick="closeMessageModal()">Close</button>
@@ -649,7 +571,6 @@
         </div>
     </div>
 
-    <!-- Reply Modal -->
     <div id="replyModal" class="modal-overlay">
         <div class="modal-container">
             <div class="modal-header">
@@ -668,8 +589,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Notifications Modal -->
     <div id="notificationsModal" class="modal-overlay">
         <div class="modal-container notifications-modal">
             <div class="modal-header">
@@ -677,14 +596,9 @@
                 <button class="close-modal-btn" onclick="closeNotificationsModal()">&times;</button>
             </div>
             <div class="modal-body" id="notificationsBody">
-                <!-- Notifications populated by JS -->
             </div>
         </div>
     </div>
-
-
-
-        <!-- Messages Section -->
         <section class="content-section" id="messages-section">
             <div class="page-header">
                 <h1>Messages</h1>
@@ -750,14 +664,10 @@
                 </form>
             </div>
         </section>
-
-        <!-- Company Profile Section -->
         <section class="content-section" id="company-profile-section">
             <div class="page-header">
                 <h1>Company Profile</h1>
             </div>
-
-            <!-- Contact Information -->
             <div class="profile-card">
                 <div class="profile-card-header">
                     <h3>Contact Information</h3>
@@ -801,7 +711,6 @@
                 </div>
             </div>
 
-            <!-- Mission Statement -->
             <div class="profile-card">
                 <div class="profile-card-header">
                     <h3>Mission Statement</h3>
@@ -814,7 +723,7 @@
                 </div>
             </div>
 
-            <!-- History -->
+
             <div class="profile-card">
                 <div class="profile-card-header">
                     <h3>History</h3>
@@ -827,7 +736,6 @@
                 </div>
             </div>
 
-            <!-- Items/Stock/Status -->
             <div class="profile-card">
                 <div class="profile-card-header">
                     <h3>Items / Stock / Status</h3>
@@ -847,7 +755,7 @@
                                 </tr>
                             </thead>
                             <tbody id="inventoryTableBody">
-                                <!-- Populated by supplier_portal.js -->
+
                             </tbody>
                         </table>
                     </div>
@@ -856,7 +764,6 @@
         </section>
     </main>
 
-    <!-- Edit Modal -->
     <div id="editModal" class="modal-overlay">
         <div class="modal-container">
             <div class="modal-header">
@@ -864,7 +771,7 @@
                 <button class="close-modal-btn" onclick="closeEditModal()">&times;</button>
             </div>
             <div class="modal-body" id="modalBody">
-                <!-- Dynamic content -->
+
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
@@ -873,7 +780,6 @@
         </div>
     </div>
 
-    <!-- Message View Modal -->
     <div id="messageModal" class="modal-overlay">
         <div class="modal-container">
             <div class="modal-header">
@@ -881,7 +787,7 @@
                 <button class="close-modal-btn" onclick="closeMessageModal()">&times;</button>
             </div>
             <div class="modal-body" id="messageModalBody">
-                <!-- Dynamic content -->
+
             </div>
             <div class="modal-footer">
                 <button class="btn btn-primary" onclick="closeMessageModal()">Close</button>
@@ -889,7 +795,6 @@
         </div>
     </div>
 
-    <!-- Reply Modal -->
     <div id="replyModal" class="modal-overlay">
         <div class="modal-container">
             <div class="modal-header">
@@ -909,7 +814,6 @@
         </div>
     </div>
 
-    <!-- Notifications Modal -->
     <div id="notificationsModal" class="modal-overlay">
         <div class="modal-container notifications-modal">
             <div class="modal-header">
@@ -917,7 +821,7 @@
                 <button class="close-modal-btn" onclick="closeNotificationsModal()">&times;</button>
             </div>
             <div class="modal-body" id="notificationsBody">
-                <!-- Notifications populated by JS -->
+
             </div>
         </div>
     </div>
@@ -925,7 +829,7 @@
 
  
 
-        <!-- Messages Section -->
+
         <section class="content-section" id="messages-section">
             <div class="page-header">
                 <h1>Messages</h1>
@@ -992,13 +896,12 @@
             </div>
         </section>
 
-        <!-- Company Profile Section -->
+
         <section class="content-section" id="company-profile-section">
             <div class="page-header">
                 <h1>Company Profile</h1>
             </div>
 
-            <!-- Contact Information -->
             <div class="profile-card">
                 <div class="profile-card-header">
                     <h3>Contact Information</h3>
@@ -1042,7 +945,7 @@
                 </div>
             </div>
 
-            <!-- Mission Statement -->
+
             <div class="profile-card">
                 <div class="profile-card-header">
                     <h3>Mission Statement</h3>
@@ -1055,7 +958,7 @@
                 </div>
             </div>
 
-            <!-- History -->
+
             <div class="profile-card">
                 <div class="profile-card-header">
                     <h3>History</h3>
@@ -1068,7 +971,7 @@
                 </div>
             </div>
 
-            <!-- Items/Stock/Status -->
+
             <div class="profile-card">
                 <div class="profile-card-header">
                     <h3>Items / Stock / Status</h3>
@@ -1088,7 +991,7 @@
                                 </tr>
                             </thead>
                             <tbody id="inventoryTableBody">
-                                <!-- Populated by supplier_portal.js -->
+
                             </tbody>
                         </table>
                     </div>
@@ -1097,7 +1000,7 @@
         </section>
     </main>
 
-    <!-- Edit Modal -->
+
     <div id="editModal" class="modal-overlay">
         <div class="modal-container">
             <div class="modal-header">
@@ -1105,7 +1008,7 @@
                 <button class="close-modal-btn" onclick="closeEditModal()">&times;</button>
             </div>
             <div class="modal-body" id="modalBody">
-                <!-- Dynamic content -->
+
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
@@ -1114,7 +1017,7 @@
         </div>
     </div>
 
-    <!-- Message View Modal -->
+
     <div id="messageModal" class="modal-overlay">
         <div class="modal-container">
             <div class="modal-header">
@@ -1122,7 +1025,7 @@
                 <button class="close-modal-btn" onclick="closeMessageModal()">&times;</button>
             </div>
             <div class="modal-body" id="messageModalBody">
-                <!-- Dynamic content -->
+
             </div>
             <div class="modal-footer">
                 <button class="btn btn-primary" onclick="closeMessageModal()">Close</button>
@@ -1130,7 +1033,7 @@
         </div>
     </div>
 
-    <!-- Reply Modal -->
+
     <div id="replyModal" class="modal-overlay">
         <div class="modal-container">
             <div class="modal-header">
@@ -1150,7 +1053,7 @@
         </div>
     </div>
 
-    <!-- Notifications Modal -->
+
     <div id="notificationsModal" class="modal-overlay">
         <div class="modal-container notifications-modal">
             <div class="modal-header">
@@ -1158,7 +1061,7 @@
                 <button class="close-modal-btn" onclick="closeNotificationsModal()">&times;</button>
             </div>
             <div class="modal-body" id="notificationsBody">
-                <!-- Notifications populated by JS -->
+
             </div>
         </div>
     </div>

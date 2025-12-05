@@ -1,7 +1,6 @@
 <?php
 require 'db_connect.php';
 
-// Protect page - require login
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
   header("Location: login.php");
   exit();
@@ -35,35 +34,29 @@ if (isset($_POST['fetch_product']) && $_POST['fetch_product'] == 1) {
       'unit'=>''];
 
     echo json_encode($data);
-    exit; // important to stop the rest of the page
+    exit; 
 }
-// ---------- HELPERS ----------
+
 function flash($type, $msg) {
   $_SESSION['flash'][] = ['type'=>$type, 'msg'=>$msg];
 }
 if (!isset($_SESSION['flash'])) $_SESSION['flash'] = [];
 
-// ---------- HANDLE POST (Add / Edit / Delete) ----------
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $action = $_POST['action'] ?? '';
 
   try {
     if ($action === 'add_item') {
-      // Inputs
-      // $productID       = trim($_POST['item_name'] ?? '');
-      // $productID  = trim($_POST['product_id'] ?? '');
+
       $product    = trim($_POST['product'] ?? '');
       $category   = trim($_POST['category'] ?? '');
       $catid      = trim($_POST['category_id'] ?? '');
       $unit       = trim($_POST['unit'] ?? '');
       $unitId       = trim($_POST['unit_id'] ?? '');
       $price       = trim($_POST['price'] ?? '');
-      // $sku        = trim($_POST['sku'] ?? '');
-      // $Batchnum     = trim($_POST['Batchnum'] ?? '');
       $minquantity   = isset($_POST['minquantity']) ? (int)$_POST['minquantity'] : 0;
       $maxquantity   = isset($_POST['maxquantity']) ? (int)$_POST['maxquantity'] : 0;
-      // $expiration = $_POST['expiration'] ?? null;
-      // if ($expiration === '') $expiration = null;
+
 
 
       if ($product === '') {
@@ -82,11 +75,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           throw new Exception("Stock quantities must be non-negative.");
       }
       $conn->begin_transaction();
-      // Category
+
       if ($catid !== '') {
         $categoryId = (int)$catid;
     } else {
-        // Check if name already exists
+
         $stmt = $conn->prepare("SELECT CategoryID FROM categories WHERE Category_Name = ?");
         $stmt->bind_param("s", $category);
         $stmt->execute();
@@ -103,7 +96,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->close();
     }
 
-      // Unit
       if (!$unitId && $unit !== '') {
           $stmt = $conn->prepare("SELECT UnitID FROM units WHERE UnitName = ?");
           $stmt->bind_param('s', $unit);
@@ -128,31 +120,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $stmt->bind_param('siidii', $product, $categoryId, $unitId, $price, $minquantity, $maxquantity);
       $stmt->execute();
       $stmt->close();
-      // // Insert inventory (SKU optional -> NULLIF to avoid UNIQUE '' issue)
-
-      // $status = ($quantity === 0) ? 'Out of Stock' : (($quantity < 10) ? 'Low Stock' : 'In Stock');
-      // $stmt = $conn->prepare("
-      //   INSERT INTO inventory (ProductID, SKU, BatchNum, Quantity, ExpirationDate, Status)
-      //   VALUES (?, NULLIF(?, ''), ?, ?, ?, ?)
-      // ");
-      // $stmt->bind_param('ississ', $productID, $sku, $Batchnum, $quantity, $expiration, $status);
-      // $stmt->execute();
-      // $stmt->close();
-
-//       $stmt = $conn->prepare("
-//         SELECT Min_stock, Max_stock FROM inventory i
-//         WHERE ProductID = ?
-//       ");
-//       $stmt->bind_param('i', $productId);
-//       $stmt->execute();
-//       $result = $stmt->get_result();
-//       $data = $results->fetch_assoc();
-//       $stmt->close();
-//       $minstock = $data['Min_stock'];
-//       $maxstock = $data['Max_stock'];
-
-//       // $status = ($quantity === 0) ? 'Out of Stock' : (($quantity < $minstock) ? 'Low Stock' : 'In Stock');
-
       $conn->commit();
       flash('success', 'Item added successfully.');
 
@@ -174,7 +141,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $conn->begin_transaction();
 
-    // Create category if needed
     if (!$categoryId && $category !== '') {
         $stmt = $conn->prepare("SELECT CategoryID FROM categories WHERE Category_Name = ?");
         $stmt->bind_param("s", $category);
@@ -193,7 +159,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->close();
     }
 
-    // Create unit if needed
     if (!$unitId && $unit !== '') {
         $stmt = $conn->prepare("SELECT UnitID FROM units WHERE UnitName = ?");
         $stmt->bind_param("s", $unit);
@@ -212,7 +177,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->close();
     }
 
-    // Perform update
     $stmt = $conn->prepare("
         UPDATE products 
         SET ProductName = ?, CategoryID = ?, UnitID = ?, Price = ?, Min_stock = ?, Max_stock = ?
@@ -260,27 +224,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     flash('error', 'Error: ' . $e->getMessage());
   }
 
-  // PRG: redirect back to self to avoid resubmits
   header("Location: ".$_SERVER['PHP_SELF']);
   exit;
 }
 
-// ---------- FETCH INVENTORY + STATS ----------
-  // SELECT 
-  //     p.ProductID,
-  //     p.ProductName,
-  //     p.SKU,
-  //     SUM(i.Quantity) AS TotalQuantity,
-  //     p.Min_stock,
-  //     p.Max_stock,
-  //     u.UnitName,
-  //     c.Category_Name
-  // FROM products p
-  // LEFT JOIN inventory i ON i.ProductID = p.ProductID
-  // LEFT JOIN categories c ON c.CategoryID = p.CategoryID
-  // LEFT JOIN units u ON u.UnitID = p.UnitID
-  // GROUP BY p.ProductID
-  // ORDER BY p.ProductName;
 $inventory = [];
 try {
   $sql = "
@@ -358,7 +305,7 @@ try {
 <link rel="stylesheet" href="styles/sidebar.css" />
 <link rel="stylesheet" href="styles/inventory.css" />
 <style>
-/* (minimal safe styles; keep your inventory.css) */
+
 .status-ok { color:#12805c; font-weight:600; } .status-low { color:#b48a00; font-weight:600; } .status-out { color:#c5162e; font-weight:600; }
 .quick-request { padding:14px; }
 .qr-actions { display:flex; gap:8px; margin-top:12px; }
@@ -377,16 +324,15 @@ try {
 .alert.success { background:#e8fff4; color:#0d6b4d; }
 .alert.error { background:#ffe9e9; color:#a10f1d; }
 .alert.warning { background:#fff7e5; color:#8a6a00; }
-/* Universal dropdown for Reports */
+
   .has-dropdown {
     position: relative;
   }
 
-  /* Dropdown menu hidden by default */
   .has-dropdown .dropdown-menu {
     display: none;
     position: absolute;
-    top: 100%; /* Below the nav item */
+    top: 100%; 
     left: 0;
     background: white;
     list-style: none;
@@ -398,12 +344,10 @@ try {
     z-index: 10;
   }
 
-  /* Show dropdown on hover */
   .has-dropdown:hover .dropdown-menu {
     display: block;
   }
 
-  /* Dropdown items */
   .has-dropdown .dropdown-menu li {
     padding: 12px 16px;
     cursor: pointer;
@@ -434,9 +378,6 @@ try {
   <li id="inventorymanagement">
     <a class="report-link">Inventory Management</a>
   </li>
-  <!-- <li>
-    <a class="report-link" href="report_pos.php">POS Exchange</a>
-  </li> -->
   <li id="expirationwastage">
     <a class="report-link">Expiration / Wastage</a>
   </li>
@@ -454,9 +395,6 @@ try {
 </aside>
 
 <main class="main">
-
-
-  <!-- Heading Bar -->
   <div class="heading-bar">
     <h1>Inventory</h1>
     
@@ -470,26 +408,11 @@ try {
   </div>
   </div>
 
-  <!-- flash alerts -->
   <div class="alerts">
     <?php foreach ($_SESSION['flash'] as $f): ?>
       <div class="alert <?= htmlspecialchars($f['type']) ?>"><?= htmlspecialchars($f['msg']) ?></div>
     <?php endforeach; $_SESSION['flash']=[]; ?>
   </div>
-
-  <!-- <section class="cards" style="margin-top: 0;">
-    <div class="card"><h4>Total Items per Product</h4><p><?= (int)$total_items ?></p></div>
-<div class="card red">
-      <h4>Low Stock Alerts</h4>
-      <p><?= (int)$low_stock ?></p>
-    </div>
-    <div class="card" style="background-color: #ffe5e5; color: #d32f2f;">
-      <h4>Out of Stock Alerts</h4>
-      <p><?= (int)($total_low_and_out - $low_stock) ?></p>
-    </div>
-    <div class="card yellow"><h4>Pending Requests</h4><p><?= (int)$pending_requests ?></p></div>
-  </section> -->
-
   <section class="content-grid" style="margin-top: 20px;">
     <div class="table-panel box">
       <div class="panel-top">
@@ -591,66 +514,6 @@ try {
 
   </table>
 </div>
-
-      <!-- <div class="table-wrap">
-        <table class="inventory-table" role="table" aria-label="Inventory table">
-          <thead>
-            <tr>
-              <th>Item</th>
-              <th>Category</th>
-              <th>Current Stock</th>
-              <th>Status</th>
-              <th>Expiration Date</th>
-              <th>Batch Number</th>
-              <th>SKU</th><th>Unit</th>
-              <th>Request</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-          <?php foreach ($inventory as $item): ?>
-            <tr>
-              <td><?= htmlspecialchars($item['ProductName']) ?></td>
-              <td><?= htmlspecialchars($item['Category_Name'] ?? '-') ?></td>
-              <td><?= (int)$item['Quantity'] ?></td>
-              <td class="<?= $item['status_class'] ?>"><?= htmlspecialchars($item['status']) ?></td>
-              <td class="expiration"><?= !empty($item['ExpirationDate']) ? htmlspecialchars($item['ExpirationDate']) : '--' ?></td>
-              <td><?= htmlspecialchars($item['BatchNum'] ?? '-') ?></td>
-              <td><?= htmlspecialchars($item['SKU'] ?? '-') ?></td>
-              <td><?= htmlspecialchars($item['UnitName'] ?? '-') ?></td>
-              <td>
-                <button class="btn small select-btn"
-                        data-productid="<?= (int)$item['ProductID'] ?>"
-                        data-name="<?= htmlspecialchars($item['ProductName']) ?>">Select</button>
-              </td>
-              <td>
-                <div class="action-wrap">
-                  <button class="icon-more"><i class="fa-solid fa-ellipsis"></i></button>
-                  <div class="more-menu">
-                    <button class="menu-item edit-btn"
-                      data-inventoryid="<?= (int)$item['InventoryID'] ?>"
-                      data-name="<?= htmlspecialchars($item['ProductName']) ?>"
-                      data-category="<?= htmlspecialchars($item['Category_Name'] ?? '') ?>"
-                      data-unit="<?= htmlspecialchars($item['Unit'] ?? '') ?>"
-                      data-sku="<?= htmlspecialchars($item['SKU'] ?? '') ?>"
-                      data-quantity="<?= (int)$item['Quantity'] ?>"
-                      data-expiration="<?= htmlspecialchars($item['ExpirationDate'] ?? '') ?>"
-                    >Edit</button>
-
-                    <form method="post" style="margin:0;">
-                      <input type="hidden" name="action" value="delete_item">
-                      <input type="hidden" name="inventory_id" value="<?= (int)$item['InventoryID'] ?>">
-                      <button type="submit" class="menu-item danger" onclick="return confirm('Delete this row?')">Delete</button>
-                    </form>
-                  </div>
-                </div>
-              </td>
-            </tr>
-          <?php endforeach; ?>
-          </tbody>
-        </table>
-      </div>  -->
-      
     </div>
 
     <aside class="quick-request box" aria-label="Quick request panel">
@@ -674,24 +537,13 @@ try {
       </div>
     </aside>
   </section>
-  
-  <!-- Add Item Modal -->
+
   <div class="modal" id="addItemModal" style="display:none;">
     <div class="modal-content">
       <span class="close" role="button" aria-label="Close">&times;</span>
       <h3>Product Information</h3>
       <form method="post">
         <input type="hidden" name="action" value="add_item">
-        <!-- <label>Select Product</label>
-        <select name="item_name" id="item_name" required>
-        <option value="">-- Select Product --</option>
-        <?php
-        $result = $conn->query("SELECT ProductID, ProductName FROM products");
-        while ($row = $result->fetch_assoc()) {
-                        echo "<option value='{$row['ProductID']}'>{$row['ProductName']}</option>";
-        }
-        ?>
-        </select> -->
         <input type="hidden" name="product_id" id="product_id">
         <label>Product Name</label>
         <input type="text" name="product">
@@ -728,7 +580,6 @@ try {
     </div>
   </div>
 
-  <!-- Edit Item Modal -->
   <div class="modal" id="editItemModal" style="display:none;">
     <div class="modal-content">
       <span class="close" role="button" aria-label="Close">&times;</span>
@@ -783,7 +634,7 @@ $(function () {
         if (productID) {
             $.ajax({
                 type: 'POST',
-                url: '', // same PHP file
+                url: '', 
                 data: { fetch_product: 1, product_id: productID },
                 dataType: 'json',
                 success: function(response) {
@@ -794,7 +645,7 @@ $(function () {
                     $('#unit_id').val(response.unit_id);
                     console.log(response);
                     if (response.product_name) {
-                      let namePart = response.product_name.substring(0, 4).toUpperCase(); // fixed here
+                      let namePart = response.product_name.substring(0, 4).toUpperCase(); 
                       let datePart = new Date().toISOString().slice(2,10).replace(/-/g, '')
                       let randomPart = Math.floor(Math.random() * 900 + 100);
                       let SKU = `${namePart}-${datePart}-${randomPart}`;
@@ -818,7 +669,6 @@ $(function () {
   $('#category_id').val(selectedId);
 });
 
-// Unit select → fill text input and hidden ID
 $('#unit-select').change(function() {
   const selectedText = $(this).find('option:selected').text();
   const selectedId   = $(this).val();
@@ -826,18 +676,17 @@ $('#unit-select').change(function() {
   $('#unit_id').val(selectedId);
 });
 
-// Optional: if user types new category/unit → clear hidden ID
+
 $('#category').on('input', function() {
-  $('#category_id').val(''); // new category
+  $('#category_id').val(''); 
 });
 $('#unit').on('input', function() {
-  $('#unit_id').val(''); // new unit
+  $('#unit_id').val(''); 
 });
   $(document).on('click', '.view-batches-btn', function() {
   const productId = $(this).data('productid');
   const productName = $(this).data('productname');
 
-  // fetch batches
   $.ajax({
       url: 'fetch_batches.php',
       method: 'POST',
@@ -855,36 +704,29 @@ $('#unit').on('input', function() {
   });
 });
 
-// Close modal when clicking the close button
 $(document).on('click', '#close-modal, .batches-close', function(e) {
   e.preventDefault();
   e.stopPropagation();
   $('#batches-modal').removeClass('show').fadeOut(300);
 });
 
-// Close modal when clicking outside modal content
 $(document).on('click', '#batches-modal', function(e) {
   if ($(e.target).is('#batches-modal')) {
     $(this).removeClass('show').fadeOut(300);
   }
 });
 
-// Close modal on Escape key
 $(document).on('keydown', function(e) {
   if (e.key === 'Escape' && $('#batches-modal').hasClass('show')) {
     $('#batches-modal').removeClass('show').fadeOut(300);
   }
 });
 
-  // Sidebar toggle handled by sidebar.js
 
-  // Open/Close modals
   $(".add-item").click(e => { e.preventDefault(); $("#addItemModal").css('display','flex'); });
   $(".modal .close").click(function () { $(this).closest(".modal").hide(); });
   $(window).click(e => { if ($(e.target).hasClass("modal")) $(".modal").hide(); });
 
-  //Edit Mode
-  // Prefill Edit modal (no AJAX submit — standard POST)
   $(document).on("click", ".edit-btn", function () {
     const $btn = $(this);
     $("#edit-product_id").val($btn.data("productid"));
@@ -892,7 +734,7 @@ $(document).on('keydown', function(e) {
     $("#edit-price").val($btn.data("price"));
     $("#edit-minquantity").val($btn.data("minquantity"));
     $("#edit-maxquantity").val($btn.data("maxquantity"));
-    // CATEGORY
+
     const catId = $btn.data("categoryid");
     const catName = $btn.data("categoryname");
 
@@ -906,7 +748,6 @@ $(document).on('keydown', function(e) {
         $("#edit-category").val(catName);
     }
 
-    // UNIT
     const unitId = $btn.data("unitid");
     const unitName = $btn.data("unitname");
 
@@ -930,26 +771,22 @@ $("#edit-category-select").on("change", function () {
     if (val) $("#edit-category").val("");
 });
 
-// Category text input
 $("#edit-category").on("input", function () {
     $("#edit-category-select").val("");
     $("#edit-category_id").val("");
 });
 
-// Unit dropdown
 $("#edit-unit-select").on("change", function () {
     const val = $(this).val();
     $("#edit-unit_id").val(val);
     if (val) $("#edit-unit").val("");
 });
 
-// Unit text input
 $("#edit-unit").on("input", function () {
     $("#edit-unit-select").val("");
     $("#edit-unit_id").val("");
 });
-//Edit Mode
-  // Action menu
+
   $(document).on("click", ".icon-more", function (e) {
     e.stopPropagation();
     $(".more-menu").not($(this).siblings(".more-menu")).hide();
@@ -958,7 +795,6 @@ $("#edit-unit").on("input", function () {
   $(document).on("click", function () { $(".more-menu").hide(); });
   $(document).on("click", ".more-menu", function (e) { e.stopPropagation(); });
 
-  // Search & filter
   $("#filter-toggle").on("click", function (e) { e.stopPropagation(); $("#filter-dropdown").toggleClass("hidden"); });
   $(document).on("click", function (e) { if (!$(e.target).closest(".filter-dropdown, #filter-toggle").length) $("#filter-dropdown").addClass("hidden"); });
   $("#table-search").on("keyup", filterTable);
@@ -971,9 +807,9 @@ function filterTable() {
   const stockValue    = $("#stock-filter").val().toLowerCase();
 
   $(".inventory-table tbody tr").each(function () {
-    const name     = $(this).find("td:nth-child(2)").text().toLowerCase(); // Product
-    const category = $(this).find("td:nth-child(7)").text().toLowerCase(); // Category (moved after Unit)
-    const status   = $(this).find("td:nth-child(6)").text().toLowerCase(); // Status (moved after Unit)
+    const name     = $(this).find("td:nth-child(2)").text().toLowerCase(); 
+    const category = $(this).find("td:nth-child(7)").text().toLowerCase(); 
+    const status   = $(this).find("td:nth-child(6)").text().toLowerCase(); 
 
     const matchesSearch   = name.includes(searchValue) || category.includes(searchValue);
     const matchesCategory = !categoryValue || category === categoryValue;
@@ -983,8 +819,6 @@ function filterTable() {
   });
 }
 
-
-  // Quick Request (kept as-is; still posts to quick_request.php)
   let qrItems = [];
   function refreshQRTable() {
     const $tbody = $("#qr-items").empty();
@@ -1022,16 +856,16 @@ function filterTable() {
   $(document).on("change", ".item-check", function() {
     const productId = parseInt($(this).val());
     const $row = $(this).closest("tr");
-    const productName = $row.find("td:nth-child(2)").text(); // assuming 2nd column is Product Name
+    const productName = $row.find("td:nth-child(2)").text(); 
 
     if (this.checked) {
-        // Add to QR if not already there
+
         if (!qrItems.some(i => i.productId === productId)) {
-        // Add default supplier as empty string
+
         qrItems.push({ productId, name: productName, quantity: 1, supplier: '' });
       }
     } else {
-        // Remove from QR
+
         qrItems = qrItems.filter(i => i.productId !== productId);
     }
     refreshQRTable();
@@ -1039,82 +873,48 @@ function filterTable() {
     const checked = document.querySelectorAll(".item-check:checked");
     document.getElementById("select-all").checked = all.length === checked.length;
   });
-      // Update supplier on change
+
     $(document).on("change", ".qr-supplier", function() {
       const productId = $(this).closest("tr").data("productid");
       const supplierId = $(this).val();
       qrItems = qrItems.map(i => i.productId === productId ? { ...i, supplier: supplierId } : i);
     });
 
-    // Toggle all checkboxes when "Select All" is clicked
   document.getElementById("select-all").addEventListener("change", function () {
     const isChecked = this.checked;
     document.querySelectorAll(".item-check").forEach(cb => {
       cb.checked = isChecked;
-    $(cb).trigger('change'); // trigger change to update QR
+    $(cb).trigger('change'); 
     });
 });
 
-
-
-  // Update quantity in QR table
 $(document).on("input", ".qr-qty", function() {
     const productId = $(this).closest("tr").data("productid");
     const qty = Math.max(1, parseInt($(this).val()) || 1);
     qrItems = qrItems.map(i => i.productId === productId ? { ...i, quantity: qty } : i);
 });
 
-// Remove item via button
 $(document).on("click", ".remove-qr", function() {
     const productId = $(this).closest("tr").data("productid");
     qrItems = qrItems.filter(i => i.productId !== productId);
-    // Also uncheck the checkbox in the main table
+
     $(`.item-check[value="${productId}"]`).prop("checked", false);
     refreshQRTable();
 });
 
-// Clear all
+
 $("#clear-qr").click(() => {
     qrItems = [];
     $(".item-check").prop("checked", false);
     refreshQRTable();
 });
-  // $(document).on("click", ".select-btn", function () {
-  //   const productId = $(this).data("productid");
-  //   const name = $(this).data("name");
-  //   if (!qrItems.some(i => i.productId === productId)) {
-  //     qrItems.push({ productId, name, quantity: 1 });
-  //     refreshQRTable();
-  //     alert(`${name} added to Quick Request.`);
-  //   } else {
-  //     alert(`${name} is already in your request list.`);
-  //   }
-  // });
-  // $(document).on("click", ".remove-qr", function () {
-  //   const productId = $(this).closest("tr").data("productid");
-  //   qrItems = qrItems.filter(i => i.productId !== productId);
-  //   refreshQRTable();
-  // });
-  // $(document).on("input", ".qr-qty", function () {
-  //   const productId = $(this).closest("tr").data("productid");
-  //   const qty = Math.max(1, parseInt($(this).val()) || 1);
-  //   qrItems = qrItems.map(i => i.productId === productId ? { ...i, quantity: qty } : i);
-  // });
-  // Clear all
+
 $("#clear-qr").click(() => {
     qrItems = [];
     $(".item-check, #select-all").prop("checked", false);
     refreshQRTable();
 });
-  // $("#submit-qr").click(() => {
-  //   if (!qrItems.length) return alert("Please select at least one item.");
-  //   if (!confirm("Submit this request?")) return;
-  //   $.post("quick_request.php", { items: JSON.stringify(qrItems) }, res => {
-  //     // try { res = JSON.parse(res); } catch (e) { return alert("Unexpected response."); } 
-  //     if (res.success) { alert("Request submitted successfully!"); qrItems = []; refreshQRTable(); }
-  //     else alert("Error: " + (res.message || "failed"));
-  //   }).fail(() => alert("Failed to send request."));
-  // });
+
   $("#submit-qr").click(() => {
     for (let i of qrItems) {
     if (!i.supplier) {
@@ -1135,22 +935,21 @@ $("#clear-qr").click(() => {
   });
   refreshQRTable();
 
-  // Nav
       $(document).ready(function () {
-        //Navigation
+
         $("#dashboard").click(function(){ window.location.href = "dashboard.php"; });
         $("#inventory").click(function(){ window.location.href = "Inventory.php";});
         $("#request").click(function(){ window.location.href = "request_list.php";});
         $("#inventorymanagement").click(function(){ window.location.href = "report_inventory.php";});
         $("#expirationwastage").click(function(){ window.location.href = "report_expiration.php";});
   $(document).ready(function(){
-    const current = window.location.pathname.split("/").pop(); // e.g., report_inventory.php
+    const current = window.location.pathname.split("/").pop();
 
     $(".report-link").each(function(){
       const link = $(this).attr("href");
       if(link === current){
         $(this).addClass("active");
-        $("#reports").addClass("active"); // open dropdown
+        $("#reports").addClass("active"); 
       }
     });
   });
@@ -1165,7 +964,7 @@ $("#clear-qr").click(() => {
       const view = $(this).data("view");
       $("#view-title").text($(this).text());
       $("#view-content").removeClass("cards-container").html(views[view]);
-      validateInventoryReport(); // optional for Inventory report
+      validateInventoryReport(); 
   }); 
 $("#reports").click(function(e){
     e.stopPropagation();
@@ -1210,10 +1009,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-
-
 </script>
-<!-- Batch Modal -->
+
     <div id="batches-modal" style="display:none;">
       <div class="modal-content">
         <span id="close-modal">&times;</span>

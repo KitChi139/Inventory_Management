@@ -8,7 +8,6 @@ if (!isset($_POST['batchID'])) {
 
 $batchID = intval($_POST['batchID']);
 
-// Check if all Approved items have been completed
 $check = $conn->prepare("
     SELECT COUNT(*) 
     FROM requests 
@@ -25,11 +24,10 @@ if ($notCompleted > 0) {
     exit;
 }
 
-// Begin transaction
 $conn->begin_transaction();
 
 try {
-    // 1️⃣ Mark batch as completed
+
     $conn->query("
         UPDATE batches
         SET complete_date = NOW(),
@@ -37,7 +35,6 @@ try {
         WHERE BatchID = $batchID
     ");
 
-    // 2️⃣ Insert approved items into inventory with Status
     $approvedItems = $conn->query("
         SELECT r.ProductID, r.quantity, r.BatchNum, r.ExpirationDate, p.Min_stock, p.Max_stock
         FROM requests r
@@ -51,10 +48,9 @@ try {
     ");
 
     while ($item = $approvedItems->fetch_assoc()) {
-        // Determine Status
+
         $status = ($item['quantity'] > $item['Max_stock']) ? 'Overstock' : 'In Stock';
 
-        // Skip if already in inventory for same batch
         $checkExist = $conn->prepare("
             SELECT COUNT(*) FROM inventory 
             WHERE ProductID = ? AND BatchNum = ?

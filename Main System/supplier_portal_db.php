@@ -1,9 +1,8 @@
 <?php
 require_once 'db_connect.php';
 
-$supplier_id = $_SESSION['SupplierID']; // supplier logged in
+$supplier_id = $_SESSION['SupplierID']; 
 
-// Auto-create requests table if it doesn't exist
 $conn->query("CREATE TABLE IF NOT EXISTS requests (
     request_id INT AUTO_INCREMENT PRIMARY KEY,
     ProductID INT NOT NULL,
@@ -15,22 +14,6 @@ $conn->query("CREATE TABLE IF NOT EXISTS requests (
     FOREIGN KEY (ProductID) REFERENCES products(ProductID) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
-// Fetch inventory items for request list (low stock items)
-// $sql = "SELECT 
-//     i.InventoryID,
-//     i.Quantity,
-//     i.ExpirationDate,
-//     p.ProductID,
-//     p.ProductName,   
-//     c.Category_Name,
-//     s.supplier_name,
-//     i.BatchNum
-// FROM inventory i
-// JOIN products p ON p.ProductID = i.ProductID
-// LEFT JOIN categories c ON c.CategoryID = p.CategoryID
-// LEFT JOIN suppliers s ON s.supplier_id = p.CategoryID
-// WHERE i.Quantity <= 10
-// ORDER BY i.Quantity ASC, p.ProductName ASC";
 
 $sql = "SELECT   
     r.request_id,
@@ -51,7 +34,7 @@ LEFT JOIN categories c ON c.CategoryID = p.CategoryID
 LEFT JOIN batches b ON b.BatchID = r.BatchID
 WHERE r.SupplierID = ?
 ORDER BY b.request_date DESC, r.request_id DESC
-LIMIT 10";  // optional: limit to 10 most recent
+LIMIT 10";  
 
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $supplier_id);
@@ -59,18 +42,13 @@ $stmt->execute();
 $inventoryItems = $stmt->get_result();
 
 
-// Get statistics
-// $totalItems = $conn->query("SELECT COUNT(*) AS total FROM inventory WHERE Quantity <= 10")->fetch_assoc()['total'];
-// $criticalItems = $conn->query("SELECT COUNT(*) AS total FROM inventory WHERE Quantity <= 5")->fetch_assoc()['total'];
-
 $totalItems = $conn->query("SELECT COUNT(*) AS total FROM requests")->fetch_assoc()['total'];
 $criticalItems = $conn->query("SELECT COUNT(*) AS total FROM inventory WHERE Quantity <= 5")->fetch_assoc()['total'];
-// Get distinct suppliers for filter
-// $suppliers = $conn->query("SELECT DISTINCT supplier_name FROM suppliers WHERE supplier_name IS NOT NULL");
+
 $currentMonth = date('m');
 $currentYear = date('Y');
 
-// Total requests this month for this supplier
+
 $totalRequests = $conn->query("SELECT COUNT(*) AS total 
     FROM requests r
     JOIN batches b on b.batchID = r.BatchID
@@ -78,19 +56,16 @@ $totalRequests = $conn->query("SELECT COUNT(*) AS total
     AND MONTH(b.request_date) = $currentMonth 
     AND YEAR(b.request_date) = $currentYear")->fetch_assoc()['total'] ?? 0;
 
-// Pending requests for this supplier
 $pendingRequests = $conn->query("SELECT COUNT(*) AS total 
     FROM requests 
     WHERE SupplierID = $supplier_id 
     AND status = 'Pending'")->fetch_assoc()['total'] ?? 0;
 
-// Approved requests for this supplier
 $approvedRequests = $conn->query("SELECT COUNT(*) AS total 
     FROM requests 
     WHERE SupplierID = $supplier_id 
     AND status = 'Approved'")->fetch_assoc()['total'] ?? 0;
 
-// Completed requests for this supplier
 $completedRequests = $conn->query("SELECT COUNT(*) AS total 
     FROM requests 
     WHERE SupplierID = $supplier_id 
@@ -100,13 +75,11 @@ $totalRequestsAll = $conn->query("SELECT COUNT(*) AS total
     FROM requests 
     WHERE SupplierID = $supplier_id")->fetch_assoc()['total'] ?? 0;
 
-// Declined requests
 $declinedRequests = $conn->query("SELECT COUNT(*) AS total 
     FROM requests 
     WHERE SupplierID = $supplier_id 
     AND status = 'Declined'")->fetch_assoc()['total'] ?? 0;
 
-// Calculate percentages
 $completedPercent = $totalRequestsAll ? round(($completedRequests / $totalRequestsAll) * 100) : 0;
 $approvedPercent = $totalRequestsAll ? round(($approvedRequests / $totalRequestsAll) * 100) : 0;
 $pendingPercent  = $totalRequestsAll ? round(($pendingRequests / $totalRequestsAll) * 100) : 0;
@@ -115,7 +88,6 @@ $declinedPercent  = $totalRequestsAll ? round(($declinedRequests / $totalRequest
 $currentMonth = date('m');
 $currentYear = date('Y');
 
-// Initialize counts
 $statusCounts = [
     'Pending' => 0,
     'Approved' => 0,
@@ -123,7 +95,6 @@ $statusCounts = [
     'Completed' => 0
 ];
 
-// Query counts per status for this supplier for current month
 $statusQuery = $conn->query("
     SELECT b.status, COUNT(*) AS total
     FROM requests r
@@ -154,7 +125,7 @@ while ($row = $statusQuery->fetch_assoc()) {
     <script src="supplier_portal.js" defer></script>
 </head>
 <body>
-    <!-- Top Navigation Bar -->
+
     <header class="top-nav">
         <div class="nav-left">
             <div class="logo-container">
@@ -175,7 +146,6 @@ while ($row = $statusQuery->fetch_assoc()) {
         </div>
     </header>
 
-    <!-- Secondary Navigation Tabs -->
     <nav class="tab-navigation">
         <button id="db" class="tab-link active" data-tab="dashboard">
             <i class="fas fa-chart-line"></i>
@@ -197,25 +167,16 @@ while ($row = $statusQuery->fetch_assoc()) {
             <i class="fas fa-clipboard-check"></i>
             <span>Completed Requests</span>
         </button>
-        <!-- <button id="m" class="tab-link" data-tab="messages">
-            <i class="fas fa-envelope"></i>
-            <span>Messages</span>
-        </button>
-        <button id="cp" class="tab-link" data-tab="company-profile">
-            <i class="fas fa-building"></i>
-            <span>Company Profile</span>
-        </button> -->
+
     </nav>
 
-    <!-- Main Content Area -->
     <main class="main-content">
-        <!-- Dashboard Section -->
+    
         <section class="content" id="dashboard-section">
             <div class="page-header">
                 <h1>Dashboard Overview</h1>
             </div>
 
-            <!-- Summary Cards -->
             <div class="summary-grid">
                 <div class="stat-card yellow-card">
     <div class="stat-header">
@@ -254,7 +215,7 @@ while ($row = $statusQuery->fetch_assoc()) {
 </div>
             </div>
 
-            <!-- Dashboard Widgets -->
+     
             <div class="widgets-grid">
                 <div class="widget-card">
                     <h3 class="widget-title">Request Status Overview</h3>
@@ -328,10 +289,10 @@ const statusBarChart = new Chart(ctx, {
                 <?php echo $statusCounts['Completed']; ?>
             ],
             backgroundColor: [
-                '#FFC107', // Pending - yellow
-                '#2196F3', // Approved - blue
-                '#F44336', // Declined - red
-                '#4CAF50'  // Completed - green
+                '#FFC107', 
+                '#2196F3', 
+                '#F44336', 
+                '#4CAF50' 
             ],
             borderColor: [
                 '#FFC107',
@@ -353,7 +314,7 @@ const statusBarChart = new Chart(ctx, {
                     }
                 }
             },
-            datalabels: {  // <-- Show numbers on top of each bar
+            datalabels: {  
                 anchor: 'end',
                 align: 'end',
                 color: '#000',
@@ -383,11 +344,10 @@ const statusBarChart = new Chart(ctx, {
             }
         }
     },
-    plugins: [ChartDataLabels] // <-- Register the plugin
+    plugins: [ChartDataLabels] 
 });
     $(document).ready(function () {
-        //Navigation
-        // $("#db").click(function(){ window.location.href = "supplier_portal_db.php";});
+
         $("#pr").click(function(){ window.location.href = "supplier_portal_1pr.php";});
         $("#dr").click(function(){ window.location.href = "supplier_portal_2dr.php";});
         $("#ar").click(function(){ window.location.href = "supplier_portal_3ar.php";});
