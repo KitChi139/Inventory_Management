@@ -8,13 +8,12 @@
   ini_set('display_startup_errors', 1);
   error_reporting(E_ALL);
 
-  /* ---------- DB Connection ---------- */
+
   $connection = new mysqli("localhost", "root", "", "inventory_db");
   if ($connection->connect_error) {
       die("Connection Failed: " . $connection->connect_error);
   }
 
-  /* ---------- Handle Registration POST ---------- */
   $success = false;
   $newUserData = null;
   $errorMsg = null;
@@ -28,10 +27,8 @@
 
       $pass = $_POST['pass'] ?? '';
 
-      // Basic server-side validation
         $errors = [];
 
-        // Required fields
         if (!$var1) $errors[] = ($userType === 'employee') ? 'Employee Name is required.' : 'Company Name is required.';
         if (!$var2) $errors[] = ($userType === 'employee') ? 'Employee Number is required.' : 'Contact Person is required.';
         if (!$contact) $errors[] = 'Contact Number is required.';
@@ -39,17 +36,14 @@
         if (!$pass) $errors[] = 'Password is required.';
         if (!$userType) $errors[] = 'User Type is required.';
 
-        // Email format
         if ($email && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $errors[] = 'Invalid email format.';
         }
 
-        // Contact number format (digits only, 7-15 digits)
         if ($contact && !preg_match('/^\d{7,15}$/', $contact)) {
             $errors[] = 'Contact number must be 7-15 digits.';
         }
 
-        // Password strength: minimum 6 characters
         if ($pass && strlen($pass) < 6) {
             $errors[] = 'Password must be at least 6 characters.';
         }
@@ -73,8 +67,8 @@
 
                   if ($count > 0) {
                       $_SESSION['error'] = "Email already exists.";
-                      header("Location: admin.php"); // redirect back
-                      exit(); // stop further execution
+                      header("Location: admin.php"); 
+                      exit(); 
                   }
                   $stmt1 = $connection->prepare("INSERT INTO email (email) VALUES (?)");
                   $stmt1->bind_param("s", $email);
@@ -118,7 +112,6 @@
                   $stmt5->execute();
                   $stmt5->close();
 
-                  // Prepare data for returning to client
                   $newUserData = [
                       'name' => $var1,
                       'empNumber' => $var2,
@@ -126,7 +119,7 @@
                       'email' => $email,
                       'role' => 'Employee'
                   ];
-              } else { // Supplier
+              } else { 
                   $role = "Supplier";
                   $status = "Active";
 
@@ -145,8 +138,8 @@
 
                   if ($count > 0) {
                       $_SESSION['error'] = "Email already exists.";
-                      header("Location: admin.php"); // redirect back
-                      exit(); // stop further execution
+                      header("Location: admin.php"); 
+                      exit(); 
                   }
 
                   $stmt2 = $connection->prepare("INSERT INTO company (companyName, companyPerson) VALUES (?, ?)");
@@ -205,7 +198,7 @@
     $empNumber = trim($_POST['editEmpNumber']);
     $contact = trim($_POST['editContact']);
     $email = trim($_POST['editEmail']);
-    $role = trim($_POST['editRole']); // Add hidden input in modal
+    $role = trim($_POST['editRole']); 
 
     $errors = [];
     if (!$id) $errors[] = 'Invalid user ID.';
@@ -223,7 +216,6 @@
     try {
         $connection->begin_transaction();
 
-        // Validate unique email except current user
         $stmt = $connection->prepare("
             SELECT COUNT(*) FROM email e
             JOIN userinfo ui ON e.emailID = ui.emailID
@@ -242,7 +234,6 @@
             exit();
         }
 
-        // Update email & username
         $stmt = $connection->prepare("
             UPDATE email e
             JOIN userinfo ui ON ui.emailID = e.emailID
@@ -255,7 +246,7 @@
         $stmt->close();
 
         if ($role === 'Employee') {
-            // Update employee info
+
             $stmt = $connection->prepare("
                 UPDATE employee emp
                 JOIN userinfo ui ON ui.empID = emp.empID
@@ -263,7 +254,7 @@
                 WHERE ui.userID = ?
             ");
         } else { 
-            // Supplier updates company + phone number
+
             $stmt = $connection->prepare("
                 UPDATE company c
                 JOIN suppliers s ON s.comID = c.comID
@@ -276,7 +267,6 @@
         $stmt->execute();
         $stmt->close();
 
-        // Update contact
         $stmt = $connection->prepare("
             UPDATE userinfo SET cont_num=? WHERE userID=?
         ");
@@ -317,7 +307,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reactivate_user'])) {
     }
     exit('success');
 }
-  /* ---------- Fetch existing accounts for display in table ---------- */
+
   $accounts = [];
   try {
 $sql = "
@@ -339,7 +329,6 @@ ORDER BY u.userID DESC
           $empNumber = $r['empNum'] ?? '';
           $status = $r['status'] ?? 'Active';
 
-          // determine class
           $rowClass = ($status === 'Disabled') ? 'disabled-row' : '';
 
           $accounts[] = [
@@ -350,13 +339,13 @@ ORDER BY u.userID DESC
               'email' => $r['username'],
               'role' => ucfirst($r['roleName']),
               'status' => $status,
-              'rowClass' => $rowClass   // add this to the array
+              'rowClass' => $rowClass  
           ];
       }
           $res->free();
       }
   } catch (Exception $e) {
-      // ignore fetch errors for display; optionally log them
+
   }
 
   $connection->close();
@@ -460,7 +449,6 @@ ORDER BY u.userID DESC
   <span>Reports</span>
   <ul class="dropdown-menu">
     <li class="report-link" data-view="inventory-management">Inventory Management</li>
-    <!-- <li class="report-link" data-view="pos-requests">POS Exchange</li> -->
     <li class="report-link" data-view="expiration-wastage">Expiration / Wastage</li>
 </ul>
 </li>
@@ -472,7 +460,6 @@ ORDER BY u.userID DESC
 
 
     <div class="main">
-          <!-- Notification + Profile icon (top-right in main content) -->
           <div class="heading-bar">
         <h1>Accounts Overview</h1><div class="topbar-right">
         <div class="profile-container">
@@ -510,7 +497,6 @@ ORDER BY u.userID DESC
           </tr>
         </thead>
         <tbody id="accountsTbody">
-          <!-- Pre-populated server-side rows -->
           <?php foreach ($accounts as $acc): ?>
           <tr class="<?= $acc['rowClass'] ?>"
               data-id="<?= $acc['userID'] ?>"
@@ -542,7 +528,6 @@ ORDER BY u.userID DESC
     </div>
   </div>
 
-    <!-- ADD / REGISTRATION MODAL (replaces your old add modal) -->
     <div class="modal" id="addModal" aria-hidden="true" role="dialog" aria-modal="true" style="display:none;">
       <div class="modal-content">
         <h3>Register New Account</h3>
@@ -599,7 +584,7 @@ ORDER BY u.userID DESC
       </div>
     </div>
 
-    <!-- EDIT MODAL -->
+
     <div class="modal" id="editModal" aria-hidden="true" role="dialog" aria-modal="true" style="display:none;">
       <div class="modal-content">
         <h3>Edit Account</h3>
@@ -645,7 +630,6 @@ ORDER BY u.userID DESC
       </div>
     </div>
 
-    <!-- DELETE CONFIRM MODAL -->
     <div class="modal" id="deleteModal" aria-hidden="true" role="dialog" aria-modal="true" style="display:none;">
       <div class="modal-content">
         <h3>Confirm Delete</h3>
@@ -666,7 +650,7 @@ ORDER BY u.userID DESC
       </div>
     </div>
   </div>
-    <!-- Success Popup -->
+
     <div id="popup" class="popup">
       <div class="popup-content">
         <p>You have successfully registered!</p>
@@ -690,7 +674,6 @@ ORDER BY u.userID DESC
       errorModal.setAttribute('aria-hidden', 'true');
     });
 
-    // optional: click outside modal to close
     window.addEventListener('click', (e) => {
       if (e.target === errorModal) {
         errorModal.style.display = 'none';
@@ -704,7 +687,7 @@ ORDER BY u.userID DESC
     <script src="sidebar.js"></script>
 
     <script>
-      // DOM refs
+
       const addModal = document.getElementById('addModal');
       const editModal = document.getElementById('editModal');
       const deleteModal = document.getElementById('deleteModal');
@@ -718,7 +701,6 @@ ORDER BY u.userID DESC
       const accountsTbody = document.getElementById('accountsTbody');
       const searchInput = document.getElementById('searchInput');
 
-      // Add form fields
       const addFullName = document.getElementById('addFullName');
       const addEmpNumber = document.getElementById('addEmpNumber');
       const addContact = document.getElementById('addContact');
@@ -727,28 +709,25 @@ ORDER BY u.userID DESC
       const addConfirmPassword = document.getElementById('addConfirmPassword');
       const userTypeInput = document.getElementById('userType');
 
-      // Edit form fields
       const editFullName = document.getElementById('editFullName');
       const editEmpNumber = document.getElementById('editEmpNumber');
       const editContact = document.getElementById('editContact');
       const editEmail = document.getElementById('editEmail');
-      // const editRole = document.getElementById('editRole');
+
       const editSaveBtn = document.getElementById('editSaveBtn');
 
-      // Delete confirm
+
       const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
 
-      // Employee / Supplier toggle
+
       const employeeBtn = document.getElementById('employeeBtn');
       const supplierBtn = document.getElementById('supplierBtn');
       const label1 = document.getElementById('label1');
       const label2 = document.getElementById('label2');
 
-      // state
       let editingRow = null;
       let deletingRow = null;
 
-      // helpers
       function openModal(modal) {
         modal.style.display = 'flex';
         modal.setAttribute('aria-hidden', 'false');
@@ -758,7 +737,6 @@ ORDER BY u.userID DESC
         modal.setAttribute('aria-hidden', 'true');
       }
 
-      // clear add form
       function clearAddForm() {
         addFullName.value = '';
         addEmpNumber.value = '';
@@ -767,14 +745,13 @@ ORDER BY u.userID DESC
         userTypeInput.value = 'employee';
         addPassword.value = '';
         addConfirmPassword.value = '';
-        // reset labels
+
         label1.textContent = 'Full Name:';
         label2.textContent = 'Employee Number:';
         employeeBtn.classList.add('active');
         supplierBtn.classList.remove('active');
       }
 
-      // create table row
       function createRow(data) {
         const tr = document.createElement('tr');
         tr.dataset.id = data.id;
@@ -802,7 +779,6 @@ ORDER BY u.userID DESC
         return tr;
       }
 
-      // validate add form (simple)
       function validateAdd() {
         if (!addFullName.value.trim()) { alert('Please enter full name / company name'); addFullName.focus(); return false; }
         if (!addEmail.value.trim()) { alert('Please enter email'); addEmail.focus(); return false; }
@@ -811,23 +787,20 @@ ORDER BY u.userID DESC
         return true;
       }
 
-      // open add modal
       openAddBtn.addEventListener('click', () => {
         clearAddForm();
         openModal(addModal);
       });
       closeAddBtn.addEventListener('click', () => closeModal(addModal));
 
-      // submit add: default form POST will handle server side; use client validation to catch early errors
       document.getElementById('registrationForm').addEventListener('submit', (e) => {
         if (!validateAdd()) {
           e.preventDefault();
           return false;
         }
-        // allow normal form submit (post to admin.php)
+
       });
 
-      // event delegation for edit/delete buttons inside tbody
       accountsTbody.addEventListener('click', (e) => {
     const tr = e.target.closest('tr');
     if (!tr) return;
@@ -835,7 +808,6 @@ ORDER BY u.userID DESC
     const actionsCell = tr.querySelector('td:last-child');
     const statusCell = tr.querySelector('.cell-status');
 
-    // EDIT
     if (e.target.classList.contains('edit-btn')) {
         editingRow = tr;
         document.getElementById('editUserID').value = tr.dataset.id;
@@ -846,7 +818,6 @@ ORDER BY u.userID DESC
         openModal(editModal);
     }
 
-    // DELETE / DEACTIVATE
     if (e.target.classList.contains('delete-btn')) {
         if (!confirm("Are you sure you want to deactivate this account?")) return;
         fetch('admin.php', {
@@ -860,7 +831,6 @@ ORDER BY u.userID DESC
                 statusCell.textContent = 'Disabled';
                 tr.classList.add('disabled-row');
 
-                // Swap buttons: replace Edit/Delete with Reactivate
                 actionsCell.innerHTML = `<button class="action-btn reactivate-btn">Reactivate</button>`;
             } else {
                 alert('Error deactivating account: ' + data);
@@ -868,7 +838,6 @@ ORDER BY u.userID DESC
         }).catch(err => { console.error(err); alert('Error deactivating account.'); });
     }
 
-    // REACTIVATE
     if (e.target.classList.contains('reactivate-btn')) {
         if (!confirm("Are you sure you want to reactivate this account?")) return;
         fetch('admin.php', {
@@ -882,7 +851,6 @@ ORDER BY u.userID DESC
                 statusCell.textContent = 'Active';
                 tr.classList.remove('disabled-row');
 
-                // Swap buttons: replace Reactivate with Edit/Delete
                 actionsCell.innerHTML = `
                     <button class="action-btn edit-btn">Edit</button>
                     <button class="action-btn delete-btn">Delete</button>
@@ -893,20 +861,19 @@ ORDER BY u.userID DESC
         }).catch(err => { console.error(err); alert('Error reactivating user.'); });
     }
 });
-      // save edit
+
       editSaveBtn.addEventListener('click', () => {
         if (!editingRow) return;
-        // basic validation
+
         if (!editFullName.value.trim()) { alert('Please enter full name'); editFullName.focus(); return; }
         if (!editEmail.value.trim()) { alert('Please enter email'); editEmail.focus(); return; }
-        // if (!editRole.value) { alert('Please select a role'); editRole.focus(); return; }
 
         // update cells and dataset
         editingRow.dataset.fullName = editFullName.value.trim();
         editingRow.dataset.empNumber = editEmpNumber.value.trim();
         editingRow.dataset.contact = editContact.value.trim();
         editingRow.dataset.email = editEmail.value.trim();
-        // editingRow.dataset.role = editRole.value;
+
 
         editingRow.querySelector('.cell-name').textContent = editingRow.dataset.fullName;
         editingRow.querySelector('.cell-email').textContent = editingRow.dataset.email;
@@ -929,13 +896,12 @@ ORDER BY u.userID DESC
               return; 
           }
 
-          // Submit the form to backend
           editForm.submit();
       });
 
       closeEditBtn.addEventListener('click', () => { editingRow = null; closeModal(editModal); });
 
-      // delete confirm
+
       confirmDeleteBtn.addEventListener('click', () => {
     if (!deletingRow) return;
     
@@ -949,10 +915,10 @@ ORDER BY u.userID DESC
     .then(res => res.text())
     .then(data => {
         if (data.trim() === 'success') {
-            // only now update UI
+
     if (data.trim() === 'success') {
         deletingRow.querySelector('.cell-status').textContent = 'Disabled';
-        deletingRow.classList.add('disabled-row'); // add the gray-out class
+        deletingRow.classList.add('disabled-row'); 
     }        
     } else {
             alert('Error deactivating account: ' + data);
@@ -967,14 +933,13 @@ ORDER BY u.userID DESC
 });
             closeDeleteBtn.addEventListener('click', () => { deletingRow = null; closeModal(deleteModal); });
 
-      // click outside modal to close
       window.addEventListener('click', (e) => {
         if (e.target === addModal) closeModal(addModal);
         if (e.target === editModal) { editingRow = null; closeModal(editModal); }
         if (e.target === deleteModal) { deletingRow = null; closeModal(deleteModal); }
       });
 
-      // search filter
+
       searchInput.addEventListener('input', () => {
         const q = searchInput.value.trim().toLowerCase();
         Array.from(accountsTbody.children).forEach(tr => {
@@ -986,7 +951,7 @@ ORDER BY u.userID DESC
         });
       });
 
-      // Employee / Supplier toggle behavior (for modal)
+
       employeeBtn.addEventListener('click', () => {
         employeeBtn.classList.add('active');
         supplierBtn.classList.remove('active');
@@ -1016,7 +981,6 @@ ORDER BY u.userID DESC
         $("#logout").click(function(){ window.location.href = "logout.php"; });
       });
 
-      // Show registration success popup and append new row if server created user
       const registrationSuccess = <?= json_encode($success) ?>;
       const newUser = <?= json_encode($newUserData) ?>;
 
@@ -1028,46 +992,45 @@ ORDER BY u.userID DESC
 
       okBtn.addEventListener('click', function() {
         popup.style.display = 'none';
-        // Close the add modal if it's open
+
         closeModal(addModal);
       });
-      // Toggle dropdown
+
 $("#reports").click(function(e){
     e.stopPropagation();
     $(this).toggleClass("active");
 });
 
-// Close dropdown when clicking outside
 $(document).click(function(e){
     if(!$(e.target).closest("#reports").length){
         $("#reports").removeClass("active");
     }
 });
 
-// Report item click loads the view
+
 $(".report-link").click(function(){
     const view = $(this).data("view");
     $("#view-title").text($(this).text());
     $("#view-content").removeClass("cards-container").html(views[view]);
     validateInventoryReport();
-    $("#reports").removeClass("active"); // close dropdown
+    $("#reports").removeClass("active"); 
 });
-// Report item click loads the view directly in main content
+
 $(".report-link").click(function(e){
-    e.stopPropagation(); // prevent bubbling
+    e.stopPropagation(); 
     const view = $(this).data("view");
     $("#view-title").text($(this).text());
     $("#view-content").removeClass("cards-container").html(views[view]);
-    validateInventoryReport(); // update summary colors if needed
+    validateInventoryReport(); 
 });
-// Map data-view values to report URLs
+
 const reportLinks = {
     "inventory-management": "report_inventory.php",
     "pos-requests": "report_pos.php",
     "expiration-wastage": "report_expiration.php"
 };
 
-// Attach click event
+
 document.querySelectorAll(".report-link").forEach(link => {
     link.addEventListener("click", () => {
         const view = link.dataset.view;

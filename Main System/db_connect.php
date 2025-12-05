@@ -1,9 +1,7 @@
 <?php
-// db_connect.php
-// Include session configuration first
+
 require_once 'session_config.php';
 
-// Adjust credentials to your environment
 $host = 'localhost';
 $user = 'root';
 $pass = '';

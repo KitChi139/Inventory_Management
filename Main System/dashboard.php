@@ -1,13 +1,12 @@
   <?php
   require 'db_connect.php';
 
-  // Protect page - require login
+
   if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
     header("Location: login.php");
     exit();
   }
 
-  // Pull any popup message (keeps existing behavior)
   $popupMessage = '';
   if (isset($_SESSION['popupMessage'])) {
       $popupMessage = $_SESSION['popupMessage'];
@@ -24,16 +23,7 @@
       $total_value = $row['total_value'] ?? 0;
   }
 
-  /*
-    ---------- DYNAMIC DATA BUILD ----------
-    Using schema from your uploaded SQL:
-    - inventory table: InventoryID, ProductID, Quantity, ExpirationDate, Status
-    - products table: ProductID, ProductName, CategoryID, Min_stock
-    - categories table: CategoryID, Category_Name
-    - requests table: request_id, status
-  */
 
-  // 1) Fetch inventory rows joined with product and category (to get Min_stock)
   $inventory_rows = [];
   try {
       $sql = "
@@ -53,8 +43,8 @@
       $res = $conn->query($sql);
       while ($r = $res->fetch_assoc()) {
         $r['Quantity'] = (int)($r['Quantity'] ?? 0);
-        // determine status using rule: qty == 0 => Out of Stock; qty < Min_stock => Low Stock; else In Stock
-        $min = isset($r['Min_stock']) ? (int)$r['Min_stock'] : 5; // fallback Min_stock = 5 if null
+
+        $min = isset($r['Min_stock']) ? (int)$r['Min_stock'] : 5; 
         if ($r['Quantity'] === 0) {
           $r['computed_status'] = 'Out of Stock';
           $r['status_class'] = 'status-out';
@@ -71,9 +61,9 @@
       $inventory_rows = [];
   }
 
-  // 2) Aggregate totals
-  $total_rows = count($inventory_rows);             // number of inventory rows (batches)
-  $total_quantity = array_sum(array_map(fn($i) => $i['Quantity'], $inventory_rows)); // sum of quantities
+
+  $total_rows = count($inventory_rows);             
+  $total_quantity = array_sum(array_map(fn($i) => $i['Quantity'], $inventory_rows)); 
 
   $in_rows = count(array_filter($inventory_rows, fn($i) => $i['computed_status'] === 'In Stock'));
   $low_rows = count(array_filter($inventory_rows, fn($i) => $i['computed_status'] === 'Low Stock'));
@@ -83,7 +73,6 @@
   $low_perc = $total_rows > 0 ? round(($low_rows / $total_rows) * 100) : 0;
   $out_perc = $total_rows > 0 ? round(($out_rows / $total_rows) * 100) : 0;
 
-  // 3) Pending requests count
   $pending_requests = 0;
   try {
     $stmt = $conn->prepare("SELECT COUNT(*) FROM requests WHERE status = 'Pending'");
@@ -95,7 +84,7 @@
     $pending_requests = 0;
   }
 
-  // 4) Category summary: for each category, how many inventory rows, and whether any are low
+
   $categories = [];
   try {
     $sql = "
@@ -120,9 +109,8 @@
       ];
     }
 
-    // determine per-category low/out flags by scanning inventory_rows
     foreach ($inventory_rows as $ir) {
-      if (empty($ir['CategoryID'])) continue; // skip items with no category
+      if (empty($ir['CategoryID'])) continue; 
       $catId = (int)$ir['CategoryID'];
       if (!isset($categories[$catId])) continue;
 
@@ -133,22 +121,21 @@
           $categories[$catId]['has_out'] = true;
       }
   }
-  // Mark categories with total_quantity = 0 as OUT
+
   foreach ($categories as $catId => $cat) {
       if ((int)$cat['total_quantity'] === 0) {
           $categories[$catId]['has_out'] = true;
-          $categories[$catId]['has_low'] = false; // optional
+          $categories[$catId]['has_low'] = false; 
       }
   }
   } catch (Throwable $e) {
     $categories = [];
   }
 
-  // ---------- EXPIRATION TIMELINE (improved) ----------
   $expirations = [];
 
   try {
-      // window: show items expired in last 30 days, and items expiring within next 365 days
+
       $start = date('Y-m-d', strtotime('-30 days'));
       $end   = date('Y-m-d', strtotime('+365 days'));
 
@@ -167,12 +154,12 @@
   $stmt->bind_param('s', $end);
 
 
-      // $stmt->bind_param('ss', $start, $end);
+
       $stmt->execute();
       $stmt->bind_result($iid, $pname, $expd, $qty);
       while ($stmt->fetch()) {
-          // normalize values and compute days difference relative to today
-          $expDate = $expd; // string from DB
+         
+          $expDate = $expd; 
           $daysLeft = null;
           if ($expDate && strtotime($expDate) !== false) {
               $daysLeft = (int)floor((strtotime($expDate) - strtotime(date('Y-m-d'))) / 86400);
@@ -187,7 +174,7 @@
       }
       $stmt->close();
   } catch (Throwable $e) {
-      // keep $expirations as empty on error
+      
       $expirations = [];
   }
 
@@ -206,33 +193,31 @@
 
 
     <style>
-      /* small inline helpers so labels look good if your CSS misses them */
+      
       .status-label { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size: 18px; }
       .status-label span:first-child { font-weight: 600; font-size: 18px; }
       .status-label .details { color:#555; font-weight:600; font-size: 18px; }
       .progress-bar { background:#e6e6e6; height:10px; border-radius:8px; overflow:hidden; }
       .progress { height:100%; border-radius:8px; }
       .progress.in-stock { background:#28b463; }
-      .progress.low-stock { background:#e05a47; } /* orange/red-ish to match your theme */
+      .progress.low-stock { background:#e05a47; } 
       .progress.out-stock { background:#8a8a8a; }
       .tag { display:inline-block; padding:4px 8px; border-radius:999px; font-size:.78rem; margin-left:8px; font-weight:700; color:#fff; }
       .tag.low { background: #f05a5a; }
       .tag.good { background: #0b66a1; }
       .expiration .table { width:100%; margin-top: 15px !important; border-collapse: collapse; }
-      /* optional helpers for clearer expiration states */
       .expiration .table td { padding: 6px 8px; font-size: 15px; border-bottom: 1px solid #f1f3f6; }
       .expiration small { font-weight:600; }
       .expiration .table tr { margin-bottom: 4px;}
-  /* Universal dropdown for Reports */
+
   .has-dropdown {
     position: relative;
   }
 
-  /* Dropdown menu hidden by default */
   .has-dropdown .dropdown-menu {
     display: none;
     position: absolute;
-    top: 100%; /* Below the nav item */
+    top: 100%; 
     left: 0;
     background: white;
     list-style: none;
@@ -244,12 +229,12 @@
     z-index: 10;
   }
 
-  /* Show dropdown on hover */
+
   .has-dropdown:hover .dropdown-menu {
     display: block;
   }
 
-  /* Dropdown items */
+
   .has-dropdown .dropdown-menu li {
     padding: 12px 16px;
     cursor: pointer;
@@ -284,9 +269,6 @@
   <li>
     <a class="report-link" href="report_inventory.php">Inventory Management</a>
   </li>
-  <!-- <li>
-    <a class="report-link" href="report_pos.php">POS Exchange</a>
-  </li> -->
   <li>
     <a class="report-link" href="report_expiration.php">Expiration / Wastage</a>
   </li>
@@ -305,8 +287,6 @@
 
     <main class="main">
 
-
-      <!-- Heading Bar -->
       <div class="heading-bar">
         <h1>Dashboard Overview</h1>
         <div class="topbar-right">
@@ -319,8 +299,6 @@
       </div>   
       </div>
 
-
-  <!-- Cards Container -->
   <div class="cards">
     <div class="card">
       <h4>Total Items per Unit</h4>
@@ -399,7 +377,7 @@
           $label = '<span class="tag good">GOOD</span>';
       }
 
-      if ($countShown >= 3) break; // only show first 3
+      if ($countShown >= 3) break; 
 
       echo '<p style="margin:8px 0; font-size:18px;">' 
           . htmlspecialchars($cat['name']) .
@@ -433,25 +411,21 @@
     <?php 
     $shown = 0;
     foreach ($expirations as $e): 
-        if ($shown >= 3) break; // only show first 3
+        if ($shown >= 3) break; 
         $shown++;
         
-        // label for days left
+      
         $days = $e['daysLeft'];
         $label = '';
 
   if ($days < 0) {
-      // Already expired — excluded by SQL, but keep fallback
       $label = '<span style="color:#c4162e; font-weight:700;">Expired '.abs($days).'d ago</span>';
   } elseif ($days <= 7) {
-      // Urgent: expiring within 7 days
       $label = '<span style="background:#c4162e; color:#fff; font-weight:700; padding:2px 6px; border-radius:6px;">URGENT</span> ' .
               '<span style="color:#c4162e; font-weight:700;">'.$days.'d left</span>';
   } elseif ($days <= 30) {
-      // Normal soon-to-expire
       $label = '<span style="color:#e07b2f; font-weight:700;">'.$days.'d left</span>';
   } else {
-      // Safe
       $label = '<span style="color:#4c636f;">'.$days.'d left</span>';
   }
 
@@ -489,7 +463,6 @@
     <a href="settings.php" class="btn"><i class="fa-solid fa-gear"></i> Settings</a>
   </div>
 
-      <!-- Category List Modal -->
   <div id="categoryModal" class="modal" style="
       display:none; position:fixed; inset:0; 
       background:rgba(0,0,0,0.35); justify-content:center; align-items:center; z-index:2000;
@@ -503,7 +476,6 @@
       <div style="max-height:300px; overflow-y:auto; margin-top:15px;">
           <?php foreach ($categories as $cat): ?>
               <?php 
-                  // PRIORITY: OUT > LOW > GOOD
                   if (!empty($cat['has_out'])) {
                       $label = '<span class="tag out">OUT</span>';
                   } elseif (!empty($cat['has_low'])) {
@@ -540,7 +512,6 @@
   </div>
   </div>
 
-  <!-- Expiration List Modal -->
   <div id="expirationModal" class="modal" style="
       display:none; position:fixed; inset:0; 
       background:rgba(0,0,0,0.35); justify-content:center; align-items:center; z-index:2000;
@@ -584,10 +555,6 @@
         </button>
     </div>
   </div>
-
-
-
-    </div> <!-- /dashboard-grid -->
     </main>
 
     <script src="sidebar.js"></script>
@@ -616,13 +583,13 @@
       }
   });
   $(document).ready(function(){
-    const current = window.location.pathname.split("/").pop(); // e.g., report_inventory.php
+    const current = window.location.pathname.split("/").pop(); 
 
     $(".report-link").each(function(){
       const link = $(this).attr("href");
       if(link === current){
         $(this).addClass("active");
-        $("#reports").addClass("active"); // open dropdown
+        $("#reports").addClass("active"); 
       }
     });
   });
@@ -632,23 +599,18 @@
         $("#logout").click(function(){ window.location.href = "logout.php"; });
       });
 
-      // Category Modal Controls
+
   $("#show-all-categories").click(function () {
       $("#categoryModal").css("display", "flex");
   });
-
   $("#closeCategoryModal").click(function () {
       $("#categoryModal").hide();
   });
-
-  // Close if clicking outside modal content
   $(window).on("click", function (e) {
       if ($(e.target).attr("id") === "categoryModal") {
           $("#categoryModal").hide();
       }
   });
-
-  // Expiration Modal Controls
   $("#show-all-expirations").click(function () {
       $("#expirationModal").css("display", "flex");
   });
@@ -656,24 +618,18 @@
   $("#closeExpirationModal").click(function () {
       $("#expirationModal").hide();
   });
-
-  // Close popup when clicking outside
   $(window).on("click", function (e) {
       if ($(e.target).attr("id") === "expirationModal") {
           $("#expirationModal").hide();
       }
   });
-
-  // Load report content in main area
   $(document).on("click", ".report-link", function(e){
       e.stopPropagation();
       const view = $(this).data("view");
       $("#view-title").text($(this).text());
       $("#view-content").removeClass("cards-container").html(views[view]);
-      validateInventoryReport(); // optional for Inventory report
+      validateInventoryReport(); 
   });
-
     </script>
-
   </body>
   </html>

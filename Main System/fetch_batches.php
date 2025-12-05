@@ -43,10 +43,9 @@ if (isset($_POST['product_id'])) {
         while ($row = $result->fetch_assoc()) {
             $unit = htmlspecialchars($row['Unit'] ?? '-');
             $quantity = (int)$row['Quantity'];
-            // Quantity per unit is the same as quantity for each batch
+
             $quantityPerUnit = $quantity;
             
-            // Format expiration date
             $expirationDate = $row['ExpirationDate'];
             if ($expirationDate && $expirationDate !== '0000-00-00' && $expirationDate !== null) {
                 $expirationDate = date('Y-m-d', strtotime($expirationDate));
