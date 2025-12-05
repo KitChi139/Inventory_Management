@@ -167,21 +167,17 @@ $suppliers = $conn->query("SELECT DISTINCT CompanyName FROM company WHERE Compan
 
     <!-- Main Content -->
     <main class="main">
-        <!-- Notification + Profile icon (top-right) -->
-        <div class="topbar-right">
-            <button class="messages-btn" onclick="window.location.href='message_list.php'">
-                <i class="fa-solid fa-envelope"></i>
-                <span>Messages</span>
-            </button>
-            <?php include 'notification_component.php'; ?>
-            <div class="profile-icon">
-                <i class="fa-solid fa-user"></i>
-            </div>
-        </div>
 
-        <!-- Heading Bar -->
         <div class="heading-bar">
             <h1>Request List</h1>   
+            <div class="topbar-right">
+            <div class="profile-container">
+            <i class="fa-solid fa-user profile-icon"></i>
+            <div class="profile-info">
+                <small><?= htmlspecialchars(ucfirst($_SESSION['role'] ?? 'employee')) ?></small>
+            </div>
+            </div>
+        </div>
         </div>
 
         <!-- Statistics Cards -->

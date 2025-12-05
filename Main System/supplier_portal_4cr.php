@@ -32,7 +32,7 @@ $approvedRequests = $stmt->get_result();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Supplier Portal - MediSync</title>
-    <link rel="stylesheet" href="supplier_portal.css">
+    <link rel="stylesheet" href="styles/supplier_portal.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>   
     <script src="supplier_portal.js" defer></script>
@@ -65,7 +65,7 @@ $approvedRequests = $stmt->get_result();
             <i class="fas fa-chart-line"></i>
             <span>Dashboard</span>
         </button>
-        <button id="pr" class="tab-link active" data-tab="pending-requests">
+        <button id="pr" class="tab-link" data-tab="pending-requests">
             <i class="fas fa-hourglass-half"></i>
             <span>Pending Requests</span>
         </button>
@@ -77,7 +77,7 @@ $approvedRequests = $stmt->get_result();
             <i class="fas fa-check-circle"></i>
             <span>Approved Requests</span>
         </button>
-        <button id="cr" class="tab-link" data-tab="completed-requests">
+        <button id="cr" class="tab-link active" data-tab="completed-requests">
             <i class="fas fa-clipboard-check"></i>
             <span>Completed Requests</span>
         </button>
@@ -110,8 +110,6 @@ $approvedRequests = $stmt->get_result();
             <option value="Antihistamines / Antiallergics">Antihistamines / Antiallergics</option>
             <option value="Antacids / Antiulcerants">Antacids / Antiulcerants</option>
         </select>
-        <!-- Optional: include only if you want date filtering -->
-        <input type="date" id="dateFilter" />
         <button class="btn btn-secondary" onclick="clearFilters()">Clear</button>
         </div>
 

@@ -357,8 +357,6 @@ try {
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <link rel="stylesheet" href="styles/sidebar.css" />
 <link rel="stylesheet" href="styles/inventory.css" />
-<link rel="stylesheet" href="styles/notification.css">
-<script src="notification.js" defer></script>
 <style>
 /* (minimal safe styles; keep your inventory.css) */
 .status-ok { color:#12805c; font-weight:600; } .status-low { color:#b48a00; font-weight:600; } .status-out { color:#c5162e; font-weight:600; }
@@ -463,9 +461,11 @@ try {
     <h1>Inventory</h1>
     
      <div class="topbar-right">
-    <?php include 'notification_component.php'; ?>
-    <div class="profile-icon">
-      <i class="fa-solid fa-user"></i>
+     <div class="profile-container">
+      <i class="fa-solid fa-user profile-icon"></i>
+      <div class="profile-info">
+        <small><?= htmlspecialchars(ucfirst($_SESSION['role'] ?? 'employee')) ?></small>
+      </div>
     </div>
   </div>
   </div>
@@ -1209,26 +1209,8 @@ document.addEventListener('DOMContentLoaded', () => {
     applyFilters();
   });
 });
-function loadNotifications() {
-    $.ajax({
-        url: "get_notifications.php",
-        method: "GET",
-        dataType: "json",
-        success: function(data) {
-            let total = data.messages + data.lowstock;
 
-            if (total > 0) {
-                $("#notifBadge").text(total).show();
-            } else {
-                $("#notifBadge").hide();
-            }
-        }
-    });
-}
-loadNotifications();
 
-// Refresh every 10 seconds
-setInterval(loadNotifications, 10000);
 
 </script>
 <!-- Batch Modal -->

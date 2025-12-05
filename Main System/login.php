@@ -8,10 +8,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = trim($_POST['username']);
     $password = trim($_POST['password']);
 
-    $stmt = $connection -> prepare("SELECT u.*, ur.roleName 
-                                    FROM users AS u
-                                    JOIN userroles AS ur on u.roleID = ur.roleID 
-                                    WHERE username = ? ");
+    $stmt = $connection->prepare(
+        "SELECT u.*, ur.roleName, s.SupplierID 
+        FROM users AS u
+        JOIN userroles AS ur ON u.roleID = ur.roleID 
+        JOIN userinfo AS ui on ui.userID = u.userID
+        LEFT JOIN suppliers s on s.SupplierID = ui.SupplierID
+        WHERE username = ?"
+    );
     $stmt -> bind_param("s", $username);
     $stmt -> execute();
 
@@ -29,10 +33,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                   header("Location: dashboard.php");
                   exit();
                 } elseif ($user['roleName'] === 'Supplier') {
+                      $_SESSION['SupplierID'] = $user['SupplierID'];
                   $_SESSION['popupMessage'] = "You have successfully logged in to the Supplier Portal!";
+                    header("Location: supplier_portal_db.php");
+                    exit();
                 } elseif ($user['roleName'] === 'Admin') {
                   $_SESSION['popupMessage'] = "You have successfully logged in to the Admin Portal!";
                   header("Location:dashboard.php");
+                  
                 }
               }
                 
