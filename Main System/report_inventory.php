@@ -163,8 +163,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Inventory Management Report</title>
-    <link rel="stylesheet" href="sidebar.css" />
-    <link rel="stylesheet" href="notification.css" />
+    <link rel="stylesheet" href="styles/sidebar.css" />
+    <link rel="stylesheet" href="styles/notification.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <style>

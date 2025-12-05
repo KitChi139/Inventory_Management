@@ -81,7 +81,7 @@ $suppliers = $conn->query("SELECT DISTINCT CompanyName FROM company WHERE Compan
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Request List</title>
-    <link rel="stylesheet" href="sidebar.css">
+    <link rel="stylesheet" href="styles/sidebar.css">
     <style>
 /* Universal dropdown for Reports */
   .has-dropdown {
@@ -120,8 +120,8 @@ $suppliers = $conn->query("SELECT DISTINCT CompanyName FROM company WHERE Compan
     background-color: #f0f6ff;
   }
         </style>
-    <link rel="stylesheet" href="request_list.css">
-    <link rel="stylesheet" href="notification.css">
+    <link rel="stylesheet" href="styles/request_list.css">
+    <link rel="stylesheet" href="styles/notification.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 </head>

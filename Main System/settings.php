@@ -24,9 +24,9 @@ $units = $conn->query("SELECT UnitID, UnitName FROM units ORDER BY UnitName")->f
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Settings</title>
-<link rel="stylesheet" href="sidebar.css">
-<link rel="stylesheet" href="dashboard.css">
-<link rel="stylesheet" href="notification.css">
+<link rel="stylesheet" href="styles/sidebar.css">
+<link rel="stylesheet" href="styles/dashboard.css">
+<link rel="stylesheet" href="styles/notification.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
 /* Scrollable table */
