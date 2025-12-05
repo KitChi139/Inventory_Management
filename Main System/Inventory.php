@@ -660,7 +660,7 @@ try {
 
         <table id="qr-table" class="qr-table">
           <thead><tr><th>Item</th><th>Quantity</th><th>Supplier</th><th>Action</th></tr></thead>
-          <tbody id="qr-items"><tr class="empty"><td colspan="3" style="text-align:center;color:#999; font-size: 16px;">No items selected</td></tr></tbody>
+          <tbody id="qr-items"><tr class="empty"><td colspan="4" style="text-align:center;color:#999; font-size: 16px;">No items selected</td></tr></tbody>
             
         </table>
         <div class="qr-summary">
@@ -989,7 +989,7 @@ function filterTable() {
   function refreshQRTable() {
     const $tbody = $("#qr-items").empty();
     if (qrItems.length === 0) {
-      $tbody.append(`<tr class="empty"><td colspan="3" style="text-align:center;color:#999;">No items selected</td></tr>`);
+      $tbody.append(`<tr class="empty"><td colspan="4" style="text-align:center;color:#999;">No items selected</td></tr>`);
     } else {
       qrItems.forEach(item => {
         const supplierOptions = `<?php
@@ -1011,7 +1011,7 @@ function filterTable() {
                 ${supplierOptions}
               </select>
             </td>
-            <td>...</td>
+            <td><button class="remove-qr">X</button></td>
           </tr>
         `);
       });

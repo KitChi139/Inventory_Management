@@ -481,6 +481,25 @@ html, body {
   font-size: 14px;
 }
 
+.qr-table .remove-qr {
+  background: var(--danger);
+  color: #fff;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.qr-table .remove-qr:hover {
+  background: #d32f2f;
+}
+
 .qr-table .empty td {
   text-align: center;
   color: #999;
@@ -942,4 +961,18 @@ html, body {
     font-size: 15px;
     transition: all 0.2s;
 
+}
+
+.remove-btn {
+  background: none;
+  border: none;
+  color: #c5162e;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+.remove-btn:hover {
+  background: rgba(197,22,46,0.1);
 }
