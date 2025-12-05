@@ -1,12 +1,12 @@
 <?php
 require_once 'db_connect.php';
-// Protect page - require login
+
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
   header("Location: login.php");
   exit();
 }
 
-// Auto-create requests table if it doesn't exist
+
 $conn->query("CREATE TABLE IF NOT EXISTS requests (
     request_id INT AUTO_INCREMENT PRIMARY KEY,
     ProductID INT NOT NULL,
@@ -18,23 +18,6 @@ $conn->query("CREATE TABLE IF NOT EXISTS requests (
     FOREIGN KEY (ProductID) REFERENCES products(ProductID) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
-// Fetch inventory items for request list (low stock items)
-// $sql = "SELECT 
-//     i.InventoryID,
-//     i.Quantity,
-//     i.ExpirationDate,
-//     p.ProductID,
-//     p.ProductName,
-//     c.Category_Name,
-//     s.supplier_name,
-//     i.BatchNum
-// FROM inventory i
-// JOIN products p ON p.ProductID = i.ProductID
-// LEFT JOIN categories c ON c.CategoryID = p.CategoryID
-// LEFT JOIN suppliers s ON s.supplier_id = p.CategoryID
-// WHERE i.Quantity <= 10
-// ORDER BY i.Quantity ASC, p.ProductName ASC";
-
 $sql = "SELECT 
         b.BatchID,
         b.request_date,
@@ -42,18 +25,6 @@ $sql = "SELECT
         b.complete_date,
         com.companyName,
         b.status AS batch_status
-
-        -- CASE
-        --     WHEN SUM(r.status = 'Pending') > 0 THEN 'Pending'
-        --     WHEN SUM(r.status = 'Approved') > 0 THEN 'Approved'
-        --     WHEN SUM(r.status = 'Declined') > 0 
-        --          AND SUM(r.status = 'Completed') = 0 THEN 'Declined'
-        --     WHEN SUM(r.status = 'Completed') = COUNT(r.BatchID) THEN 'Completed'
-        --     WHEN SUM(r.status = 'Approved') > 0 
-        --          AND SUM(r.status = 'Declined') > 0 THEN 'Partially Approved'
-        --     ELSE 'Unknown'
-        -- END AS batch_status
-
     FROM batches b
     LEFT JOIN requests r ON r.BatchID = b.BatchID
     LEFT JOIN suppliers s ON s.SupplierID = r.SupplierID
@@ -66,13 +37,9 @@ $batchList = $conn->query($sql);
 
 $inventoryItems = $conn->query($sql);
 
-// Get statistics
-// $totalItems = $conn->query("SELECT COUNT(*) AS total FROM inventory WHERE Quantity <= 10")->fetch_assoc()['total'];
-// $criticalItems = $conn->query("SELECT COUNT(*) AS total FROM inventory WHERE Quantity <= 5")->fetch_assoc()['total'];
-
 $totalItems = $conn->query("SELECT COUNT(*) AS total FROM requests")->fetch_assoc()['total'];
 $criticalItems = $conn->query("SELECT COUNT(*) AS total FROM inventory WHERE Quantity <= 5")->fetch_assoc()['total'];
-// Get distinct suppliers for filter
+
 $suppliers = $conn->query("SELECT DISTINCT CompanyName FROM company WHERE CompanyName IS NOT NULL");
 ?>
 <!DOCTYPE html>
@@ -83,16 +50,15 @@ $suppliers = $conn->query("SELECT DISTINCT CompanyName FROM company WHERE Compan
     <title>Request List</title>
     <link rel="stylesheet" href="styles/sidebar.css">
     <style>
-/* Universal dropdown for Reports */
+
   .has-dropdown {
     position: relative;
   }
 
-  /* Dropdown menu hidden by default */
   .has-dropdown .dropdown-menu {
     display: none;
     position: absolute;
-    top: 100%; /* Below the nav item */
+    top: 100%; 
     left: 0;
     background: white;
     list-style: none;
@@ -104,12 +70,10 @@ $suppliers = $conn->query("SELECT DISTINCT CompanyName FROM company WHERE Compan
     z-index: 10;
   }
 
-  /* Show dropdown on hover */
   .has-dropdown:hover .dropdown-menu {
     display: block;
   }
 
-  /* Dropdown items */
   .has-dropdown .dropdown-menu li {
     padding: 12px 16px;
     cursor: pointer;
@@ -127,8 +91,6 @@ $suppliers = $conn->query("SELECT DISTINCT CompanyName FROM company WHERE Compan
 </head>
 <body>
 
-
-    <!-- Sidebar -->
 <aside class="sidebar" id="sidebar">
   <div class="profile">
     <div class="icon">
@@ -146,9 +108,6 @@ $suppliers = $conn->query("SELECT DISTINCT CompanyName FROM company WHERE Compan
   <li id="inventorymanagement">
     <a class="report-link">Inventory Management</a>
   </li>
-  <!-- <li>
-    <a class="report-link" href="report_pos.php">POS Exchange</a>
-  </li> -->
   <li id="expirationwastage">
     <a class="report-link">Expiration / Wastage</a>
   </li>
@@ -165,14 +124,12 @@ $suppliers = $conn->query("SELECT DISTINCT CompanyName FROM company WHERE Compan
       </ul>
 </aside>
 
-    <!-- Main Content -->
     <main class="main">
 
           <div class="heading-bar">
     <h1>Request List</h1>
   </div>
 
-        <!-- Statistics Cards -->
         <section class="stats-cards">
             <div class="stat-card">
                 <div class="stat-title">Total Items</div>
@@ -188,7 +145,6 @@ $suppliers = $conn->query("SELECT DISTINCT CompanyName FROM company WHERE Compan
             </div>
         </section>
 
-        <!-- Filters -->
         <section class="filters">
             <input type="text" class="search-input" id="search-input" placeholder="Search batch number or item name...">
             <select class="filter-dropdown" id="supplier-filter">
@@ -209,7 +165,6 @@ $suppliers = $conn->query("SELECT DISTINCT CompanyName FROM company WHERE Compan
             <button class="btn-clear" id="clear-filters">Clear Selection</button>
         </section>
 
-        <!-- Main Layout: Single Column -->
         <section class="layout">
             <div class="requests-column">
                 <div class="table-container">
@@ -248,7 +203,7 @@ $suppliers = $conn->query("SELECT DISTINCT CompanyName FROM company WHERE Compan
             </div>
         </section>
     </main>
-    <!-- // modal -->
+
 <div class="modal" id="batch-modal" style="display:none;">
     <div class="modal-content">
         <h2>Batch Details</h2>
@@ -276,7 +231,7 @@ $suppliers = $conn->query("SELECT DISTINCT CompanyName FROM company WHERE Compan
                 </tr>
             </thead>
             <tbody id="batch-items-body">
-                <!-- Filled via AJAX -->
+
             </tbody>
         </table>
         <div class="modal-actions">
@@ -287,7 +242,7 @@ $suppliers = $conn->query("SELECT DISTINCT CompanyName FROM company WHERE Compan
         <button class="btn-secondary close-batch-modal">Close</button>
     </div>
 </div>
-    <!-- Contact Modal -->
+
     <div class="modal" id="contact-modal" style="display:none;">
         <div class="modal-content">
             <h2>Contact Supplier</h2>
@@ -338,29 +293,25 @@ $suppliers = $conn->query("SELECT DISTINCT CompanyName FROM company WHERE Compan
     </div>
     <script src="sidebar.js"></script>
     <script>
-        let confirmCallback = null; // function to call when confirmed
+        let confirmCallback = null; 
 
-        // Show confirmation modal
         function showConfirmation(message, callback) {
             $('#confirmation-message').text(message);
             confirmCallback = callback;
             $('#confirmation-modal').fadeIn(150);
         }
 
-        // Cancel button
         $('#cancel-confirmation').on('click', function() {
             $('#confirmation-modal').fadeOut(150);
             confirmCallback = null;
         });
 
-        // Confirm button
         $('#confirm-action').on('click', function() {
             if (confirmCallback) confirmCallback();
             $('#confirmation-modal').fadeOut(150);
             confirmCallback = null;
         });
 
-        // Close modal on clicking outside
         $('#confirmation-modal').on('click', function(e) {
             if (e.target.id === 'confirmation-modal') $('#confirmation-modal').fadeOut(150);
         });
@@ -380,13 +331,11 @@ $.ajax({
         $('#batch-items-body').html(data.html);
 
         if (data.batch_status && data.batch_status.toLowerCase() === 'completed') {
-            // Batch itself is marked completed
             $("#mark-batch-complete")
                 .prop("disabled", true)
                 .css("opacity", "0.5")
                 .text("Batch Complete");
         } else if (data.incomplete > 0) {
-            // Items still incomplete
             $("#mark-batch-complete")
                 .prop("disabled", true)
                 .css("opacity", "0.5")
@@ -395,13 +344,12 @@ $.ajax({
             $("#warning-message").html(`⚠ ${data.incomplete} item(s) still incomplete`);
             $("#warning-modal").fadeIn(150);
         } else {
-            // Not completed yet and all items completed
             $("#mark-batch-complete")
                 .prop("disabled", false)
                 .css("opacity", "1")
                 .text("Mark Batch Complete");
 
-            $("#warning-modal").fadeOut(0); // hide if no warning
+            $("#warning-modal").fadeOut(0); 
         }
     },
     error: function() {
@@ -411,30 +359,12 @@ $.ajax({
 
 });
 
-    // Close modal
+
     $('.close-batch-modal').on('click', () => $('#batch-modal').hide());
     $('#batch-modal').on('click', function(e) {
         if (e.target.id === 'batch-modal') $(this).hide();
     });
-        // // Select all checkbox
-        // document.getElementById('select-all').addEventListener('change', (e) => {
-        //     const checkboxes = document.querySelectorAll('.row-checkbox');
-        //     checkboxes.forEach(cb => cb.checked = e.target.checked);
-        //     updateSelectedCount();
-        // });
 
-        // // Row checkbox change
-        // document.querySelectorAll('.row-checkbox').forEach(cb => {
-        //     cb.addEventListener('change', updateSelectedCount);
-        // });
-
-        // function updateSelectedCount() {
-        //     const selected = document.querySelectorAll('.row-checkbox:checked').length;
-        //     document.getElementById('selected-count').textContent = selected;
-        // }
-
-        // Search and filter
-        // Search and filter
         $('#search-input').on('keyup', function() {
             const search = $(this).val().toLowerCase();
             const category = $('#category-filter').val().toLowerCase();
@@ -464,13 +394,6 @@ $.ajax({
             $('#search-input').trigger('keyup');
         });
 
-
-        // Clear selection
-        // $('#clear-selection').on('click', function() {
-        //     $('.row-checkbox').prop('checked', false);
-        //     $('#select-all').prop('checked', false);
-        //     updateSelectedCount();
-        // });
         $(document).on("click", ".item-complete-btn", function () {
     const requestID = $(this).data("requestid");
 
@@ -559,41 +482,10 @@ $("#close-warning").on("click", function () {
     $("#warning-modal").fadeOut(150);
 });
 
-// Close when clicking outside modal-content
 $("#warning-modal").on("click", function (e) {
     if (e.target.id === "warning-modal") $("#warning-modal").fadeOut(150);
 });
-        // Create purchase request
-        // $('#create-purchase-request').on('click', function() {
-        //     const selected = [];
-        //     $('.row-checkbox:checked').each(function() {
-        //         selected.push({
-        //             productId: $(this).data('product-id'),
-        //             productName: $(this).data('product-name')
-        //         });
-        //     });
-            
-        //     if (selected.length === 0) {
-        //         alert('Please select at least one item to create a purchase request.');
-        //         return;
-        //     }
-            
-        //     // Send to bulk request handler
-        //     $.ajax({
-        //         url: 'request_stock_bulk.php',
-        //         method: 'POST',
-        //         data: { items: selected },
-        //         success: function(response) {
-        //             alert('Purchase request created successfully!');
-        //             location.reload();
-        //         },
-        //         error: function() {
-        //             alert('Error creating purchase request. Please try again.');
-        //         }
-        //     });
-        // });
 
-        // Modal functionality
         const closeModalBtn = document.getElementById('close-modal');
         if (closeModalBtn) {
             closeModalBtn.addEventListener('click', () => {
@@ -601,34 +493,31 @@ $("#warning-modal").on("click", function (e) {
             });
         }
 
-        // Close modal on outside click
         document.getElementById('contact-modal').addEventListener('click', (e) => {
             if (e.target.id === 'contact-modal') {
                 document.getElementById('contact-modal').style.display = 'none';
             }
         });
 
-        // Sidebar toggle
         $("#toggleBtn").click(function() {
             $("#sidebar").toggleClass("hide");
         });
 
-        // Navigation handlers
         $(document).ready(function () {
-        //Navigation
+
         $("#dashboard").click(function(){ window.location.href = "dashboard.php"; });
         $("#inventory").click(function(){ window.location.href = "Inventory.php";});
         $("#request").click(function(){ window.location.href = "request_list.php";});
         $("#inventorymanagement").click(function(){ window.location.href = "report_inventory.php";});
         $("#expirationwastage").click(function(){ window.location.href = "report_expiration.php";});
   $(document).ready(function(){
-    const current = window.location.pathname.split("/").pop(); // e.g., report_inventory.php
+    const current = window.location.pathname.split("/").pop(); 
 
     $(".report-link").each(function(){
       const link = $(this).attr("href");
       if(link === current){
         $(this).addClass("active");
-        $("#reports").addClass("active"); // open dropdown
+        $("#reports").addClass("active"); 
       }
     });
   });
@@ -643,7 +532,7 @@ $("#warning-modal").on("click", function (e) {
       const view = $(this).data("view");
       $("#view-title").text($(this).text());
       $("#view-content").removeClass("cards-container").html(views[view]);
-      validateInventoryReport(); // optional for Inventory report
+      validateInventoryReport(); 
   }); 
 $("#reports").click(function(e){
     e.stopPropagation();

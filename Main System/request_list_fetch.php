@@ -3,7 +3,6 @@ require_once 'db_connect.php';
 
 $batchID = (int)$_POST['batchID'];
 
-// Fetch requests in the batch
 $sql = "SELECT
         r.request_id,
         p.ProductName,
@@ -26,14 +25,12 @@ $result = $conn->query($sql);
 
 $incompleteCount = 0;
 
-// Capture the HTML output
 ob_start();
 
 if ($result->num_rows == 0) {
     echo "<tr><td colspan='9'>No items found.</td></tr>";
 } else {
     while($row = $result->fetch_assoc()):
-        // Count incomplete items (Approved or Rejected without decline date)
         if ($row["status"] !== "Completed" && !($row["status"] === "Rejected" && $row["date_declined"])) {
             $incompleteCount++;
         }
@@ -71,11 +68,9 @@ if ($result->num_rows == 0) {
 
 $html = ob_get_clean();
 
-// Fetch batch status
 $batchStatusRow = $conn->query("SELECT status FROM batches WHERE BatchID = $batchID")->fetch_assoc();
 $batchStatus = $batchStatusRow['status'] ?? 'Unknown';
 
-// Output JSON object including batch status
 echo json_encode([
     "html" => $html,
     "incomplete" => $incompleteCount,

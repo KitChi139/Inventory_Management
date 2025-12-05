@@ -1,7 +1,6 @@
         <?php
         require 'db_connect.php';
 
-        // Protect page - require login
         if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
             header("Location: login.php");
             exit();
@@ -10,13 +9,11 @@
 
 
         $today = date('Y-m-d');
-        $nearExpiryThreshold = date('Y-m-d', strtotime('+30 days')); // items expiring in 30 days
+        $nearExpiryThreshold = date('Y-m-d', strtotime('+30 days')); 
 
-        // Fetch items
         $items = [];
         $summary = ['near'=>0,'expired'=>0,'total'=>0];
 
-        // Base query
     $sql = "
     SELECT i.Quantity, i.BatchNum, i.ExpirationDate, p.ProductName, c.Category_Name, c.CategoryID
     FROM inventory i
@@ -25,7 +22,6 @@
     WHERE 1
     ";
 
-    // Date range
     if(!empty($_GET['start_date'])){
         $start = $conn->real_escape_string($_GET['start_date']);
         $sql .= " AND i.ExpirationDate >= '$start'";
@@ -35,13 +31,11 @@
         $sql .= " AND i.ExpirationDate <= '$end'";
     }
 
-    // Category
     if(!empty($_GET['category'])){
         $catID = (int)$_GET['category'];
         $sql .= " AND c.CategoryID = $catID";
     }
 
-    // Severity
     if(!empty($_GET['severity'])){
         $sev = $_GET['severity'];
         if($sev == 'expired') $sql .= " AND i.ExpirationDate < '$today'";
@@ -53,7 +47,6 @@
 
     $result = $conn->query($sql);
 
-    // Reset summary & items
     $items = [];
     $summary = ['near'=>0,'expired'=>0,'total'=>0];
     while($row = $result->fetch_assoc()){
@@ -61,14 +54,14 @@
 
         if($expDate < $today){
             $summary['expired']++;
-            $summary['total']++; // count expired as risk item
+            $summary['total']++; 
             $items[] = $row;
         } elseif($expDate <= $nearExpiryThreshold){
             $summary['near']++;
-            $summary['total']++; // count near-expiry as risk item
+            $summary['total']++; 
             $items[] = $row;
         }
-        // Else: do NOT include safe items
+        
     }
     if(isset($_GET['export']) && $_GET['export']==1){
         header('Content-Type: text/csv');
@@ -84,11 +77,11 @@
         fclose($out);
         exit();
     }
-    // Nearest five
+    
 $nearestFive = [];
 foreach ($items as $row) {
     $expDate = $row['ExpirationDate'];
-    if ($expDate > $nearExpiryThreshold) continue; // skip safe
+    if ($expDate > $nearExpiryThreshold) continue; 
     $nearestFive[] = $row;
     if(count($nearestFive) >= 5) break;
 }
@@ -118,28 +111,23 @@ foreach ($items as $row) {
         * { box-sizing:border-box; margin:0; padding:0; }
         body { font-family:'Segoe UI',sans-serif; background-color:var(--bg); display:flex; min-height:100vh; color:#333; font-size:18px; }
 
-        /* Topbar */
         .topbar-right { display:flex; align-items:center; gap:15px; justify-content:flex-end; margin-bottom:10px; z-index:100; }
         .profile-icon { width:36px; height:36px; border-radius:50%; background:var(--primary); color:#fff; display:flex; align-items:center; justify-content:center; font-size:18px; cursor:pointer; transition:0.2s; }
         .profile-icon:hover { background:var(--accent); }
 
-        /* Heading */
         .heading-bar {   display: flex;
   justify-content: space-between;
   align-items: center;
   background: #fff;
-  padding: 16px 20px;   /* reduced padding */
+  padding: 16px 20px; 
   border-radius: var(--radius);
   box-shadow: var(--card-shadow);
-  margin-bottom: 15px;  /* reduced margin */ }
-        .heading-bar h1 {   font-size: 32px;      /* slightly smaller */
+  margin-bottom: 15px; }
+        .heading-bar h1 {   font-size: 32px;      
   font-weight: 700;
   color: var(--primary); }
 
-        /* Report container */
         .report-container { background:white; padding:20px; border-radius:var(--radius); box-shadow:0 0 10px rgba(0,0,0,0.06); font-size:18px; }
-
-        /* Report header */
         .report-header { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:12px; margin-bottom:20px; }
         .report-left { display:flex; align-items:center; gap:12px; min-width:250px; flex-grow:1; }
         .title-icon { width:44px; height:44px; border-radius:8px; background:linear-gradient(135deg,var(--accent),#1b68d6); display:flex; align-items:center; justify-content:center; color:white; font-size:24px; }
@@ -147,11 +135,7 @@ foreach ($items as $row) {
         .filter-group:hover { background:#d7e6ff; }
         .export-btn { padding:8px 16px; background:var(--accent); border:none; color:white; border-radius:8px; cursor:pointer; font-weight:600; font-size:18px; min-width:110px; transition:0.2s; }
         .export-btn:hover { background:#3b7cd3; }
-
-        /* Summary box */
         .summary { margin-top:20px; padding:18px 20px; border-radius:10px; background:#f8fbff; border:1px solid rgba(4,56,115,0.06); }
-
-        /* Expiration list */
         .expire-list { margin-top:15px; }
         .expire-item { background:#f8fbff; padding:15px 20px; border-radius:8px; border:1px solid rgba(4,56,115,0.08); display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
         .expire-name { font-weight:700; color:var(--primary); font-size:18px; }
@@ -159,9 +143,8 @@ foreach ($items as $row) {
         .expire-date { font-weight:600; color:var(--primary); background:#eef5ff; padding:6px 12px; border-radius:6px; min-width:100px; text-align:center; }
         .expire-date.expired { background:#ffd6d6; color:#dc3545; }
         .expire-date.near-expiry { background:#fff4e5; color:#ff9f00; }
-        /* Table */
         .table-wrapper {
-            max-height: 420px; /* Fits around 10 rows */
+            max-height: 420px; 
             overflow-y: auto;
             margin-top: 10px;
             border: 1px solid #eee;
@@ -169,7 +152,6 @@ foreach ($items as $row) {
             background: white;
         }
 
-        /* Keep the header visible while scrolling */
         .table-wrapper thead th {
             position: sticky;
             top: 0;
@@ -183,11 +165,11 @@ foreach ($items as $row) {
         td, th { text-align: left; padding: 12px 16px;
         border-bottom: 1px solid #eee; vertical-align: middle;
         font-size: 15px; white-space: nowrap; }
-        /* { background:white; padding:12px 15px; border-radius:8px; border:1px solid rgba(4,56,115,0.08); word-wrap:break-word; } */
+    
 
-        /* Dropdown menu fix */
+ 
         .has-dropdown {
-            position: relative; /* required for absolute dropdown */
+            position: relative; 
         }
 
         .has-dropdown .dropdown-menu {
@@ -206,7 +188,7 @@ foreach ($items as $row) {
         }
 
         .has-dropdown:hover .dropdown-menu {
-            display: block; /* show on hover */
+            display: block; 
         }
 
         .has-dropdown .dropdown-menu li {
@@ -218,7 +200,7 @@ foreach ($items as $row) {
         .has-dropdown .dropdown-menu li:hover {
             background-color: #f0f6ff;
         }
-        /* Table row coloring */
+
         tr.expired-row td {
             background: #ffe5e5 !important;
             color: #c62828;
@@ -253,37 +235,36 @@ foreach ($items as $row) {
         border: 1px solid #ccc;
         border-radius: 6px;
     }
-    /* Make the date filter dropdown smaller */
-    /* Hide dropdown by default */
+
 #dateFilterDropdown {
-    display: none;          /* hide on page load */
-    min-width: 200px;       /* set a reasonable default */
-    flex-direction: row;    /* horizontal layout */
+    display: none;          
+    min-width: 200px;       
+    flex-direction: row;    
     gap: 4px;
     padding: 8px;
 }
 
-/* Date inputs inside dropdown */
+
 #dateFilterDropdown input[type="date"] {
-    flex: 1;                /* take available space */
+    flex: 1;                
     padding: 4px 6px;
     font-size: 14px;
-    width: auto;            /* shrink to fit flex */
+    width: auto;            
 }
 
-/* Apply button styling */
+
 #dateFilterDropdown .export-btn {
     padding: 6px 12px;
     font-size: 14px;
-    flex-shrink: 0;         /* prevent shrinking */
+    flex-shrink: 0;        
     min-width: auto;
 }
         </style>
         </head>
         <body>
 
-        <!-- Sidebar -->
-<!-- Sidebar -->
+
+
     <aside class="sidebar" id="sidebar">
   <div class="profile">
     <div class="icon">
@@ -301,9 +282,7 @@ foreach ($items as $row) {
   <li id="inventorymanagement">
     <a class="report-link">Inventory Management</a>
   </li>
-  <!-- <li>
-    <a class="report-link" href="report_pos.php">POS Exchange</a>
-  </li> -->
+
   <li id="expirationwastage" class="active">
     <a class="report-link">Expiration / Wastage</a>
   </li>
@@ -321,13 +300,18 @@ foreach ($items as $row) {
 </aside>
 
         <main class="main">
-            <!-- Topbar -->
-            
 
+<<<<<<< HEAD
             <!-- Heading -->
             <div class="heading-bar"><h1>Expiration / Wastage Report</h1></div>
 
             <!-- Report container -->
+=======
+            <div class="heading-bar"><h1>Expiration / Wastage Report</h1><div class="topbar-right">
+                <?php include 'notification_component.php'; ?>
+                <div class="profile-icon"><i class="fa-solid fa-user"></i></div>
+            </div></div>
+>>>>>>> d68acbff0bf7cc8d9ae2f3de19d7deee889eb7d1
             <div class="report-container">
                 <div class="report-header">
                     <div class="report-left">
@@ -338,13 +322,13 @@ foreach ($items as $row) {
                         </div>
                     </div>
                     <div style="display:flex;gap:12px; position:relative;">
-        <!-- Date Range Filter -->
+
     <div class="filter-group" id="dateFilterBtn"><i class="fa-solid fa-calendar"></i> Date Range
         <div class="filter-dropdown" id="dateFilterDropdown">
             <form method="get">
                 <input type="date" name="start_date" value="<?= isset($_GET['start_date']) ? $_GET['start_date'] : '' ?>" placeholder="Start Date">
                 <input type="date" name="end_date" value="<?= isset($_GET['end_date']) ? $_GET['end_date'] : '' ?>" placeholder="End Date">
-                <!-- Preserve other GET params -->
+
                 <?php if(!empty($_GET['category'])): ?>
                     <input type="hidden" name="category" value="<?= htmlspecialchars($_GET['category']) ?>">
                 <?php endif; ?>
@@ -356,7 +340,6 @@ foreach ($items as $row) {
         </div>
     </div>
 
-    <!-- Category Filter -->
     <div class="filter-group" id="categoryFilterBtn"><i class="fa-solid fa-tags"></i> Item Category
         <div class="filter-dropdown" id="categoryFilterDropdown">
             <form method="get">
@@ -370,7 +353,7 @@ foreach ($items as $row) {
                     }
                     ?>
                 </select>
-                <!-- Preserve other GET params -->
+
                 <?php if(!empty($_GET['start_date'])): ?>
                     <input type="hidden" name="start_date" value="<?= htmlspecialchars($_GET['start_date']) ?>">
                 <?php endif; ?>
@@ -385,7 +368,6 @@ foreach ($items as $row) {
         </div>
     </div>
 
-    <!-- Severity Filter -->
     <div class="filter-group" id="severityFilterBtn"><i class="fa-solid fa-exclamation-triangle"></i> Severity
         <div class="filter-dropdown" id="severityFilterDropdown">
             <form method="get">
@@ -395,7 +377,7 @@ foreach ($items as $row) {
                     <option value="near" <?= (isset($_GET['severity']) && $_GET['severity']=='near') ? 'selected' : '' ?>>Near Expiry</option>
                     <option value="safe" <?= (isset($_GET['severity']) && $_GET['severity']=='safe') ? 'selected' : '' ?>>Safe</option>
                 </select>
-                <!-- Preserve other GET params -->
+
                 <?php if(!empty($_GET['start_date'])): ?>
                     <input type="hidden" name="start_date" value="<?= htmlspecialchars($_GET['start_date']) ?>">
                 <?php endif; ?>
@@ -410,17 +392,13 @@ foreach ($items as $row) {
         </div>
     </div>
 
-
-        <!-- Export -->
         <a href="report_expiration.php?<?= http_build_query($_GET) ?>&export=1" class="export-btn"><i class="fa-solid fa-file-export"></i> Export CSV</a>
         <a href="report_expiration.php" class="export-btn" style="background:#ff4d4f;">
     <i class="fa-solid fa-eraser"></i> Clear Filters
 </a>
     </div>
-
                 </div>
 
-                <!-- Expiration timeline -->
                 <div class="expire-list">
                         <?php foreach($nearestFive as $row): ?>
                             <?php 
@@ -439,7 +417,6 @@ foreach ($items as $row) {
                         <?php endforeach; ?>
                     </div>
 
-                <!-- Summary -->
                 <div class="summary">
                     <div class="report-title">Summary</div>
                     <p>Near Expiry: <strong><?= $summary['near'] ?></strong></p>
@@ -447,7 +424,6 @@ foreach ($items as $row) {
                     <p>Total Risk Items: <strong><?= $summary['total'] ?></strong></p>
                 </div>
 
-                <!-- Expiration table -->
                 <div style="margin-top:20px;">
                     <div class="report-title">Expiration List</div>
                     <div class="table-wrapper">
@@ -486,7 +462,7 @@ foreach ($items as $row) {
         <script src="notification.js" defer></script>
         <script>
         $(document).ready(function(){
-        // Toggle filter dropdowns
+
         $("#dateFilterBtn").click(function(e){
             e.stopPropagation();
             $("#dateFilterDropdown").toggle();
@@ -505,12 +481,10 @@ foreach ($items as $row) {
             $("#dateFilterDropdown, #categoryFilterDropdown").hide();
         });
 
-        // Prevent dropdown click from closing
         $(".filter-dropdown").click(function(e){
             e.stopPropagation();
         });
 
-        // Close dropdown if clicked outside
         $(document).click(function(){
             $(".filter-dropdown").hide();
         });
@@ -519,26 +493,25 @@ foreach ($items as $row) {
 
         $(document).ready(function(){
 
-            // Dropdown toggle
             $(".has-dropdown > span, .has-dropdown > i").click(function(){
                 $(this).parent().toggleClass("open");
             });
 
 $(document).ready(function () {
-        //Navigation
+
         $("#dashboard").click(function(){ window.location.href = "dashboard.php"; });
         $("#inventory").click(function(){ window.location.href = "Inventory.php";});
         $("#request").click(function(){ window.location.href = "request_list.php";});
         $("#inventorymanagement").click(function(){ window.location.href = "report_inventory.php";});
         $("#expirationwastage").click(function(){ window.location.href = "report_expiration.php";});
   $(document).ready(function(){
-    const current = window.location.pathname.split("/").pop(); // e.g., report_inventory.php
+    const current = window.location.pathname.split("/").pop(); 
 
     $(".report-link").each(function(){
       const link = $(this).attr("href");
       if(link === current){
         $(this).addClass("active");
-        $("#reports").addClass("active"); // open dropdown
+        $("#reports").addClass("active"); 
       }
     });
   });
@@ -553,7 +526,7 @@ $(document).ready(function () {
       const view = $(this).data("view");
       $("#view-title").text($(this).text());
       $("#view-content").removeClass("cards-container").html(views[view]);
-      validateInventoryReport(); // optional for Inventory report
+      validateInventoryReport(); 
   }); 
 $("#reports").click(function(e){
     e.stopPropagation();

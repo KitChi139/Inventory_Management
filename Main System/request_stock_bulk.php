@@ -10,7 +10,6 @@ if (!is_array($productIds) || !is_array($quantities)) {
     exit;
 }
 
-// If you have login system replace with: $_SESSION['username']
 $requester = "Admin";
 
 foreach ($productIds as $index => $productId) {

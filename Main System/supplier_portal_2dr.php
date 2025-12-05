@@ -20,6 +20,16 @@ WHERE r.status = 'Rejected'
 ORDER BY r.BatchID DESC, p.ProductName ASC;";
 
 $inventoryItems = $conn->query($query);
+
+$categories = [];
+$catStmt = $conn->prepare("SELECT CategoryID, Category_Name FROM categories ORDER BY Category_Name ASC");
+$catStmt->execute();
+$catResult = $catStmt->get_result();
+while ($row = $catResult->fetch_assoc()) {
+    $categories[] = $row;
+}
+$catStmt->close();
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -33,7 +43,10 @@ $inventoryItems = $conn->query($query);
     <script src="supplier_portal.js" defer></script>
 </head>
 <body>
-    <!-- Top Navigation Bar -->
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
     <header class="top-nav">
         <div class="nav-left">
             <div class="logo-container">
@@ -41,20 +54,16 @@ $inventoryItems = $conn->query($query);
             </div>
         </div>
         <div class="nav-right">
-            <button class="icon-btn notification-btn" title="Notifications">
-                <i class="fas fa-bell"></i>
-                <span class="notification-badge">3</span>
-            </button>
-            <button class="icon-btn profile-btn">
-                <i class="fas fa-user-circle"></i>
-            </button>
             <button class="logout-button" title="Logout">
                 <i class="fas fa-sign-out-alt"></i>
             </button>
         </div>
     </header>
 
-    <!-- Secondary Navigation Tabs -->
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
     <nav class="tab-navigation">
         <button id="db" class="tab-link" data-tab="dashboard">
             <i class="fas fa-chart-line"></i>
@@ -76,14 +85,10 @@ $inventoryItems = $conn->query($query);
             <i class="fas fa-clipboard-check"></i>
             <span>Completed Requests</span>
         </button>
-        <!-- <button id="m" class="tab-link" data-tab="messages">
-            <i class="fas fa-envelope"></i>
-            <span>Messages</span>
-        </button> -->
-        <!-- <button id="cp" class="tab-link" data-tab="company-profile">
-            <i class="fas fa-building"></i>
-            <span>Company Profile</span>
-        </button> -->
+<<<<<<< HEAD
+=======
+  
+>>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
     </nav>
 
 
@@ -92,19 +97,12 @@ $inventoryItems = $conn->query($query);
             <div class="page-header">
                 <h1>Declined Requests</h1>
             </div>
-            <!-- Filter bar -->
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
         <div class="filter-bar">
-        <input type="text" id="searchInput" placeholder="Search batch ID, item name, or quantity..." />
-        <select id="categoryFilter">
-            <option value="">All Categories</option>
-            <option value="Protective Equipment">Protective Equipment</option>
-            <option value="Antibiotics / Antibacterials">Antibiotics / Antibacterials</option>
-            <option value="Analgesics / Antipyretics">Analgesics / Antipyretics</option>
-            <option value="Antivirals">Antivirals</option>
-            <option value="Antifungals">Antifungals</option>
-            <option value="Antihistamines / Antiallergics">Antihistamines / Antiallergics</option>
-            <option value="Antacids / Antiulcerants">Antacids / Antiulcerants</option>
-        </select>
+        <input type="text" id="searchInput" placeholder="Search word...." />
         <button class="btn btn-secondary" onclick="clearFilters()">Clear</button>
         </div>
             
@@ -129,20 +127,16 @@ $inventoryItems = $conn->query($query);
                                     </td>
                                 </tr>
                             <?php else: ?>
-                                <!-- <?php while($item = $inventoryItems->fetch_assoc()): 
-                                    $qty = (int)$item['Quantity'];
-                                    $status = $qty == 0 ? 'Critical' : ($qty <= 5 ? 'Critical' : 'Almost Low');
-                                    $statusClass = $qty == 0 ? 'status-critical' : ($qty <= 5 ? 'status-critical' : 'status-almost-low');
-                                ?> -->
-                                    <!-- <tr data-supplier="<?= htmlspecialchars($item['supplier_name'] ?? '') ?>" data-status="<?= $status ?>"> -->
-                                        <td><?= str_pad((int)$item['BatchID'], 4, "0", STR_PAD_LEFT) ?></td>
-                                        <td><?= htmlspecialchars($item['ProductName']) ?></td>
-                                        <td><?= htmlspecialchars($item['Category_Name'] ?? '-') ?></td>
-                                        <td><?= htmlspecialchars($item['quantity'] ?? '-') ?></td>
-                                        <td><?= date("m/d/Y h:i A", strtotime($item['request_date'])) ?></td>
-                                        <td><?= $item['date_declined'] ? date("Y-m-d h:i A", strtotime($item['date_declined'])) : '-' ?></td>
-                                    </tr>
-                                <!-- <?php endwhile; ?> -->
+                                <?php while($item = $inventoryItems->fetch_assoc()): ?>
+<tr>
+    <td><?= str_pad((int)$item['BatchID'], 4, "0", STR_PAD_LEFT) ?></td>
+    <td><?= htmlspecialchars($item['ProductName']) ?></td>
+    <td><?= htmlspecialchars($item['Category_Name'] ?? '-') ?></td>
+    <td><?= htmlspecialchars($item['quantity'] ?? '-') ?></td>
+    <td><?= date("m/d/Y h:i A", strtotime($item['request_date'])) ?></td>
+    <td><?= $item['date_declined'] ? date("Y-m-d h:i A", strtotime($item['date_declined'])) : '-' ?></td>
+</tr>
+<?php endwhile; ?>
                             <?php endif; ?>
                         </tbody>
                     </table>
@@ -154,11 +148,28 @@ $inventoryItems = $conn->query($query);
     </main>
 </body>
 <script>
+    function filterTable() {
+    const searchText = $('#searchInput').val().toLowerCase();
+
+    $('.request-table tbody tr').each(function() {
+        const rowText = $(this).text().toLowerCase();
+        $(this).toggle(rowText.includes(searchText));
+    });
+}
+
+$('#searchInput').on('input', filterTable);
+
+function clearFilters() {
+    $('#searchInput').val('');
+    filterTable();
+}
     $(document).ready(function () {
-        //Navigation
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
         $("#db").click(function(){ window.location.href = "supplier_portal_db.php";});
         $("#pr").click(function(){ window.location.href = "supplier_portal_1pr.php";});
-        // $("#dr").click(function(){ window.location.href = "supplier_portal_2dr.php";});
         $("#ar").click(function(){ window.location.href = "supplier_portal_3ar.php";});
         $("#cr").click(function(){ window.location.href = "supplier_portal_4cr.php";});
         $("#m").click(function(){ window.location.href = "supplier_portal_m.php"; });

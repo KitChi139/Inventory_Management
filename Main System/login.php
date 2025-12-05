@@ -8,14 +8,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = trim($_POST['username']);
     $password = trim($_POST['password']);
 
-    $stmt = $connection->prepare(
-        "SELECT u.*, ur.roleName, s.SupplierID 
-        FROM users AS u
-        JOIN userroles AS ur ON u.roleID = ur.roleID 
-        JOIN userinfo AS ui on ui.userID = u.userID
-        LEFT JOIN suppliers s on s.SupplierID = ui.SupplierID
-        WHERE username = ?"
-    );
+$stmt = $connection->prepare(
+    "SELECT u.*, ur.roleName, s.SupplierID
+     FROM users AS u
+     JOIN userroles AS ur ON u.roleID = ur.roleID
+     LEFT JOIN userinfo AS ui ON ui.userID = u.userID
+     LEFT JOIN suppliers AS s ON s.SupplierID = ui.SupplierID
+     WHERE username = ?"
+);
     $stmt -> bind_param("s", $username);
     $stmt -> execute();
 
@@ -40,7 +40,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 } elseif ($user['roleName'] === 'Admin') {
                   $_SESSION['popupMessage'] = "You have successfully logged in to the Admin Portal!";
                   header("Location:dashboard.php");
-                  
+                  exit();
                 }
               }
                 
@@ -53,11 +53,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $stmt -> close();
 }
-// $localUser  = "";
-// if ($_SERVER["REQUEST_METHOD"] === "POST") {
-//     $email = trim($_POST['username']); // form input
-//     $password = trim($_POST['password']);
 
+<<<<<<< HEAD
 // //     // -------------------------
 // //     // Step 1: Try to fetch user locally (Employee/Supplier)
 // //     // -------------------------
@@ -156,20 +153,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   
 
 
-// if (isset($_SESSION['popupMessage'])) {
-//     $popupMessage = $_SESSION['popupMessage'];
-//     unset($_SESSION['popupMessage']); 
-// }
+if (isset($_SESSION['popupMessage'])) {
+    $popupMessage = $_SESSION['popupMessage'];
+    unset($_SESSION['popupMessage']); 
+}
+=======
+>>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
 ?>
-<!-- {
-   "email": "inventorysystem63@gmail.com",
-   "password": "Inventory139",
-   "first_name": "Karl Louis",
-   "last_name": "Pineda",
-   "role" : "admin",
-   "position": "admin",
-   "departmentID": 22
- } -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -239,7 +230,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         justify-content: center;
 
 
-        /* Multiple layered background with random-like scattered crosses */
+
         background-image: 
 
           radial-gradient(circle at 20% 30%, rgba(255,255,255,0.08) 0%, transparent 60%),
@@ -338,7 +329,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         margin-bottom: 1.5rem;
       }
 
-      /* Inputs */
       .login-box form {
         display: flex;
         flex-direction: column;
@@ -350,8 +340,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         margin-bottom: 4px;
       }
 
-
-      /* Show Password Checkbox */
       .show-pass {
         display: flex;
         align-items: center;
@@ -364,7 +352,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         margin-left: 6px;
       }
 
-      /* Consistent input styling for all states */
       .login-box input[type="email"],
       .login-box input[type="password"],
       .login-box input[type="text"] {
@@ -385,13 +372,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         box-shadow: 0 0 4px rgba(4, 56, 115, 0.2);
       }
 
-      /* Prevent layout shift when toggling password visibility */
       .login-box input {
-        height: 40px; /* ensures height consistency */
+        height: 40px; 
         line-height: 1.4;
       }
 
-      /* Button */
       .login-box button {
         background-color: var(--primary-color);
         color: #fff;
@@ -408,7 +393,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         background-color: var(--primary-color);
       }
 
-      /* Forgot Password */
       .forgot {
         text-align: center;
         margin-top: 10px;
@@ -424,7 +408,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         text-decoration: underline;
       }
 
-      /* Responsive */
 
       @media (max-width: 1200px) {
         .cross { width: 10%; }
@@ -468,7 +451,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         margin-bottom: 1.5rem;
       }
 
-      /* Inputs */
       .login-box form {
         display: flex;
         flex-direction: column;
@@ -480,7 +462,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         margin-bottom: 4px;
       }
 
-      /* Show Password Checkbox */
       .show-pass {
         display: flex;
         align-items: center;
@@ -493,7 +474,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         margin-left: 6px;
       }
 
-      /* Consistent input styling for all states */
       .login-box input[type="email"],
       .login-box input[type="password"],
       .login-box input[type="text"] {
@@ -514,13 +494,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         box-shadow: 0 0 4px rgba(4, 56, 115, 0.2);
       }
 
-      /* Prevent layout shift when toggling password visibility */
       .login-box input {
-        height: 40px; /* ensures height consistency */
+        height: 40px; 
         line-height: 1.4;
       }
 
-      /* Button */
       .login-box button {
         background-color: var(--primary-color);
         color: #fff;
@@ -537,7 +515,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         background-color: var(--primary-color);
       }
 
-      /* Forgot Password */
       .forgot {
         text-align: center;
         margin-top: 10px;
@@ -553,7 +530,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         text-decoration: underline;
       }
 
-      /* Error Message */
       .error-message {
         color: #dc3545;
         font-size: 14px;
@@ -561,7 +537,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         text-align: left;
       }
 
-      /* Popup */
       .popup {
         display: none;
         position: fixed;
@@ -599,7 +574,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         cursor: pointer;
       }
 
-      /* Responsive */
       @media (max-width: 1200px) {
         .cross { width: 10%; }
         .line { width: 34%; }
@@ -640,7 +614,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <div class="login-wrapper">
 
-  <!-- Left Branding Section -->
   <div class="login-left">
     <img class="cross" src="logo+.svg" alt="Logo Cross" />
     <img class="line" src="logo-.svg" alt="Logo Line" />
@@ -651,7 +624,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
   </div>
 
-  <!-- Right Login Form Section -->
   <div class="login-right">
     <div class="login-box">
       <h2>Log In</h2>
@@ -673,9 +645,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
           <div class="error-message"><?= htmlspecialchars($error) ?></div>
         <?php endif; ?>
 
-        <!-- <div class="forgot">
-          <a href="/forgot-password">Forgot Password?</a>
-        </div> -->
       </form>
     </div>
   </div>
@@ -699,14 +668,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if (message.trim() !== "") {
       popupMessage.textContent = message;
-      popup.style.display = 'flex'; // show the popup
+      popup.style.display = 'flex'; 
     }
 
     okBtn.addEventListener('click', () => {
-      popup.style.display = 'none'; // close when OK is clicked
+      popup.style.display = 'none'; 
     });
 
-    // Toggle show/hide password
     showPasswordCheckbox.addEventListener('change', () => {
       passwordInput.type = showPasswordCheckbox.checked ? 'text' : 'password';
     });

@@ -10,7 +10,7 @@
     <script src="supplier_portal.js" defer></script>
 </head>
 <body>
-    <!-- Top Navigation Bar -->
+
     <header class="top-nav">
         <div class="nav-left">
             <div class="logo-container">
@@ -31,7 +31,6 @@
         </div>
     </header>
 
-    <!-- Secondary Navigation Tabs -->
     <nav class="tab-navigation">
         <button id="db" class="tab-link" data-tab="dashboard">
             <i class="fas fa-chart-line"></i>
@@ -62,9 +61,9 @@
             <span>Company Profile</span>
         </button>
     </nav>
-        <!-- Main Content Area -->
+
             <main class="main-content">
-        <!-- Messages Section -->
+
         <section class="content" id="messages-section">
             <div class="page-header">
                 <h1>Messages</h1>
@@ -131,7 +130,7 @@
             </div>
         </section>
         </main>
-            <!-- Message View Modal -->
+
     <div id="messageModal" class="modal-overlay">
         <div class="modal-container">
             <div class="modal-header">
@@ -139,7 +138,7 @@
                 <button class="close-modal-btn" onclick="closeMessageModal()">&times;</button>
             </div>
             <div class="modal-body" id="messageModalBody">
-                <!-- Dynamic content -->
+
             </div>
             <div class="modal-footer">
                 <button class="btn btn-primary" onclick="closeMessageModal()">Close</button>
@@ -147,7 +146,6 @@
         </div>
     </div>
 
-    <!-- Reply Modal -->
     <div id="replyModal" class="modal-overlay">
         <div class="modal-container">
             <div class="modal-header">
@@ -169,13 +167,13 @@
     </body>
     <script>
         $(document).ready(function () {
-            //Navigation
+
             $("#db").click(function(){ window.location.href = "supplier_portal_db.php";});
             $("#pr").click(function(){ window.location.href = "supplier_portal_1pr.php";});
             $("#dr").click(function(){ window.location.href = "supplier_portal_2dr.php";});
             $("#ar").click(function(){ window.location.href = "supplier_portal_3ar.php";});
             $("#cr").click(function(){ window.location.href = "supplier_portal_4cr.php";});
-            // $("#m").click(function(){ window.location.href = "supplier_portal_m.php"; });
+
             $("#cp").click(function(){ window.location.href = "supplier_portal_cp.php"; });
         });
     </script>

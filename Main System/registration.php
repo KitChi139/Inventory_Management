@@ -22,11 +22,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
     try {
-      // $checkstmt = $connection ->prepare("SELECT empID, empName, empNum FROM employee WHERE empID = ?");
-      // $checkstmt
+
       
       $connection -> begin_transaction();
-      if ($userType === 'employee') { // Employee
+      if ($userType === 'employee') { 
 
           $role = "employee";
           $status = "Active";
@@ -62,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           $stmt5 -> execute();
           $stmt5 -> close();
 
-      } else { // Supplier
+      } else { 
 
           $role = "supplier";
           $status = "Active";
@@ -203,7 +202,7 @@ $success = $success ?? false;
     const label2 = document.getElementById('label2');
 
     if (registrationSuccess) {
-      popup.style.display = 'flex'; // <-- show popup
+      popup.style.display = 'flex'; 
     }
 
 

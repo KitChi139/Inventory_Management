@@ -1,8 +1,4 @@
-// =====================
-// Supplier Portal JS
-// =====================
 
-// -------- Request data --------
 let requestsData = {
     pending: [
         { id: 'REQ-001', date: '2025-04-10', items: ['Face Mask | qty: 50 boxes', 'Medical Gloves | qty: 30 boxes'], amounts: ['₱25,000', '₱20,000'], total: '₱45,000' }
@@ -18,7 +14,6 @@ let requestsData = {
     ]
 };
 
-// -------- Inventory data --------
 let inventoryData = [
     { name: 'Face Mask', stock: '500 pcs', price: 500, status: 'In Stock' },
     { name: 'Medical Gloves', stock: '320 boxes', price: 650, status: 'In Stock' },
@@ -27,7 +22,6 @@ let inventoryData = [
     { name: 'Thermometers', stock: '75 units', price: 850, status: 'Low Stock' }
 ];
 
-// -------- Company profile data --------
 let companyProfile = {
     address: '1456 Industrial Avenue, Metro City, Philippines',
     phone: '+63 (2) 8456-7890',
@@ -39,7 +33,6 @@ let companyProfile = {
         <p>Over the years, MediSync has continuously adapted to the evolving needs of the healthcare industry. From protective equipment and diagnostic tools to sanitization and emergency supplies, our products are designed to meet the highest standards of safety and performance. Our strong partnerships with healthcare providers nationwide stand as proof of our mission to safeguard lives and promote healthier communities.</p>`
 };
 
-// -------- Notifications data --------
 let notificationsData = [
     { id: 1, title: 'Request REQ-001 Received', message: 'New request received from Inventory Manager', time: '2 hours ago', unread: true },
     { id: 2, title: 'Request REQ-002 Approved', message: 'Request has been successfully approved', time: '5 hours ago', unread: true },
@@ -47,7 +40,6 @@ let notificationsData = [
     { id: 4, title: 'New Message from Hospital Admin', message: 'Stock availability check request', time: '2 days ago', unread: false }
 ];
 
-// -------- Messages data --------
 const messageData = {
     1: {
         subject: 'Order Inquiry - REQ-001',
@@ -69,9 +61,6 @@ const messageData = {
     }
 };
 
-// =====================
-// Initialization
-// =====================
 document.addEventListener('DOMContentLoaded', () => {
     populateInventoryTable();
     updateCompanyProfileDisplay();
@@ -79,9 +68,6 @@ document.addEventListener('DOMContentLoaded', () => {
     wireTabLinks();
 });
 
-// =====================
-// Tab switching
-// =====================
 function wireTabLinks() {
     document.querySelectorAll('.tab-link').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -103,9 +89,6 @@ function switchTab(tab) {
     if (section) section.classList.add('active');
 }
 
-// =====================
-// Inventory table
-// =====================
 function populateInventoryTable() {
     const tbody = document.getElementById('inventoryTableBody');
     if (!tbody) return;
@@ -129,9 +112,6 @@ function populateInventoryTable() {
     });
 }
 
-// =====================
-// Company profile display
-// =====================
 function updateCompanyProfileDisplay() {
     const address = document.getElementById('display-address');
     const phone = document.getElementById('display-phone');
@@ -150,9 +130,6 @@ function updateCompanyProfileDisplay() {
     if (history) history.innerHTML = companyProfile.history;
 }
 
-// =====================
-// Notifications modal
-// =====================
 function setupNotificationBell() {
     const notificationBtn = document.querySelector('.notification-btn');
     if (notificationBtn) {
@@ -188,9 +165,6 @@ function closeNotificationsModal() {
     if (modal) modal.style.display = 'none';
 }
 
-// =====================
-// Message modals
-// =====================
 function openMessageModal(messageId) {
     const modal = document.getElementById('messageModal');
     const modalTitle = document.getElementById('messageModalTitle');
@@ -219,9 +193,6 @@ function closeMessageModal() {
     if (modal) modal.style.display = 'none';
 }
 
-// =====================
-// Reply modal
-// =====================
 let currentReplyMessageId = null;
 
 function openReplyModal(messageId) {
@@ -265,9 +236,6 @@ function sendReplyFromModal() {
     }
 }
 
-// =====================
-// Message form (bottom of messages page)
-// =====================
 function sendMessage(event) {
     event.preventDefault();
     const replyText = document.getElementById('replyMessage');
@@ -289,9 +257,6 @@ function clearReply() {
     if (replyText) replyText.value = '';
 }
 
-// =====================
-// Edit modal
-// =====================
 function openEditModal(section) {
     const modal = document.getElementById('editModal');
     const modalTitle = document.getElementById('modalTitle');
@@ -340,7 +305,6 @@ function openEditModal(section) {
 
         case 'history':
             modalTitle.textContent = 'Edit Company History';
-            // Extract text content from HTML for editing
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = companyProfile.history;
             const historyText = Array.from(tempDiv.querySelectorAll('p')).map(p => p.textContent).join('\n\n');
@@ -377,8 +341,6 @@ function openEditModal(section) {
     }
 
     modalBody.innerHTML = content;
-
-    // Populate inventory edit rows if needed
     if (section === 'inventory') {
         const tbody = document.getElementById('inventoryEditBody');
         if (tbody) {
@@ -475,9 +437,6 @@ function saveEdit() {
     closeEditModal();
 }
 
-// =====================
-// Global: close modals when clicking outside
-// =====================
 window.addEventListener('click', function (event) {
     const messageModal = document.getElementById('messageModal');
     const replyModal = document.getElementById('replyModal');
@@ -493,11 +452,11 @@ window.addEventListener('click', function (event) {
 document.addEventListener('DOMContentLoaded', () => {
   const searchInput = document.getElementById('searchInput');
   const categoryFilter = document.getElementById('categoryFilter');
-  const dateFilter = document.getElementById('dateFilter'); // may be null
+  const dateFilter = document.getElementById('dateFilter'); 
 
   function normalizeDate(dateStr) {
     const txt = (dateStr || '').trim();
-    if (/^\d{4}-\d{2}-\d{2}$/.test(txt)) return txt; // ISO already
+    if (/^\d{4}-\d{2}-\d{2}$/.test(txt)) return txt; 
     const parts = txt.split('/');
     if (parts.length === 3) {
       const [m, d, y] = parts;
@@ -509,7 +468,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function filterTables() {
     const searchValue = (searchInput?.value || '').toLowerCase();
     const categoryValue = (categoryFilter?.value || '').toLowerCase();
-    const dateValue = (dateFilter?.value || ''); // empty if missing or blank
+    const dateValue = (dateFilter?.value || ''); 
 
     const tableBodies = document.querySelectorAll('.request-table tbody');
 
@@ -557,18 +516,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.clearFilters = clearFilters;
 
-  // Initial run to ensure consistent state
   filterTables();
 });
 
-
-
-
-
-
-// =====================
-// Logout
-// =====================
 const logoutBtn = document.querySelector('.logout-button');
 if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {

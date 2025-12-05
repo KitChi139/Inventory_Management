@@ -12,14 +12,14 @@ $rating = $_POST['rating'] ?? 0;
 $items = $_POST['items'] ?? 0;
 
 if ($id == "") {
-    // INSERT
+
     $stmt = $conn->prepare("
         INSERT INTO suppliers (supplier_name, contact_person, phone, email, categories, rating, items, status)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     ");
     $stmt->bind_param("sssssdss", $name, $contact, $phone, $email, $categories, $rating, $items, $status);
 } else {
-    // UPDATE
+
     $stmt = $conn->prepare("
         UPDATE suppliers 
         SET supplier_name=?, contact_person=?, phone=?, email=?, categories=?, rating=?, items=?, status=?

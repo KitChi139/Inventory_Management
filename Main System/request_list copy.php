@@ -1,13 +1,12 @@
 <?php
 require 'db_connect.php';
 
-// Protect page - require login
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
   header("Location: login.php");
   exit();
 }
 
-// Auto-create requests table if it doesn't exist
+
 $conn->query("CREATE TABLE IF NOT EXISTS requests (
     request_id INT AUTO_INCREMENT PRIMARY KEY,
     ProductID INT NOT NULL,
@@ -19,22 +18,6 @@ $conn->query("CREATE TABLE IF NOT EXISTS requests (
     FOREIGN KEY (ProductID) REFERENCES products(ProductID) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
-// Fetch inventory items for request list (low stock items)
-// $sql = "SELECT 
-//     i.InventoryID,
-//     i.Quantity,
-//     i.ExpirationDate,
-//     p.ProductID,
-//     p.ProductName,
-//     c.Category_Name,
-//     s.supplier_name,
-//     i.BatchNum
-// FROM inventory i
-// JOIN products p ON p.ProductID = i.ProductID
-// LEFT JOIN categories c ON c.CategoryID = p.CategoryID
-// LEFT JOIN suppliers s ON s.supplier_id = p.CategoryID
-// WHERE i.Quantity <= 10
-// ORDER BY i.Quantity ASC, p.ProductName ASC";
 
 $sql = "SELECT   
     r.BatchID,
@@ -56,13 +39,9 @@ ORDER BY r.BatchID DESC, p.ProductName ASC;";
 
 $inventoryItems = $conn->query($sql);
 
-// Get statistics
-// $totalItems = $conn->query("SELECT COUNT(*) AS total FROM inventory WHERE Quantity <= 10")->fetch_assoc()['total'];
-// $criticalItems = $conn->query("SELECT COUNT(*) AS total FROM inventory WHERE Quantity <= 5")->fetch_assoc()['total'];
-
 $totalItems = $conn->query("SELECT COUNT(*) AS total FROM requests")->fetch_assoc()['total'];
 $criticalItems = $conn->query("SELECT COUNT(*) AS total FROM inventory WHERE Quantity <= 5")->fetch_assoc()['total'];
-// Get distinct suppliers for filter
+
 $suppliers = $conn->query("SELECT DISTINCT CompanyName FROM company WHERE CompanyName IS NOT NULL");
 ?>
 <!DOCTYPE html>
@@ -78,7 +57,7 @@ $suppliers = $conn->query("SELECT DISTINCT CompanyName FROM company WHERE Compan
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 </head>
 <body>
-    <!-- Sidebar -->
+
     <aside class="sidebar" id="sidebar" aria-label="Primary">
         <div class="profile">
             <div class="icon">
@@ -103,9 +82,8 @@ $suppliers = $conn->query("SELECT DISTINCT CompanyName FROM company WHERE Compan
         </ul>
     </aside>
 
-    <!-- Main Content -->
     <main class="main">
-        <!-- Notification + Profile icon (top-right) -->
+
         <div class="topbar-right">
             <button class="messages-btn" onclick="window.location.href='message_list.php'">
                 <i class="fa-solid fa-envelope"></i>
@@ -116,13 +94,10 @@ $suppliers = $conn->query("SELECT DISTINCT CompanyName FROM company WHERE Compan
                 <i class="fa-solid fa-user"></i>
             </div>
         </div>
-
-        <!-- Heading Bar -->
         <div class="heading-bar">
             <h1>Request List</h1>   
         </div>
 
-        <!-- Statistics Cards -->
         <section class="stats-cards">
             <div class="stat-card">
                 <div class="stat-title">Total Items</div>
@@ -138,7 +113,6 @@ $suppliers = $conn->query("SELECT DISTINCT CompanyName FROM company WHERE Compan
             </div>
         </section>
 
-        <!-- Filters -->
         <section class="filters">
             <input type="text" class="search-input" id="search-input" placeholder="Search batch number or item name...">
             <select class="filter-dropdown" id="supplier-filter">
@@ -159,7 +133,6 @@ $suppliers = $conn->query("SELECT DISTINCT CompanyName FROM company WHERE Compan
             <button class="btn-clear" id="clear-filters">Clear Selection</button>
         </section>
 
-        <!-- Main Layout: Single Column -->
         <section class="layout">
             <div class="requests-column">
                 <div class="table-container">
@@ -197,10 +170,8 @@ $suppliers = $conn->query("SELECT DISTINCT CompanyName FROM company WHERE Compan
                                         <td><?= htmlspecialchars($item['ProductName']) ?></td>
                                         <td><?= htmlspecialchars($item['Category_Name'] ?? '-') ?></td>
                                         <td><?= htmlspecialchars($item['quantity'] ?? '-') ?></td>
-                                        <!-- <td><span class="status-badge <?= $statusClass ?>"><?= $status ?></span></td> -->
                                         <td><?= htmlspecialchars($item['status']) ?></td>
                                         <td><?= htmlspecialchars($item['companyName'] ?? 'N/A') ?></td>
-                                        <!-- <td><?= !empty($item['ExpirationDate']) ? date('Y/m/d', strtotime($item['ExpirationDate'])) : 'N/A' ?></td> -->
                                         <td><?= htmlspecialchars($item['request_date'] ?? 'N/A') ?></td>
                                         <td><?= htmlspecialchars($item['complete_date'] ?? 'N/A') ?></td>
                                         <td style="white-space: nowrap;">
@@ -224,7 +195,6 @@ $suppliers = $conn->query("SELECT DISTINCT CompanyName FROM company WHERE Compan
         </section>
     </main>
 
-    <!-- Contact Modal -->
     <div class="modal" id="contact-modal" style="display:none;">
         <div class="modal-content">
             <h2>Contact Supplier</h2>
@@ -253,14 +223,12 @@ $suppliers = $conn->query("SELECT DISTINCT CompanyName FROM company WHERE Compan
     <script src="sidebar.js"></script>
     <script>
 
-        // Select all checkbox
         document.getElementById('select-all').addEventListener('change', (e) => {
             const checkboxes = document.querySelectorAll('.row-checkbox');
             checkboxes.forEach(cb => cb.checked = e.target.checked);
             updateSelectedCount();
         });
 
-        // Row checkbox change
         document.querySelectorAll('.row-checkbox').forEach(cb => {
             cb.addEventListener('change', updateSelectedCount);
         });
@@ -270,8 +238,6 @@ $suppliers = $conn->query("SELECT DISTINCT CompanyName FROM company WHERE Compan
             document.getElementById('selected-count').textContent = selected;
         }
 
-        // Search and filter
-        // Search and filter
         $('#search-input').on('keyup', function() {
             const search = $(this).val().toLowerCase();
             const category = $('#category-filter').val().toLowerCase();
@@ -301,15 +267,12 @@ $suppliers = $conn->query("SELECT DISTINCT CompanyName FROM company WHERE Compan
             $('#search-input').trigger('keyup');
         });
 
-
-        // Clear selection
         $('#clear-selection').on('click', function() {
             $('.row-checkbox').prop('checked', false);
             $('#select-all').prop('checked', false);
             updateSelectedCount();
         });
 
-        // Create purchase request
         $('#create-purchase-request').on('click', function() {
             const selected = [];
             $('.row-checkbox:checked').each(function() {
@@ -323,8 +286,7 @@ $suppliers = $conn->query("SELECT DISTINCT CompanyName FROM company WHERE Compan
                 alert('Please select at least one item to create a purchase request.');
                 return;
             }
-            
-            // Send to bulk request handler
+
             $.ajax({
                 url: 'request_stock_bulk.php',
                 method: 'POST',
@@ -339,7 +301,6 @@ $suppliers = $conn->query("SELECT DISTINCT CompanyName FROM company WHERE Compan
             });
         });
 
-        // Modal functionality
         const closeModalBtn = document.getElementById('close-modal');
         if (closeModalBtn) {
             closeModalBtn.addEventListener('click', () => {
@@ -347,19 +308,16 @@ $suppliers = $conn->query("SELECT DISTINCT CompanyName FROM company WHERE Compan
             });
         }
 
-        // Close modal on outside click
         document.getElementById('contact-modal').addEventListener('click', (e) => {
             if (e.target.id === 'contact-modal') {
                 document.getElementById('contact-modal').style.display = 'none';
             }
         });
 
-        // Sidebar toggle
         $("#toggleBtn").click(function() {
             $("#sidebar").toggleClass("hide");
         });
 
-        // Navigation handlers
         $("#dashboard").click(function(){ window.location.href = "dashboard.php"; });
         $("#inventory").click(function(){ window.location.href = "Inventory.php"; });
         $("#low-stock").click(function(){ window.location.href = "lowstock.php"; });

@@ -2,19 +2,18 @@
     session_start();
     require 'db_connect.php';
 
-    // Protect page - require login
+   
     if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
         header("Location: login.php");
         exit();
     }
-    // Fetch categories for filter dropdown
+    
     $categories = [];
     $catRes = $conn->query("SELECT CategoryID, Category_Name FROM categories ORDER BY Category_Name");
     while($cat = $catRes->fetch_assoc()){
         $categories[] = $cat;
     }
 
-    // Get selected category
     $selectedCategory = $_GET['category'] ?? null;
 
     $whereDate = "";
@@ -29,7 +28,6 @@
         $whereDate = "DateTime >= DATE_SUB(NOW(), INTERVAL 4 WEEK)";
     }
 
-    // Category filter
     if($selectedCategory){
         $whereCategory = "p.CategoryID = ".(int)$selectedCategory;
     }
@@ -38,9 +36,6 @@
     if($whereDate) $whereClause .= " AND $whereDate";
     if($whereCategory) $whereClause .= " AND $whereCategory";
 
-    // =====================
-    // 1️⃣ Weekly Movement Data (for chart)
-    // =====================
     $weeklyData = [
         'labels' => [],
         'stock_in' => [],
@@ -80,12 +75,8 @@
         $weeklyData = ['labels'=>[], 'stock_in'=>[], 'stock_out'=>[], 'net_change'=>[]];
     }
 
-    // Net change total
     $net_change = $total_in - $total_out;
 
-    // =====================
-    // 2️⃣ Frequently Moved Items (for table)
-    // =====================
     $frequentItems = [];
     try {
         $sqlItems = "
@@ -112,9 +103,6 @@
         $frequentItems = [];
     }
 
-    // =====================
-    // 3️⃣ Total Expired
-    // =====================
     $stmt = $conn->query("SELECT SUM(Quantity) as total_expired FROM inventory_transactions WHERE Source='Expired'");
     $total_expired = ($stmt->fetch_assoc())['total_expired'] ?? 0;
 
@@ -125,19 +113,17 @@
 
     $output = fopen("php://output", "w");
 
-    // Title row
-    fputcsv($output, ["Inventory Management Report"]);
-    fputcsv($output, []); // blank row
 
-    // Summary section
+    fputcsv($output, ["Inventory Management Report"]);
+    fputcsv($output, []); 
+
     fputcsv($output, ["Summary"]);
     fputcsv($output, ["Total IN", $total_in]);
     fputcsv($output, ["Total OUT", $total_out]);
     fputcsv($output, ["Net Change", $net_change]);
     fputcsv($output, ["Expired", $total_expired]);
-    fputcsv($output, []); // blank row
+    fputcsv($output, []); 
 
-    // Frequent items table
     fputcsv($output, ["Frequently Moved Items"]);
     fputcsv($output, ["Item", "Category", "Batch", "IN", "OUT", "Net"]);
 
@@ -186,31 +172,28 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); display: flex; height: 100vh; color: #333; font-size: 18px; }
 
-    /* Topbar */
     .topbar-right { display: flex; align-items: center; gap: 15px; justify-content: flex-end; margin-bottom: 10px; position: relative; z-index: 100; }
     .profile-icon { width: 36px; height: 36px; border-radius: 50%; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; transition: 0.2s; }
     .profile-icon:hover { background: var(--accent); }
-
-    /* Heading Bar */
-            .heading-bar {   display: flex;
+    .heading-bar {   display: flex;
     justify-content: space-between;
     align-items: center;
     background: #fff;
-    padding: 16px 20px;   /* reduced padding */
+    padding: 16px 20px;  
     border-radius: var(--radius);
     box-shadow: var(--card-shadow);
-    margin-bottom: 15px;  /* reduced margin */ }
-            .heading-bar h1 {   font-size: 32px;      /* slightly smaller */
+    margin-bottom: 15px;  }
+    .heading-bar h1 {   font-size: 32px;  
     font-weight: 700;
     color: var(--primary); }
 
-    /* Cards */
+
     .cards-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 25px; margin-top: 10px; }
     .card { background: #d9d9d9; padding: 35px 25px; border-radius: 8px; text-align: center; cursor: pointer; transition: 0.2s; }
     .card:hover { background: #c8c8c8; transform: translateY(-3px); }
     .card .emoji { font-size: 46px; margin-bottom: 10px; }
 
-    /* Report container */
+
     .report-container { background: white; padding: 20px 25px; border-radius: var(--radius); box-shadow: 0 0 10px rgba(0,0,0,0.06); color: #333; font-size: 18px; max-width: 100%; }
     .report-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 12px; }
     .report-left { display: flex; align-items: center; gap: 12px; min-width: 250px; flex-grow: 1; }
@@ -246,7 +229,6 @@
     border-bottom: 1px solid #eee; vertical-align: middle;
     font-size: 15px; white-space: nowrap; }
 
-    /* Dropdown */
     .has-dropdown { position: relative; }
     .has-dropdown .dropdown-menu { display: none; position: absolute; top: 100%; left: 0; background: white; list-style: none; padding: 0; margin: 0; width: 220px; border-radius: var(--radius); box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 10; }
     .has-dropdown:hover .dropdown-menu { display: block; }
@@ -254,7 +236,7 @@
     .has-dropdown .dropdown-menu li:hover { background-color: #f0f6ff; }
     .has-dropdown.open .dropdown-menu { display: block !important; }
 
-    /* Date filter dropdown */
+
     .filter-dropdown {
         display: none;
         position: absolute;
@@ -295,7 +277,7 @@
         min-width: 140px;
     }
     #categoryFilterBtn {
-    position: relative; /* Add this */
+    position: relative; 
     min-width: 140px;
     }
 
@@ -303,7 +285,6 @@
     </head>
     <body>
 
-    <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
   <div class="profile">
     <div class="icon">
@@ -321,9 +302,7 @@
   <li id="inventorymanagement" class="active">
     <a class="report-link">Inventory Management</a>
   </li>
-  <!-- <li>
-    <a class="report-link" href="report_pos.php">POS Exchange</a>
-  </li> -->
+
   <li id="expirationwastage">
     <a class="report-link">Expiration / Wastage</a>
   </li>
@@ -364,7 +343,6 @@
                         <form method="get">
                             <input type="date" name="start" value="<?= isset($_GET['start']) ? $_GET['start'] : '' ?>" placeholder="Start Date">
                             <input type="date" name="end" value="<?= isset($_GET['end']) ? $_GET['end'] : '' ?>" placeholder="End Date">
-                            <!-- Preserve other GET params if needed -->
                             <button type="submit" class="export-btn">Apply</button>
                         </form>
                     </div>
@@ -506,20 +484,20 @@
         }
     });
     $(document).ready(function () {
-        //Navigation
+
         $("#dashboard").click(function(){ window.location.href = "dashboard.php"; });
         $("#inventory").click(function(){ window.location.href = "Inventory.php";});
         $("#request").click(function(){ window.location.href = "request_list.php";});
         $("#inventorymanagement").click(function(){ window.location.href = "report_inventory.php";});
         $("#expirationwastage").click(function(){ window.location.href = "report_expiration.php";});
   $(document).ready(function(){
-    const current = window.location.pathname.split("/").pop(); // e.g., report_inventory.php
+    const current = window.location.pathname.split("/").pop(); 
 
     $(".report-link").each(function(){
       const link = $(this).attr("href");
       if(link === current){
         $(this).addClass("active");
-        $("#reports").addClass("active"); // open dropdown
+        $("#reports").addClass("active"); 
       }
     });
   });
@@ -534,15 +512,13 @@
       const view = $(this).data("view");
       $("#view-title").text($(this).text());
       $("#view-content").removeClass("cards-container").html(views[view]);
-      validateInventoryReport(); // optional for Inventory report
+      validateInventoryReport(); 
   }); 
 $("#reports").click(function(e){
     e.stopPropagation();
     $(this).toggleClass("active");
 });
 
-
-    // Optional: toggle dropdown on click
     document.querySelectorAll(".has-dropdown > span").forEach(span => {
         span.addEventListener("click", e => {
             const parent = span.parentElement;
@@ -552,7 +528,6 @@ $("#reports").click(function(e){
         });
     });
 
-    // Validate report numbers
     const stockIn = document.getElementById('stock-in');
     const stockOut = document.getElementById('stock-out');
     const netChange = document.getElementById('net-change');

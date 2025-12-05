@@ -10,7 +10,7 @@
     <script src="supplier_portal.js" defer></script>
 </head>
 <body>
-    <!-- Top Navigation Bar -->
+
     <header class="top-nav">
         <div class="nav-left">
             <div class="logo-container">
@@ -31,7 +31,6 @@
         </div>
     </header>
 
-    <!-- Secondary Navigation Tabs -->
     <nav class="tab-navigation">
         <button id="db" class="tab-link" data-tab="dashboard">
             <i class="fas fa-chart-line"></i>
@@ -62,17 +61,14 @@
             <span>Company Profile</span>
         </button>
     </nav>
-    <!-- Main Content Area -->
-        <main class="main-content">
-            
 
-            <!-- Company Profile Section -->
+        <main class="main-content">
+
             <section class="content" id="company-profile-section">
                 <div class="page-header">
                     <h1>Company Profile</h1>
                 </div>
 
-                <!-- Contact Information -->
                 <div class="profile-card">
                     <div class="profile-card-header">
                         <h3>Contact Information</h3>
@@ -116,8 +112,6 @@
                     </div>
                 </div>
 
-
-                <!-- Items/Stock/Status -->
                 <div class="profile-card">
                     <div class="profile-card-header">
                         <h3>Items / Stock / Status</h3>
@@ -137,7 +131,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="inventoryTableBody">
-                                    <!-- Populated by supplier_portal.js -->
+
                                 </tbody>
                             </table>
                         </div>
@@ -145,7 +139,7 @@
                 </div>
             </section>
         </main>
-    <!-- Edit Modal -->
+
     <div id="editModal" class="modal-overlay">
         <div class="modal-container">
             <div class="modal-header">
@@ -153,7 +147,7 @@
                 <button class="close-modal-btn" onclick="closeEditModal()">&times;</button>
             </div>
             <div class="modal-body" id="modalBody">
-                <!-- Dynamic content -->
+
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
@@ -164,14 +158,14 @@
 </body>
 <script>
     $(document).ready(function () {
-        //Navigation
+
         $("#db").click(function(){ window.location.href = "supplier_portal_db.php";});
         $("#pr").click(function(){ window.location.href = "supplier_portal_1pr.php";});
         $("#dr").click(function(){ window.location.href = "supplier_portal_2dr.php";});
         $("#ar").click(function(){ window.location.href = "supplier_portal_3ar.php";});
         $("#cr").click(function(){ window.location.href = "supplier_portal_4cr.php";});
         $("#m").click(function(){ window.location.href = "supplier_portal_m.php"; });
-        // $("#cp").click(function(){ window.location.href = "supplier_portal_cp.php"; });
+
     });
 </script>
 </html>
