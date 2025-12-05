@@ -30,23 +30,22 @@ if (isset($_POST['fetch_product']) && $_POST['fetch_product'] == 1) {
       'unit'=>''];
 
     echo json_encode($data);
-    exit; // important to stop the rest of the page
+    exit; 
 }
-// ---------- HELPERS ----------
+
 function flash($type, $msg) {
   $_SESSION['flash'][] = ['type'=>$type, 'msg'=>$msg];
 }
 if (!isset($_SESSION['flash'])) $_SESSION['flash'] = [];
 
-// ---------- HANDLE POST (Add / Edit / Delete) ----------
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $action = $_POST['action'] ?? '';
 
   try {
     if ($action === 'add_item') {
-      // Inputs
+
       $productID       = trim($_POST['item_name'] ?? '');
-      // $productID  = trim($_POST['product_id'] ?? '');
       $category   = trim($_POST['category'] ?? '');
       $catid      = trim($_POST['category_id'] ?? '');
       $unit       = trim($_POST['unit'] ?? '');
@@ -63,59 +62,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
       $conn->begin_transaction();
 
-    //   // Find/create category
-    //   $stmt = $conn->prepare("SELECT Category_ID, Category FROM categories WHERE Category_Name = ?");
-    //   $stmt->bind_param('s', $category);
-    //   $stmt->execute();
-    //   $stmt->bind_result($catId);
-    //   $exists = $stmt->fetch();
-    //   $stmt->close();
-    //   if (!$exists) {
-    //     $stmt = $conn->prepare("INSERT INTO categories (Category_Name) VALUES (?)");
-    //     $stmt->bind_param('s', $category);
-    //     $stmt->execute();
-    //     $catId = $stmt->insert_id;
-    //     $stmt->close();
-    //   }
-
-    // // Find or create unit
-    // $stmt = $conn->prepare("SELECT Unit_ID FROM unit WHERE Unit = ?");
-    // $stmt->bind_param('s', $unit);
-    // $stmt->execute();
-    // $stmt->bind_result($unitId);
-    // $exists = $stmt->fetch();
-    // $stmt->close();
-    // if (!$exists) {
-    //     $stmt = $conn->prepare("INSERT INTO unit (Unit) VALUES (?)");
-    //     $stmt->bind_param('s', $unit);
-    //     $stmt->execute();
-    //     $unitId = $stmt->insert_id;
-    //     $stmt->close();
-    // }
-
-    //   // Find/create product (by name + category)
-    //   $stmt = $conn->prepare("SELECT ProductID, Unit FROM products WHERE ProductName = ? AND Category_ID = ?");
-    //   $stmt->bind_param('si', $name, $catId);
-    //   $stmt->execute();
-    //   $stmt->bind_result($productId, $existingUnit);
-    //   $pExists = $stmt->fetch();
-    //   $stmt->close();
-
-    //   if (!$pExists) {
-    //     $stmt = $conn->prepare("INSERT INTO products (ProductName, Category_ID, Unit) VALUES (?, ?, ?)");
-    //     $stmt->bind_param('sis', $name, $catId, $unit);
-    //     $stmt->execute();
-    //     $productId = $stmt->insert_id;
-    //     $stmt->close();
-    //   } else if ($unit !== '' && $unit !== $existingUnit) {
-    //     $stmt = $conn->prepare("UPDATE products SET Unit = ? WHERE ProductID = ?");
-    //     $stmt->bind_param('si', $unit, $productId);
-    //     $stmt->execute();
-    //     $stmt->close();
-    //   }
-
-      // Insert inventory (SKU optional -> NULLIF to avoid UNIQUE '' issue)
-
       $status = ($quantity === 0) ? 'Out of Stock' : (($quantity < 10) ? 'Low Stock' : 'In Stock');
       $stmt = $conn->prepare("
         INSERT INTO inventory (ProductID, SKU, BatchNum, Quantity, ExpirationDate, Status)
@@ -124,20 +70,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $stmt->bind_param('ississ', $productID, $sku, $Batchnum, $quantity, $expiration, $status);
       $stmt->execute();
       $stmt->close();
-
-//       $stmt = $conn->prepare("
-//         SELECT Min_stock, Max_stock FROM inventory i
-//         WHERE ProductID = ?
-//       ");
-//       $stmt->bind_param('i', $productId);
-//       $stmt->execute();
-//       $result = $stmt->get_result();
-//       $data = $results->fetch_assoc();
-//       $stmt->close();
-//       $minstock = $data['Min_stock'];
-//       $maxstock = $data['Max_stock'];
-
-//       // $status = ($quantity === 0) ? 'Out of Stock' : (($quantity < $minstock) ? 'Low Stock' : 'In Stock');
 
       $conn->commit();
       flash('success', 'Item added successfully.');
@@ -158,7 +90,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
       $conn->begin_transaction();
 
-      // Get ProductID from inventory
       $stmt = $conn->prepare("SELECT ProductID FROM inventory WHERE InventoryID = ?");
       $stmt->bind_param('i', $inventoryId);
       $stmt->execute();
@@ -166,7 +97,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       if (!$stmt->fetch()) { $stmt->close(); throw new Exception('Inventory row not found.'); }
       $stmt->close();
 
-      // Find/create category
       $stmt = $conn->prepare("SELECT Category_ID FROM categories WHERE Category_Name = ?");
       $stmt->bind_param('s', $category);
       $stmt->execute();
@@ -181,13 +111,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->close();
       }
 
-      // Update product fields
       $stmt = $conn->prepare("UPDATE products SET ProductName = ?, Category_ID = ?, Unit = ? WHERE ProductID = ?");
       $stmt->bind_param('sisi', $name, $catId, $unit, $productId);
       $stmt->execute();
       $stmt->close();
 
-      // Update inventory (SKU via NULLIF)
       $status = ($quantity === 0) ? 'Out of Stock' : (($quantity < 5) ? 'Low Stock' : 'In Stock');
       $stmt = $conn->prepare("
         UPDATE inventory
@@ -223,12 +151,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     flash('error', 'Error: ' . $e->getMessage());
   }
 
-  // PRG: redirect back to self to avoid resubmits
   header("Location: ".$_SERVER['PHP_SELF']);
   exit;
 }
 
-// ---------- FETCH INVENTORY + STATS ----------
 $inventory = [];
 try {
   $sql = "
@@ -286,7 +212,7 @@ try {
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <link rel="stylesheet" href="inventory.css" />
 <style>
-/* (minimal safe styles; keep your inventory.css) */
+
 .status-ok { color:#12805c; font-weight:600; } .status-low { color:#b48a00; font-weight:600; } .status-out { color:#c5162e; font-weight:600; }
 .quick-request { padding:14px; }
 .qr-table { width:100%; border-collapse:collapse; margin-top:8px;} .qr-table th, .qr-table td { padding:8px; border-bottom:1px solid #eee; }
@@ -342,7 +268,6 @@ try {
     </div>
   </header>
 
-  <!-- flash alerts -->
   <div class="alerts">
     <?php foreach ($_SESSION['flash'] as $f): ?>
       <div class="alert <?= htmlspecialchars($f['type']) ?>"><?= htmlspecialchars($f['msg']) ?></div>
@@ -465,7 +390,6 @@ try {
     </aside>
   </section>
 
-  <!-- Add Item Modal -->
   <div class="modal" id="addItemModal" style="display:none;">
     <div class="modal-content">
       <span class="close" role="button" aria-label="Close">&times;</span>
@@ -503,7 +427,6 @@ try {
     </div>
   </div>
 
-  <!-- Edit Item Modal -->
   <div class="modal" id="editItemModal" style="display:none;">
     <div class="modal-content">
       <span class="close" role="button" aria-label="Close">&times;</span>
@@ -548,7 +471,7 @@ $(function () {
                     $('#unit_id').val(response.unit_id);
                     console.log(response);
                     if (response.product_name) {
-                      let namePart = response.product_name.substring(0, 4).toUpperCase(); // fixed here
+                      let namePart = response.product_name.substring(0, 4).toUpperCase(); 
                       let datePart = new Date().toISOString().slice(2,10).replace(/-/g, '')
                       let randomPart = Math.floor(Math.random() * 900 + 100);
                       let SKU = `${namePart}-${datePart}-${randomPart}`;
@@ -564,15 +487,13 @@ $(function () {
             $('#unit_id').val('');
         }
   });
-  // Sidebar toggle
+
   $(".toggle").click(() => $(".sidebar").toggleClass("hide"));
 
-  // Open/Close modals
   $(".add-item").click(e => { e.preventDefault(); $("#addItemModal").css('display','flex'); });
   $(".modal .close").click(function () { $(this).closest(".modal").hide(); });
   $(window).click(e => { if ($(e.target).hasClass("modal")) $(".modal").hide(); });
 
-  // Prefill Edit modal (no AJAX submit — standard POST)
   $(document).on("click", ".edit-btn", function () {
     const $btn = $(this);
     $("#edit-inventory-id").val($btn.data("inventoryid"));
@@ -585,7 +506,6 @@ $(function () {
     $("#editItemModal").css('display','flex');
   });
 
-  // Action menu
   $(document).on("click", ".icon-more", function (e) {
     e.stopPropagation();
     $(".more-menu").not($(this).siblings(".more-menu")).hide();
@@ -594,7 +514,6 @@ $(function () {
   $(document).on("click", function () { $(".more-menu").hide(); });
   $(document).on("click", ".more-menu", function (e) { e.stopPropagation(); });
 
-  // Search & filter
   $("#filter-toggle").on("click", function (e) { e.stopPropagation(); $("#filter-dropdown").toggleClass("hidden"); });
   $(document).on("click", function (e) { if (!$(e.target).closest(".filter-dropdown, #filter-toggle").length) $("#filter-dropdown").addClass("hidden"); });
   $("#table-search").on("keyup", filterTable);
@@ -616,7 +535,6 @@ $(function () {
     });
   }
 
-  // Quick Request (kept as-is; still posts to quick_request.php)
   let qrItems = [];
   function refreshQRTable() {
     const $tbody = $("#qr-items").empty();
@@ -671,13 +589,12 @@ $(function () {
   });
   refreshQRTable();
 
-  // Nav
+
   $("#dashboard").click(function(){ window.location.href = "dashboard.php"; });
   $("#nav-suppliers").click(function(){ window.location.href = "suppliers.php"; });
   $("#request").click(function(){ window.location.href = "request_list.php"; });
   $("#low-stock").click(function(){ window.location.href = "lowstock.php"; });
 
-  //Logout
       $("#logout").click(function(){
         window.location.href = "logout.php";
       });

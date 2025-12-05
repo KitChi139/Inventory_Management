@@ -1,10 +1,8 @@
 <?php
 require 'db_connect.php';
 
-// GET THREE MOST RECENT ALERTS (messages + lowstock)
 $list = [];
 
-// 1. RECENT MESSAGES
 $msg = $conn->query("
     SELECT 
         message_id AS id,
@@ -27,7 +25,6 @@ while ($m = $msg->fetch_assoc()) {
     ];
 }
 
-// 2. RECENT LOW STOCK
 $low = $conn->query("
     SELECT
         ProductName AS title,
@@ -48,12 +45,11 @@ while ($l = $low->fetch_assoc()) {
     ];
 }
 
-// SORT BY DATE (most recent first)
 usort($list, function($a, $b){
     return strtotime($b['created_at']) - strtotime($a['created_at']);
 });
 
-// LIMIT OUTPUT TO 3
+
 $list = array_slice($list, 0, 3);
 
 echo json_encode($list);

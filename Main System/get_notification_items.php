@@ -1,7 +1,6 @@
 <?php
 require "db_connect.php";
 
-// Get 3 recent messages
 $msg = $conn->query("
     SELECT 'message' AS type, header, supplier, date_created 
     FROM messages
@@ -9,7 +8,6 @@ $msg = $conn->query("
     LIMIT 3
 ");
 
-// Get 3 low stock alerts
 $low = $conn->query("
     SELECT 'lowstock' AS type, p.ProductName AS product, i.Quantity, i.ExpirationDate 
     FROM inventory i
@@ -21,7 +19,6 @@ $low = $conn->query("
 
 $output = "";
 
-// MESSAGES
 while ($m = $msg->fetch_assoc()) {
     $output .= "
     <div class='notif-item' onclick=\"window.location='message_list.php'\">
@@ -34,7 +31,6 @@ while ($m = $msg->fetch_assoc()) {
     </div>";
 }
 
-// LOW STOCK
 while ($l = $low->fetch_assoc()) {
     $output .= "
     <div class='notif-item' onclick=\"window.location='lowstock.php'\">
