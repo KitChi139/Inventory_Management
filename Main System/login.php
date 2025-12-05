@@ -54,7 +54,6 @@ $stmt = $connection->prepare(
     $stmt -> close();
 }
 
-<<<<<<< HEAD
 // //     // -------------------------
 // //     // Step 1: Try to fetch user locally (Employee/Supplier)
 // //     // -------------------------
@@ -157,8 +156,6 @@ if (isset($_SESSION['popupMessage'])) {
     $popupMessage = $_SESSION['popupMessage'];
     unset($_SESSION['popupMessage']); 
 }
-=======
->>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
 ?>
 
 <!DOCTYPE html>

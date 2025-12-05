@@ -1,7 +1,7 @@
 <?php
 require_once 'db_connect.php';
 
-$supplier_id = $_SESSION['SupplierID']; 
+$supplier_id = $_SESSION['SupplierID']; // supplier logged in
 
 $conn->query("CREATE TABLE IF NOT EXISTS requests (
     request_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -13,7 +13,6 @@ $conn->query("CREATE TABLE IF NOT EXISTS requests (
     date_approved TIMESTAMP NULL,
     FOREIGN KEY (ProductID) REFERENCES products(ProductID) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-
 
 $sql = "SELECT   
     r.request_id,
@@ -34,7 +33,7 @@ LEFT JOIN categories c ON c.CategoryID = p.CategoryID
 LEFT JOIN batches b ON b.BatchID = r.BatchID
 WHERE r.SupplierID = ?
 ORDER BY b.request_date DESC, r.request_id DESC
-LIMIT 10";  
+LIMIT 10";  // optional: limit to 10 most recent
 
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $supplier_id);
@@ -42,12 +41,13 @@ $stmt->execute();
 $inventoryItems = $stmt->get_result();
 
 
+
+
 $totalItems = $conn->query("SELECT COUNT(*) AS total FROM requests")->fetch_assoc()['total'];
 $criticalItems = $conn->query("SELECT COUNT(*) AS total FROM inventory WHERE Quantity <= 5")->fetch_assoc()['total'];
 
 $currentMonth = date('m');
 $currentYear = date('Y');
-
 
 $totalRequests = $conn->query("SELECT COUNT(*) AS total 
     FROM requests r
@@ -75,11 +75,13 @@ $totalRequestsAll = $conn->query("SELECT COUNT(*) AS total
     FROM requests 
     WHERE SupplierID = $supplier_id")->fetch_assoc()['total'] ?? 0;
 
+// Declined requests
 $declinedRequests = $conn->query("SELECT COUNT(*) AS total 
     FROM requests 
     WHERE SupplierID = $supplier_id 
     AND status = 'Declined'")->fetch_assoc()['total'] ?? 0;
 
+// Calculate percentages
 $completedPercent = $totalRequestsAll ? round(($completedRequests / $totalRequestsAll) * 100) : 0;
 $approvedPercent = $totalRequestsAll ? round(($approvedRequests / $totalRequestsAll) * 100) : 0;
 $pendingPercent  = $totalRequestsAll ? round(($pendingRequests / $totalRequestsAll) * 100) : 0;
@@ -88,6 +90,7 @@ $declinedPercent  = $totalRequestsAll ? round(($declinedRequests / $totalRequest
 $currentMonth = date('m');
 $currentYear = date('Y');
 
+// Initialize counts
 $statusCounts = [
     'Pending' => 0,
     'Approved' => 0,
@@ -95,6 +98,7 @@ $statusCounts = [
     'Completed' => 0
 ];
 
+// Query counts per status for this supplier for current month
 $statusQuery = $conn->query("
     SELECT b.status, COUNT(*) AS total
     FROM requests r
@@ -125,10 +129,6 @@ while ($row = $statusQuery->fetch_assoc()) {
     <script src="supplier_portal.js" defer></script>
 </head>
 <body>
-<<<<<<< HEAD
-=======
-
->>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
     <header class="top-nav">
         <div class="nav-left">
             <div class="logo-container">
@@ -167,10 +167,6 @@ while ($row = $statusQuery->fetch_assoc()) {
     </nav>
 
     <main class="main-content">
-<<<<<<< HEAD
-=======
-    
->>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
         <section class="content" id="dashboard-section">
             <div class="page-header">
                 <h1>Dashboard Overview</h1>
@@ -214,10 +210,6 @@ while ($row = $statusQuery->fetch_assoc()) {
 </div>
             </div>
 
-<<<<<<< HEAD
-=======
-     
->>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
             <div class="widgets-grid">
                 <div class="widget-card">
                     <h3 class="widget-title">Request Status Overview</h3>
@@ -291,17 +283,10 @@ const statusBarChart = new Chart(ctx, {
                 <?php echo $statusCounts['Completed']; ?>
             ],
             backgroundColor: [
-<<<<<<< HEAD
                 '#FFC107',
                 '#2196F3', 
                 '#F44336', 
                 '#4CAF50'  
-=======
-                '#FFC107', 
-                '#2196F3', 
-                '#F44336', 
-                '#4CAF50' 
->>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
             ],
             borderColor: [
                 '#FFC107',
@@ -323,11 +308,7 @@ const statusBarChart = new Chart(ctx, {
                     }
                 }
             },
-<<<<<<< HEAD
             datalabels: { 
-=======
-            datalabels: {  
->>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
                 anchor: 'end',
                 align: 'end',
                 color: '#000',
@@ -358,14 +339,9 @@ const statusBarChart = new Chart(ctx, {
         }
     },
     plugins: [ChartDataLabels] 
-<<<<<<< HEAD
-    $(document).ready(function () {
-      
-=======
 });
     $(document).ready(function () {
-
->>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
+      
         $("#pr").click(function(){ window.location.href = "supplier_portal_1pr.php";});
         $("#dr").click(function(){ window.location.href = "supplier_portal_2dr.php";});
         $("#ar").click(function(){ window.location.href = "supplier_portal_3ar.php";});

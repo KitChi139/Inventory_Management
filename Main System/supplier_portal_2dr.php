@@ -43,10 +43,6 @@ $catStmt->close();
     <script src="supplier_portal.js" defer></script>
 </head>
 <body>
-<<<<<<< HEAD
-=======
-
->>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
     <header class="top-nav">
         <div class="nav-left">
             <div class="logo-container">
@@ -60,10 +56,6 @@ $catStmt->close();
         </div>
     </header>
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
     <nav class="tab-navigation">
         <button id="db" class="tab-link" data-tab="dashboard">
             <i class="fas fa-chart-line"></i>
@@ -85,10 +77,6 @@ $catStmt->close();
             <i class="fas fa-clipboard-check"></i>
             <span>Completed Requests</span>
         </button>
-<<<<<<< HEAD
-=======
-  
->>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
     </nav>
 
 
@@ -97,10 +85,6 @@ $catStmt->close();
             <div class="page-header">
                 <h1>Declined Requests</h1>
             </div>
-<<<<<<< HEAD
-=======
-
->>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
         <div class="filter-bar">
         <input type="text" id="searchInput" placeholder="Search word...." />
         <button class="btn btn-secondary" onclick="clearFilters()">Clear</button>
@@ -164,10 +148,6 @@ function clearFilters() {
     filterTable();
 }
     $(document).ready(function () {
-<<<<<<< HEAD
-=======
-
->>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
         $("#db").click(function(){ window.location.href = "supplier_portal_db.php";});
         $("#pr").click(function(){ window.location.href = "supplier_portal_1pr.php";});
         $("#ar").click(function(){ window.location.href = "supplier_portal_3ar.php";});

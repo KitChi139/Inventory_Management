@@ -2,7 +2,7 @@
 require_once 'db_connect.php';
 $supplier_id = $_SESSION['SupplierID'];
 
-
+// Fetch approved requests with shipping date
 $sql = "SELECT
         r.request_id,
         r.BatchID,
@@ -51,6 +51,7 @@ $approvedRequests = $stmt->get_result();
             </button>
         </div>
     </header>
+
     <nav class="tab-navigation">
         <button id="db" class="tab-link" data-tab="dashboard">
             <i class="fas fa-chart-line"></i>
@@ -73,7 +74,6 @@ $approvedRequests = $stmt->get_result();
             <span>Completed Requests</span>
         </button>
     </nav>
-
             <main class="main-content">
             <section class="content" id="completed-requests-section">
             <div class="page-header">
@@ -132,16 +132,13 @@ $approvedRequests = $stmt->get_result();
     });
 }
 
-// Trigger search on input
 $('#searchInput').on('input', filterTable);
 
-// Clear button
 function clearFilters() {
     $('#searchInput').val('');
     filterTable();
 }
     $(document).ready(function () {
-
         $("#db").click(function(){ window.location.href = "supplier_portal_db.php";});
         $("#pr").click(function(){ window.location.href = "supplier_portal_1pr.php";});
         $("#dr").click(function(){ window.location.href = "supplier_portal_2dr.php";});

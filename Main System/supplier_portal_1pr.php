@@ -119,10 +119,6 @@ $catStmt->close();
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 </head>
 <body>
-<<<<<<< HEAD
-=======
-
->>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
     <header class="top-nav">
         <div class="nav-left">
             <div class="logo-container">
@@ -161,18 +157,10 @@ $catStmt->close();
     </nav>
 
     <main class="main-content">
-<<<<<<< HEAD
-=======
-
->>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
             <section class="content" id="pending-requests-section">
             <div class="page-header">
                 <h1>Pending Requests</h1>
             </div>
-<<<<<<< HEAD
-=======
-
->>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
         <div class="filter-bar">
         <input type="text" id="searchInput" placeholder="Search word..." />
     
@@ -233,10 +221,6 @@ $catStmt->close();
             
         </div>
         </section>
-<<<<<<< HEAD
-=======
-
->>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
         <div id="approveModal" class="modal" style="display:none;">
             <div class="modal-content">
                 <span class="close-approve">&times;</span>
@@ -263,10 +247,6 @@ $catStmt->close();
                 </form>
             </div>
         </div>
-<<<<<<< HEAD
-=======
-
->>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
             <div id="declineModal" class="modal" style="display:none;">
                 <div class="modal-content">
                     <span class="close-decline">&times;</span>
@@ -284,7 +264,6 @@ $catStmt->close();
     </main>
 </body>
 <script>
-<<<<<<< HEAD
     function filterTable() {
     const searchText = $('#searchInput').val().toLowerCase();
 
@@ -308,19 +287,12 @@ function clearFilters() {
     $('#searchInput').val('');
     filterTable();
 }
-=======
-    
->>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
     function generateBatchNumFor(productName) {
         const expirationDate = $('#expiration_date').val();
         if (!expirationDate) return;
 
         let prefix = productName.replace(/\s/g,'').substring(0,4).toUpperCase();
-<<<<<<< HEAD
         
-=======
-
->>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
         let exp = expirationDate.replace(/-/g,''); 
         
         $.post('supplier_portal_generate.php', { prefix: prefix, exp: exp }, function(seqNum){
@@ -336,10 +308,6 @@ function clearFilters() {
         generateBatchNumFor(productName);
     });
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
     $('.approve-btn').on('click', function() {
         const productId = $(this).data('productid');
         const productName = $(this).data('productname');
@@ -368,10 +336,6 @@ function clearFilters() {
 
         generateBatchNumFor(productName);
     });
-<<<<<<< HEAD
-=======
-
->>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
     $('.close-approve').on('click', function() {
         $('#approveModal').hide();
         $('#approveModal form .selected-product').remove();
@@ -387,10 +351,6 @@ function clearFilters() {
         }
     });
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
     $('.decline-btn').on('click', function() {
         const productId = $(this).data('productid');
         const batchId = $(this).data('batchid');
