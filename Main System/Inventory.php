@@ -498,6 +498,7 @@ try {
           <div class="search-wrapper">
             <input id="table-search" type="search" placeholder="Search items..." aria-label="Search items">
             <button class="filter-icon" id="filter-toggle" title="Filter"><i class="fa-solid fa-filter"></i></button>
+            <a href="#" class="btn add-item"><i class="fa-solid fa-plus"></i> Add Item</a>
             <div id="filter-dropdown" class="filter-dropdown hidden">
               <div>
                 <label for="category-filter">Category</label>

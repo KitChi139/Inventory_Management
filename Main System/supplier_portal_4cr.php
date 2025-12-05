@@ -46,13 +46,7 @@ $approvedRequests = $stmt->get_result();
             </div>
         </div>
         <div class="nav-right">
-            <button class="icon-btn notification-btn" title="Notifications">
-                <i class="fas fa-bell"></i>
-                <span class="notification-badge">3</span>
-            </button>
-            <button class="icon-btn profile-btn">
-                <i class="fas fa-user-circle"></i>
-            </button>
+        
             <button class="logout-button" title="Logout">
                 <i class="fas fa-sign-out-alt"></i>
             </button>
@@ -99,17 +93,7 @@ $approvedRequests = $stmt->get_result();
             </div>
             <!-- Filter bar -->
         <div class="filter-bar">
-        <input type="text" id="searchInput" placeholder="Search batch ID, item name, or quantity..." />
-        <select id="categoryFilter">
-            <option value="">All Categories</option>
-            <option value="Protective Equipment">Protective Equipment</option>
-            <option value="Antibiotics / Antibacterials">Antibiotics / Antibacterials</option>
-            <option value="Analgesics / Antipyretics">Analgesics / Antipyretics</option>
-            <option value="Antivirals">Antivirals</option>
-            <option value="Antifungals">Antifungals</option>
-            <option value="Antihistamines / Antiallergics">Antihistamines / Antiallergics</option>
-            <option value="Antacids / Antiulcerants">Antacids / Antiulcerants</option>
-        </select>
+        <input type="text" id="searchInput" placeholder="Search word..." />
         <button class="btn btn-secondary" onclick="clearFilters()">Clear</button>
         </div>
 
@@ -152,6 +136,23 @@ $approvedRequests = $stmt->get_result();
         </main>
 </body>
 <script>
+    function filterTable() {
+    const searchText = $('#searchInput').val().toLowerCase();
+
+    $('.request-table tbody tr').each(function() {
+        const rowText = $(this).text().toLowerCase();
+        $(this).toggle(rowText.includes(searchText));
+    });
+}
+
+// Trigger search on input
+$('#searchInput').on('input', filterTable);
+
+// Clear button
+function clearFilters() {
+    $('#searchInput').val('');
+    filterTable();
+}
     $(document).ready(function () {
         //Navigation
         $("#db").click(function(){ window.location.href = "supplier_portal_db.php";});

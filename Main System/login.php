@@ -8,14 +8,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = trim($_POST['username']);
     $password = trim($_POST['password']);
 
-    $stmt = $connection->prepare(
-        "SELECT u.*, ur.roleName, s.SupplierID 
-        FROM users AS u
-        JOIN userroles AS ur ON u.roleID = ur.roleID 
-        JOIN userinfo AS ui on ui.userID = u.userID
-        LEFT JOIN suppliers s on s.SupplierID = ui.SupplierID
-        WHERE username = ?"
-    );
+$stmt = $connection->prepare(
+    "SELECT u.*, ur.roleName, s.SupplierID
+     FROM users AS u
+     JOIN userroles AS ur ON u.roleID = ur.roleID
+     LEFT JOIN userinfo AS ui ON ui.userID = u.userID
+     LEFT JOIN suppliers AS s ON s.SupplierID = ui.SupplierID
+     WHERE username = ?"
+);
     $stmt -> bind_param("s", $username);
     $stmt -> execute();
 
@@ -40,7 +40,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 } elseif ($user['roleName'] === 'Admin') {
                   $_SESSION['popupMessage'] = "You have successfully logged in to the Admin Portal!";
                   header("Location:dashboard.php");
-                  
+                  exit();
                 }
               }
                 
@@ -156,10 +156,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   
 
 
-// if (isset($_SESSION['popupMessage'])) {
-//     $popupMessage = $_SESSION['popupMessage'];
-//     unset($_SESSION['popupMessage']); 
-// }
+if (isset($_SESSION['popupMessage'])) {
+    $popupMessage = $_SESSION['popupMessage'];
+    unset($_SESSION['popupMessage']); 
+}
 ?>
 <!-- {
    "email": "inventorysystem63@gmail.com",

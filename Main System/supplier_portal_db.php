@@ -154,7 +154,6 @@ while ($row = $statusQuery->fetch_assoc()) {
     <script src="supplier_portal.js" defer></script>
 </head>
 <body>
-    <!-- Top Navigation Bar -->
     <header class="top-nav">
         <div class="nav-left">
             <div class="logo-container">
@@ -162,20 +161,12 @@ while ($row = $statusQuery->fetch_assoc()) {
             </div>
         </div>
         <div class="nav-right">
-            <button class="icon-btn notification-btn" title="Notifications">
-                <i class="fas fa-bell"></i>
-                <span class="notification-badge">3</span>
-            </button>
-            <button class="icon-btn profile-btn">
-                <i class="fas fa-user-circle"></i>
-            </button>
             <button class="logout-button" title="Logout">
                 <i class="fas fa-sign-out-alt"></i>
             </button>
         </div>
     </header>
 
-    <!-- Secondary Navigation Tabs -->
     <nav class="tab-navigation">
         <button id="db" class="tab-link active" data-tab="dashboard">
             <i class="fas fa-chart-line"></i>
@@ -197,25 +188,15 @@ while ($row = $statusQuery->fetch_assoc()) {
             <i class="fas fa-clipboard-check"></i>
             <span>Completed Requests</span>
         </button>
-        <!-- <button id="m" class="tab-link" data-tab="messages">
-            <i class="fas fa-envelope"></i>
-            <span>Messages</span>
-        </button>
-        <button id="cp" class="tab-link" data-tab="company-profile">
-            <i class="fas fa-building"></i>
-            <span>Company Profile</span>
-        </button> -->
+
     </nav>
 
-    <!-- Main Content Area -->
     <main class="main-content">
-        <!-- Dashboard Section -->
         <section class="content" id="dashboard-section">
             <div class="page-header">
                 <h1>Dashboard Overview</h1>
             </div>
 
-            <!-- Summary Cards -->
             <div class="summary-grid">
                 <div class="stat-card yellow-card">
     <div class="stat-header">
@@ -254,7 +235,6 @@ while ($row = $statusQuery->fetch_assoc()) {
 </div>
             </div>
 
-            <!-- Dashboard Widgets -->
             <div class="widgets-grid">
                 <div class="widget-card">
                     <h3 class="widget-title">Request Status Overview</h3>
@@ -328,10 +308,10 @@ const statusBarChart = new Chart(ctx, {
                 <?php echo $statusCounts['Completed']; ?>
             ],
             backgroundColor: [
-                '#FFC107', // Pending - yellow
-                '#2196F3', // Approved - blue
-                '#F44336', // Declined - red
-                '#4CAF50'  // Completed - green
+                '#FFC107',
+                '#2196F3', 
+                '#F44336', 
+                '#4CAF50'  
             ],
             borderColor: [
                 '#FFC107',
@@ -353,7 +333,7 @@ const statusBarChart = new Chart(ctx, {
                     }
                 }
             },
-            datalabels: {  // <-- Show numbers on top of each bar
+            datalabels: { 
                 anchor: 'end',
                 align: 'end',
                 color: '#000',
@@ -383,11 +363,9 @@ const statusBarChart = new Chart(ctx, {
             }
         }
     },
-    plugins: [ChartDataLabels] // <-- Register the plugin
-});
+    plugins: [ChartDataLabels] 
     $(document).ready(function () {
-        //Navigation
-        // $("#db").click(function(){ window.location.href = "supplier_portal_db.php";});
+      
         $("#pr").click(function(){ window.location.href = "supplier_portal_1pr.php";});
         $("#dr").click(function(){ window.location.href = "supplier_portal_2dr.php";});
         $("#ar").click(function(){ window.location.href = "supplier_portal_3ar.php";});

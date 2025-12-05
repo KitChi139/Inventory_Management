@@ -1450,3 +1450,17 @@ body {
         width: 95%;
     }
 }
+
+.profile-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 15px;
+    color: #fff;
+    padding: 6px 12px;
+}
+
+.profile-display i {
+    font-size: 25px;
+}

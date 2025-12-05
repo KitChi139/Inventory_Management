@@ -37,7 +37,6 @@ $approvedRequests = $stmt->get_result();
     <script src="supplier_portal.js" defer></script>
 </head>
 <body>
-    <!-- Top Navigation Bar -->
     <header class="top-nav">
         <div class="nav-left">
             <div class="logo-container">
@@ -45,20 +44,13 @@ $approvedRequests = $stmt->get_result();
             </div>
         </div>
         <div class="nav-right">
-            <button class="icon-btn notification-btn" title="Notifications">
-                <i class="fas fa-bell"></i>
-                <span class="notification-badge">3</span>
-            </button>
-            <button class="icon-btn profile-btn">
-                <i class="fas fa-user-circle"></i>
-            </button>
+           
             <button class="logout-button" title="Logout">
                 <i class="fas fa-sign-out-alt"></i>
             </button>
         </div>
     </header>
 
-    <!-- Secondary Navigation Tabs -->
     <nav class="tab-navigation">
         <button id="db" class="tab-link" data-tab="dashboard">
             <i class="fas fa-chart-line"></i>
@@ -80,34 +72,14 @@ $approvedRequests = $stmt->get_result();
             <i class="fas fa-clipboard-check"></i>
             <span>Completed Requests</span>
         </button>
-        <!-- <button id="m" class="tab-link" data-tab="messages">
-            <i class="fas fa-envelope"></i>
-            <span>Messages</span>
-        </button> -->
-        <!-- <button id="cp" class="tab-link" data-tab="company-profile">
-            <i class="fas fa-building"></i>
-            <span>Company Profile</span>
-        </button> -->
     </nav>
-    <!-- Main Content Area -->
     <main class="main-content">
     <section class="content" id="approved-requests-section">
         <div class="page-header">
             <h1>Approved Requests</h1>
         </div>
-        <!-- Filter bar -->
     <div class="filter-bar">
-    <input type="text" id="searchInput" placeholder="Search batch ID, item name, or quantity..." />
-    <select id="categoryFilter">
-        <option value="">All Categories</option>
-        <option value="Protective Equipment">Protective Equipment</option>
-        <option value="Antibiotics / Antibacterials">Antibiotics / Antibacterials</option>
-        <option value="Analgesics / Antipyretics">Analgesics / Antipyretics</option>
-        <option value="Antivirals">Antivirals</option>
-        <option value="Antifungals">Antifungals</option>
-        <option value="Antihistamines / Antiallergics">Antihistamines / Antiallergics</option>
-        <option value="Antacids / Antiulcerants">Antacids / Antiulcerants</option>
-    </select>
+    <input type="text" id="searchInput" placeholder="Search Word..." />
     <button class="btn btn-secondary" onclick="clearFilters()">Clear</button>
     </div>
         
@@ -150,12 +122,25 @@ $approvedRequests = $stmt->get_result();
     </main>
 </body>
 <script>
+    function filterTable() {
+    const searchText = $('#searchInput').val().toLowerCase();
+
+    $('.request-table tbody tr').each(function() {
+        const rowText = $(this).text().toLowerCase();
+        $(this).toggle(rowText.includes(searchText));
+    });
+}
+
+$('#searchInput').on('input', filterTable);
+
+function clearFilters() {
+    $('#searchInput').val('');
+    filterTable();
+}
     $(document).ready(function () {
-        //Navigation
         $("#db").click(function(){ window.location.href = "supplier_portal_db.php";});
         $("#pr").click(function(){ window.location.href = "supplier_portal_1pr.php";});
         $("#dr").click(function(){ window.location.href = "supplier_portal_2dr.php";});
-        // $("#ar").click(function(){ window.location.href = "supplier_portal_3ar.php";});
         $("#cr").click(function(){ window.location.href = "supplier_portal_4cr.php";});
         $("#m").click(function(){ window.location.href = "supplier_portal_m.php"; });
         $("#cp").click(function(){ window.location.href = "supplier_portal_cp.php"; });
