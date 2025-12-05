@@ -1,7 +1,9 @@
 <?php
 require 'db_connect.php';
-
 if (!isset($_SESSION)) session_start();
+
+// Get return tab
+$return_tab = $_POST['return_tab'] ?? 'category';
 
 // Handle Add Category
 if (isset($_POST['action']) && $_POST['action'] == 'add_category') {
@@ -12,7 +14,21 @@ if (isset($_POST['action']) && $_POST['action'] == 'add_category') {
         $stmt->execute();
         $stmt->close();
     }
-    header("Location: settings.php");
+    header("Location: settings.php#$return_tab");
+    exit;
+}
+
+// Handle Update Category
+if (isset($_POST['action']) && $_POST['action'] == 'update_category') {
+    $id = intval($_POST['id']);
+    $name = trim($_POST['name']);
+    if ($name != '' && $id > 0) {
+        $stmt = $conn->prepare("UPDATE categories SET Category_Name = ? WHERE CategoryID = ?");
+        $stmt->bind_param("si", $name, $id);
+        $stmt->execute();
+        $stmt->close();
+    }
+    header("Location: settings.php#$return_tab");
     exit;
 }
 
@@ -25,26 +41,47 @@ if (isset($_POST['action']) && $_POST['action'] == 'add_unit') {
         $stmt->execute();
         $stmt->close();
     }
-    header("Location: settings.php");
+    header("Location: settings.php#$return_tab");
     exit;
 }
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $action = $_POST['action'] ?? '';
 
-    if ($action === 'delete_category') {
-        $id = $_POST['id'];
-        $conn->query("DELETE FROM categories WHERE CategoryID = '$id'");
-        header("Location: settings.php");
-        exit();
+// Handle Update Unit
+if (isset($_POST['action']) && $_POST['action'] == 'update_unit') {
+    $id = intval($_POST['id']);
+    $name = trim($_POST['name']);
+    if ($name != '' && $id > 0) {
+        $stmt = $conn->prepare("UPDATE units SET UnitName = ? WHERE UnitID = ?");
+        $stmt->bind_param("si", $name, $id);
+        $stmt->execute();
+        $stmt->close();
     }
-
-    if ($action === 'delete_unit') {
-        $id = $_POST['id'];
-        $conn->query("DELETE FROM units WHERE UnitID = '$id'");
-        header("Location: settings.php");
-        exit();
-    }
+    header("Location: settings.php#$return_tab");
+    exit;
 }
 
-// Similarly, you can add update_category / update_unit / delete_category / delete_unit
+// Handle Delete Category
+if (isset($_POST['action']) && $_POST['action'] == 'delete_category') {
+    $id = intval($_POST['id']);
+    if ($id > 0) {
+        $stmt = $conn->prepare("DELETE FROM categories WHERE CategoryID = ?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $stmt->close();
+    }
+    header("Location: settings.php#$return_tab");
+    exit;
+}
+
+// Handle Delete Unit
+if (isset($_POST['action']) && $_POST['action'] == 'delete_unit') {
+    $id = intval($_POST['id']);
+    if ($id > 0) {
+        $stmt = $conn->prepare("DELETE FROM units WHERE UnitID = ?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $stmt->close();
+    }
+    header("Location: settings.php#$return_tab");
+    exit;
+}
 ?>
