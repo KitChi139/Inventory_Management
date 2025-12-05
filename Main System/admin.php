@@ -9,7 +9,7 @@
   error_reporting(E_ALL);
 
 
-  $connection = new mysqli("localhost", "root", "", "inventory_db");
+  $connection = new mysqli("localhost", "root", "", "inventory_pos");
   if ($connection->connect_error) {
       die("Connection Failed: " . $connection->connect_error);
   }
@@ -461,14 +461,7 @@ ORDER BY u.userID DESC
 
     <div class="main">
           <div class="heading-bar">
-        <h1>Accounts Overview</h1><div class="topbar-right">
-        <div class="profile-container">
-      <i class="fa-solid fa-user profile-icon"></i>
-      <div class="profile-info">
-        <small><?= htmlspecialchars(ucfirst($_SESSION['role'] ?? 'employee')) ?></small>
-      </div>
-    </div>
-      </div>   
+        <h1>Accounts Overview</h1>   
       </div>
 
     <div class="container">

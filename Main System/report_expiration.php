@@ -325,10 +325,7 @@ foreach ($items as $row) {
             
 
             <!-- Heading -->
-            <div class="heading-bar"><h1>Expiration / Wastage Report</h1><div class="topbar-right">
-                <?php include 'notification_component.php'; ?>
-                <div class="profile-icon"><i class="fa-solid fa-user"></i></div>
-            </div></div>
+            <div class="heading-bar"><h1>Expiration / Wastage Report</h1></div>
 
             <!-- Report container -->
             <div class="report-container">

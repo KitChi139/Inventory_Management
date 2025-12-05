@@ -200,10 +200,7 @@ $units = $conn->query("SELECT UnitID, UnitName FROM units ORDER BY UnitName")->f
 </aside>
 
 <main class="main">
-    <div class="heading-bar"><h1>Settings</h1> <div class="topbar-right">
-        <?php include 'notification_component.php'; ?>
-        <div class="profile-icon"><i class="fa-solid fa-user"></i></div>
-    </div></div>
+    <div class="heading-bar"><h1>Settings</h1></div>
 
     <!-- Tabs -->
     <div class="tab-buttons">

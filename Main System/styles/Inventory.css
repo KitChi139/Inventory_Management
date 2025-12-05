@@ -56,6 +56,13 @@ html, body {
   color: #4f9cf9;
 }
 
+.profile-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
 .profile-icon {
   width: 36px;
   height: 36px;
@@ -70,8 +77,22 @@ html, body {
   transition: 0.2s;
 }
 
+.profile-icon i {
+  display: block;
+  line-height: 1;
+  font-size: 18px;
+}
+
 .profile-icon:hover {
   background: #4f9cf9;
+}
+
+.profile-info small {
+  display: block;
+  text-align: center;
+  font-size: 12px;
+  text-transform: capitalize;
+  color: var(--muted, #666);
 }
 
 .message-icon-btn {

@@ -288,15 +288,7 @@
     <main class="main">
 
       <div class="heading-bar">
-        <h1>Dashboard Overview</h1>
-        <div class="topbar-right">
-        <div class="profile-container">
-      <i class="fa-solid fa-user profile-icon"></i>
-      <div class="profile-info">
-        <small><?= htmlspecialchars(ucfirst($_SESSION['role'] ?? 'employee')) ?></small>
-      </div>
-    </div>
-      </div>   
+        <h1>Dashboard Overview</h1>   
       </div>
 
   <div class="cards">

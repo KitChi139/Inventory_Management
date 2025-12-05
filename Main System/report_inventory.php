@@ -343,10 +343,7 @@
     <main class="main">
     
 
-    <div class="heading-bar"><h1>Inventory Management Report</h1><div class="topbar-right">
-        <?php include 'notification_component.php'; ?>
-        <div class="profile-icon"><i class="fa-solid fa-user"></i></div>
-    </div></div>
+    <div class="heading-bar"><h1>Inventory Management Report</h1></div>
     
 
     <div class="report-container">
