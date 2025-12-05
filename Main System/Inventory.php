@@ -355,9 +355,9 @@ try {
 <title>Inventory — Dashboard</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<link rel="stylesheet" href="sidebar.css" />
-<link rel="stylesheet" href="inventory.css" />
-<link rel="stylesheet" href="notification.css">
+<link rel="stylesheet" href="styles/sidebar.css" />
+<link rel="stylesheet" href="styles/inventory.css" />
+<link rel="stylesheet" href="styles/notification.css">
 <script src="notification.js" defer></script>
 <style>
 /* (minimal safe styles; keep your inventory.css) */
