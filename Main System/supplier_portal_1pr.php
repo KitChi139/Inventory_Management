@@ -1,9 +1,9 @@
 <?php
 require_once 'db_connect.php';
 
-$supplier_id = $_SESSION['SupplierID']; // supplier logged in
+$supplier_id = $_SESSION['SupplierID'];
 
-// Auto-create requests table if it doesn't exist
+
 $conn->query("CREATE TABLE IF NOT EXISTS requests (
     request_id INT AUTO_INCREMENT PRIMARY KEY,
     ProductID INT NOT NULL,
@@ -81,7 +81,7 @@ if (isset($_POST['approve_request'])) {
 
 if (isset($_POST['decline_request'])) {
     $batchId = (int)$_POST['BatchID'];
-    $products = json_decode($_POST['products'], true); // decode JSON array
+    $products = json_decode($_POST['products'], true); 
 
     foreach ($products as $productId => $qty) {
         $stmt = $conn->prepare(
@@ -119,6 +119,10 @@ $catStmt->close();
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 </head>
 <body>
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
     <header class="top-nav">
         <div class="nav-left">
             <div class="logo-container">
@@ -157,10 +161,18 @@ $catStmt->close();
     </nav>
 
     <main class="main-content">
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
             <section class="content" id="pending-requests-section">
             <div class="page-header">
                 <h1>Pending Requests</h1>
             </div>
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
         <div class="filter-bar">
         <input type="text" id="searchInput" placeholder="Search word..." />
     
@@ -221,6 +233,10 @@ $catStmt->close();
             
         </div>
         </section>
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
         <div id="approveModal" class="modal" style="display:none;">
             <div class="modal-content">
                 <span class="close-approve">&times;</span>
@@ -247,6 +263,10 @@ $catStmt->close();
                 </form>
             </div>
         </div>
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
             <div id="declineModal" class="modal" style="display:none;">
                 <div class="modal-content">
                     <span class="close-decline">&times;</span>
@@ -264,6 +284,7 @@ $catStmt->close();
     </main>
 </body>
 <script>
+<<<<<<< HEAD
     function filterTable() {
     const searchText = $('#searchInput').val().toLowerCase();
 
@@ -287,17 +308,24 @@ function clearFilters() {
     $('#searchInput').val('');
     filterTable();
 }
+=======
+    
+>>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
     function generateBatchNumFor(productName) {
         const expirationDate = $('#expiration_date').val();
         if (!expirationDate) return;
 
         let prefix = productName.replace(/\s/g,'').substring(0,4).toUpperCase();
+<<<<<<< HEAD
         
+=======
+
+>>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
         let exp = expirationDate.replace(/-/g,''); 
         
         $.post('supplier_portal_generate.php', { prefix: prefix, exp: exp }, function(seqNum){
             seqNum = seqNum.trim().padStart(4,'0');
-            let finalBatch = `${prefix}-${exp}-${seqNum}`; // hyphens added
+            let finalBatch = `${prefix}-${exp}-${seqNum}`; 
             $('#batch_num').val(finalBatch);
             $('#auto-batch-num').val(finalBatch);
         });
@@ -308,12 +336,15 @@ function clearFilters() {
         generateBatchNumFor(productName);
     });
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
     $('.approve-btn').on('click', function() {
         const productId = $(this).data('productid');
         const productName = $(this).data('productname');
         const batchId = $(this).data('batchid');
-        const shippingDate = $(this).data('shippingdate'); // <- get date
+        const shippingDate = $(this).data('shippingdate'); 
 
         $('#approve-batch-id').val(batchId);
         $('#auto-batch-num').val('');
@@ -337,6 +368,10 @@ function clearFilters() {
 
         generateBatchNumFor(productName);
     });
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
     $('.close-approve').on('click', function() {
         $('#approveModal').hide();
         $('#approveModal form .selected-product').remove();
@@ -352,7 +387,10 @@ function clearFilters() {
         }
     });
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
     $('.decline-btn').on('click', function() {
         const productId = $(this).data('productid');
         const batchId = $(this).data('batchid');

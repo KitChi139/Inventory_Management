@@ -15,7 +15,6 @@ session_destroy();
         body {
             margin: 0;
             padding: 0;
-                /* background: linear-gradient(135deg, #2c3e50, #3498db); */
             background-color: #d9d9d9;
             font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
             display: flex;

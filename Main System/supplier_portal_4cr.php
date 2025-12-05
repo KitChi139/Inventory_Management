@@ -2,7 +2,7 @@
 require_once 'db_connect.php';
 $supplier_id = $_SESSION['SupplierID'];
 
-// Fetch approved requests with shipping date
+
 $sql = "SELECT
         r.request_id,
         r.BatchID,
@@ -38,7 +38,6 @@ $approvedRequests = $stmt->get_result();
     <script src="supplier_portal.js" defer></script>
 </head>
 <body>
-    <!-- Top Navigation Bar -->
     <header class="top-nav">
         <div class="nav-left">
             <div class="logo-container">
@@ -52,8 +51,6 @@ $approvedRequests = $stmt->get_result();
             </button>
         </div>
     </header>
-
-    <!-- Secondary Navigation Tabs -->
     <nav class="tab-navigation">
         <button id="db" class="tab-link" data-tab="dashboard">
             <i class="fas fa-chart-line"></i>
@@ -75,23 +72,13 @@ $approvedRequests = $stmt->get_result();
             <i class="fas fa-clipboard-check"></i>
             <span>Completed Requests</span>
         </button>
-        <!-- <button id="m" class="tab-link" data-tab="messages">
-            <i class="fas fa-envelope"></i>
-            <span>Messages</span>
-        </button> -->
-        <!-- <button id="cp" class="tab-link" data-tab="company-profile">
-            <i class="fas fa-building"></i>
-            <span>Company Profile</span>
-        </button> -->
     </nav>
-        <!-- Main Content Area -->
+
             <main class="main-content">
-            <!-- Completed Requests Section -->
             <section class="content" id="completed-requests-section">
             <div class="page-header">
                 <h1>Completed Requests</h1>
             </div>
-            <!-- Filter bar -->
         <div class="filter-bar">
         <input type="text" id="searchInput" placeholder="Search word..." />
         <button class="btn btn-secondary" onclick="clearFilters()">Clear</button>
@@ -154,12 +141,11 @@ function clearFilters() {
     filterTable();
 }
     $(document).ready(function () {
-        //Navigation
+
         $("#db").click(function(){ window.location.href = "supplier_portal_db.php";});
         $("#pr").click(function(){ window.location.href = "supplier_portal_1pr.php";});
         $("#dr").click(function(){ window.location.href = "supplier_portal_2dr.php";});
         $("#ar").click(function(){ window.location.href = "supplier_portal_3ar.php";});
-        // $("#cr").click(function(){ window.location.href = "supplier_portal_4cr.php";});
         $("#m").click(function(){ window.location.href = "supplier_portal_m.php"; });
         $("#cp").click(function(){ window.location.href = "supplier_portal_cp.php"; });
     });

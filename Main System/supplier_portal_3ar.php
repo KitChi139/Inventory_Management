@@ -2,7 +2,6 @@
 require_once 'db_connect.php';
 $supplier_id = $_SESSION['SupplierID'];
 
-// Fetch approved requests with shipping date
 $sql = "SELECT
         r.request_id,
         r.BatchID,
@@ -37,6 +36,10 @@ $approvedRequests = $stmt->get_result();
     <script src="supplier_portal.js" defer></script>
 </head>
 <body>
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
     <header class="top-nav">
         <div class="nav-left">
             <div class="logo-container">
@@ -50,7 +53,10 @@ $approvedRequests = $stmt->get_result();
             </button>
         </div>
     </header>
+<<<<<<< HEAD
 
+=======
+>>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
     <nav class="tab-navigation">
         <button id="db" class="tab-link" data-tab="dashboard">
             <i class="fas fa-chart-line"></i>
@@ -73,11 +79,19 @@ $approvedRequests = $stmt->get_result();
             <span>Completed Requests</span>
         </button>
     </nav>
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
     <main class="main-content">
     <section class="content" id="approved-requests-section">
         <div class="page-header">
             <h1>Approved Requests</h1>
         </div>
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2d7145306ffce975d8498d07fdbb32884df67c94
     <div class="filter-bar">
     <input type="text" id="searchInput" placeholder="Search Word..." />
     <button class="btn btn-secondary" onclick="clearFilters()">Clear</button>

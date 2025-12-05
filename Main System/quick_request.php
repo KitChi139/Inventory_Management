@@ -1,5 +1,5 @@
 <?php
-// quick_request.php
+
 header('Content-Type: application/json');
 require 'db_connect.php';
 if (session_status() === PHP_SESSION_NONE) {

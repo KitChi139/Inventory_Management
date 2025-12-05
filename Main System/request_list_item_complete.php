@@ -7,7 +7,6 @@ if (!isset($_POST['requestID'])) {
 
 $requestID = intval($_POST['requestID']);
 
-// Get current status
 $stmt = $conn->prepare("SELECT status FROM requests WHERE request_id = ?");
 $stmt->bind_param("i", $requestID);
 $stmt->execute();
@@ -27,11 +26,10 @@ if ($row['status'] === "Completed") {
     exit("ALREADY_DONE");
 }
 
-// Begin transaction for safety
 $conn->begin_transaction();
 
 try {
-    // ✅ Set date_completed for all statuses
+
     $stmt = $conn->prepare("
         UPDATE requests
         SET date_completed = NOW()
@@ -40,7 +38,6 @@ try {
     $stmt->bind_param("i", $requestID);
     $stmt->execute();
 
-    // ✅ Only approved items are marked Completed
     if ($row['status'] === "Approved") {
         $stmt = $conn->prepare("
             UPDATE requests
@@ -50,8 +47,6 @@ try {
         $stmt->bind_param("i", $requestID);
         $stmt->execute();
 
-        // Optional: insert into inventory here if needed
-        // INSERT INTO inventory (ProductID, Quantity, BatchNum, ExpirationDate) ...
     }
 
     $conn->commit();

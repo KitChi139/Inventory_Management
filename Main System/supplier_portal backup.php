@@ -9,7 +9,7 @@
     <script src="supplier_portal.js" defer></script>
 </head>
 <body>
-    <!-- Top Navigation Bar -->
+
     <header class="top-nav">
         <div class="nav-left">
             <div class="logo-container">
@@ -30,7 +30,6 @@
         </div>
     </header>
 
-    <!-- Secondary Navigation Tabs -->
     <nav class="tab-navigation">
         <button class="tab-link active" data-tab="dashboard">
             <i class="fas fa-chart-line"></i>
@@ -62,13 +61,8 @@
         </button>
     </nav>
 
-    <!-- Main Content Area -->
     <main class="main-content">
         
-
-
-
-    <!-- Notifications Modal -->
     <div id="notificationsModal" class="modal-overlay">
         <div class="modal-container notifications-modal">
             <div class="modal-header">
@@ -76,7 +70,6 @@
                 <button class="close-modal-btn" onclick="closeNotificationsModal()">&times;</button>
             </div>
             <div class="modal-body" id="notificationsBody">
-                <!-- Notifications populated by JS -->
             </div>
         </div>
     </div>

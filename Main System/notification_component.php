@@ -1,7 +1,6 @@
 <?php
 require_once "db_connect.php";
 
-// Fetch last 3 notifications (messages + low stock)
 $recent = $conn->query("
     SELECT 'message' AS type, header AS title, supplier AS info, date_created AS created_at
     FROM messages
@@ -19,7 +18,6 @@ $recentLow = $conn->query("
 ");
 ?>
 
-<!-- 🔔 NOTIFICATION SYSTEM -->
 <div class="notif-wrap" id="notifWrap">
     <button class="notif-btn" id="notifBtn" aria-expanded="false">
         <i class="fa-solid fa-bell"></i>
@@ -46,11 +44,10 @@ $recentLow = $conn->query("
     </div>
 </div>
 
-<!-- 🔊 SOUND -->
-<!-- <audio id="notifSound" src="notification_ping.mp3" preload="auto"></audio> -->
+
 
 <script>
-// 🔽 OPEN/CLOSE DROPDOWN
+
 $(document).on("click", "#notifBtn", function(e) {
     e.stopPropagation();
     $("#notifDropdown").toggleClass("show");
@@ -60,14 +57,12 @@ $(document).on("click", "#notifBtn", function(e) {
     }
 });
 
-// Close dropdown when clicking outside
 $(document).click(function(e) {
     if (!$(e.target).closest("#notifWrap").length) {
         $("#notifDropdown").removeClass("show");
     }
 });
 
-// 🔄 AUTO UPDATE BADGE
 function loadNotifications() {
     $.ajax({
         url: "get_notifications.php",
@@ -89,7 +84,6 @@ function loadNotifications() {
     });
 }
 
-// 🔽 LOAD 3 MOST RECENT ITEMS INSIDE DROPDOWN
 function loadNotificationDropdown() {
     $.ajax({
         url: "get_notification_items.php",
@@ -100,7 +94,6 @@ function loadNotificationDropdown() {
     });
 }
 
-// Auto-refresh every 10 seconds
 loadNotifications();
 setInterval(loadNotifications, 10000);
 </script>

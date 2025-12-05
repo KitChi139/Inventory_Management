@@ -2,13 +2,12 @@
 require 'db_connect.php';
 if (session_status() === PHP_SESSION_NONE) session_start();
 
-// Protect page - require login
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
     header("Location: login.php");
     exit();
 }
 
-// Current page for active nav highlighting
+
 $currentPage = basename($_SERVER['PHP_SELF']);
 ?>
 <!DOCTYPE html>
@@ -54,19 +53,16 @@ $currentPage = basename($_SERVER['PHP_SELF']);
   font-size: 18px;
   margin: 6px 0;
 }
-/* Highlight active sidebar items without changing font */
+
 .menu li.active {
-    background: #e3f2fd; /* light highlight */
+    background: #e3f2fd; 
 }
 
-/* Keep Reports text same as other nav items */
 .menu li#reports > span {
-    color: #333;           /* same black as other non-active nav items */
-    font-weight: 500;      /* same weight as other nav items */
+    color: #333;          
+    font-weight: 500;     
 }
 
-
-/* Keep other active sidebar items highlighted normally */
 .menu li.active:not(#reports) > span {
   font-weight: 700;
   color: var(--accent);
@@ -117,14 +113,11 @@ $currentPage = basename($_SERVER['PHP_SELF']);
     .export-btn:hover { background:#3b7cd3; }
     .back-btn { background:#cccccc; color:#000; border:none; padding:8px 14px; border-radius:8px; cursor:pointer; font-size:18px; font-weight:600; margin-bottom:20px; transition:0.2s; }
     .back-btn:hover { background:#b3b3b3; }
-
-    /* Dropdown Menu */
     .has-dropdown { position:relative; }
     .has-dropdown .dropdown-menu { display:none; position:absolute; top:100%; left:0; background:white; list-style:none; padding:0; margin:0; width:220px; border-radius:var(--radius); box-shadow:0 4px 10px rgba(0,0,0,0.1); z-index:10; }
     .has-dropdown:hover .dropdown-menu { display:block; }
     .has-dropdown .dropdown-menu li { padding:12px 16px; cursor:pointer; transition:0.2s; }
     .has-dropdown .dropdown-menu li:hover { background-color:#f0f6ff; }
-
     .sidebar li.active > span { font-weight:700; color:var(--accent); }
   </style>
 </head>
@@ -146,9 +139,6 @@ $currentPage = basename($_SERVER['PHP_SELF']);
     <li class="report-link" data-view="expiration-wastage">Expiration / Wastage</li>
   </ul>
 </li>
-
- 
-  
 
         </li>
         <?php if ($_SESSION['roleName'] === 'Admin'): ?>
@@ -213,7 +203,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 <script src="sidebar.js"></script>
 <script src="notification.js" defer></script>
 <script>
-  // Top-level nav
+
   const navMap = {
     "dashboard": "dashboard.php",
     "inventory": "Inventory.php",
@@ -227,7 +217,6 @@ $currentPage = basename($_SERVER['PHP_SELF']);
     if(el) el.addEventListener("click", () => window.location.href = navMap[id]);
   });
 
-  // Report dropdown
   const reportLinks = {
       "inventory-management": "report_inventory.php",
       "pos-requests": "report_pos.php",
@@ -240,7 +229,6 @@ $currentPage = basename($_SERVER['PHP_SELF']);
       });
   });
 
-  // Highlight active nav
   const currentPage = "<?php echo $currentPage; ?>";
   if(currentPage.includes("dashboard")) document.getElementById("dashboard")?.classList.add("active");
   if(currentPage.includes("Inventory")) document.getElementById("inventory")?.classList.add("active");
@@ -249,8 +237,8 @@ $currentPage = basename($_SERVER['PHP_SELF']);
   if(currentPage.includes("report_pos")) document.querySelector(".report-link[data-view='pos-requests']")?.classList.add("active");
   $(".report-link").click(function() {
     const title = $(this).text();
-    $("h1.heading-bar").text(title); // change the main heading
-    $("#reports").addClass("active"); // ensure Reports stays active
+    $("h1.heading-bar").text(title); 
+    $("#reports").addClass("active"); 
 });
 
 </script>

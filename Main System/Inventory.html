@@ -178,37 +178,32 @@
         $(this).attr("aria-expanded", String(!isHidden));
       });
 
-      // Action menu (UI-only)
       function closeAllMenus() {
         $(".more-menu").attr("aria-hidden", "true").hide();
         $(".icon-more").attr("aria-expanded", "false");
       }
 
-      // open/close per row, using delegation
       $(document).on("click", ".icon-more", function (e) {
         e.stopPropagation();
         const $btn = $(this);
         const $menu = $btn.siblings(".more-menu");
 
-        // close other menus
         $(".more-menu").not($menu).hide().attr("aria-hidden", "true");
         $(".icon-more").not($btn).attr("aria-expanded", "false");
 
-        // toggle this menu
         if ($menu.is(":visible")) {
           $menu.hide().attr("aria-hidden", "true");
           $btn.attr("aria-expanded", "false");
         } else {
-          // position logic (keeps it in view if needed)
+
           $menu.show().attr("aria-hidden", "false");
           $btn.attr("aria-expanded", "true");
         }
       });
 
-      // Clicking a menu-item is UI-only: keep menus open or close depending on UX you want.
       $(document).on("click", ".more-menu .menu-item", function (e) {
         e.stopPropagation();
-        // UI-only: briefly highlight the pressed option then close menu
+
         const $it = $(this);
         $it.addClass("pressed");
         setTimeout(() => {
@@ -217,12 +212,10 @@
         }, 180);
       });
 
-      // close menus on outside click
       $(document).on("click", function () {
         closeAllMenus();
       });
 
-      // close on Esc
       $(document).on("keydown", function (e) {
         if (e.key === "Escape") closeAllMenus();
       });
