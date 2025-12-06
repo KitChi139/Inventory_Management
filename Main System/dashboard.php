@@ -2,10 +2,7 @@
   require 'db_connect.php';
 
 
-  if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
-    header("Location: login.php");
-    exit();
-  }
+
 
   $popupMessage = '';
   if (isset($_SESSION['popupMessage'])) {

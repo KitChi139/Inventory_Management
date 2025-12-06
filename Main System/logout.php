@@ -10,7 +10,7 @@ session_destroy();
 <head>
     <meta charset="UTF-8">
     <title>Logged Out</title>
-    <meta http-equiv="refresh" content="3;url=login.php">
+    <meta http-equiv="refresh" content="3;url=../index.php">
     <style>
         body {
             margin: 0;

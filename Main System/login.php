@@ -20,39 +20,40 @@ $stmt = $connection->prepare(
     $stmt -> execute();
 
     $result = $stmt->get_result();
-    if ($result -> num_rows === 1) {
-        $user = $result->fetch_assoc();
+    if ($result->num_rows === 1) {
+    $user = $result->fetch_assoc();
 
-        if ($password === $user['password']) {
-            $_SESSION['loggedin'] = true;
-            $_SESSION['username'] = $user['username'];
-            $_SESSION['roleName'] = $user['roleName'];
-            if (!isset($_SESSION['popupMessage'])) {
-              if ($user['roleName'] === 'Employee') {
-                  $_SESSION['popupMessage'] = "You have successfully logged in to the Inventory Management!";
-                  header("Location: dashboard.php");
-                  exit();
-                } elseif ($user['roleName'] === 'Supplier') {
-                      $_SESSION['SupplierID'] = $user['SupplierID'];
-                  $_SESSION['popupMessage'] = "You have successfully logged in to the Supplier Portal!";
-                    header("Location: supplier_portal_db.php");
-                    exit();
-                } elseif ($user['roleName'] === 'Admin') {
-                  $_SESSION['popupMessage'] = "You have successfully logged in to the Admin Portal!";
-                  header("Location:dashboard.php");
-                  exit();
-                }
-              }
-                
-        } else {
-            $error = "Invalid password.";
+    // Use password_verify only
+    if (password_verify($password, $user['password'])) {
+        $_SESSION['loggedin'] = true;
+        $_SESSION['username'] = $user['username'];
+        $_SESSION['roleName'] = $user['roleName'];
+
+        if (!isset($_SESSION['popupMessage'])) {
+            if ($user['roleName'] === 'Employee') {
+                $_SESSION['popupMessage'] = "You have successfully logged in to the Inventory Management!";
+                header("Location: dashboard.php");
+                exit();
+            } elseif ($user['roleName'] === 'Supplier') {
+                $_SESSION['SupplierID'] = $user['SupplierID'];
+                $_SESSION['popupMessage'] = "You have successfully logged in to the Supplier Portal!";
+                header("Location: supplier_portal_db.php");
+                exit();
+            } elseif ($user['roleName'] === 'Admin') {
+                $_SESSION['popupMessage'] = "You have successfully logged in to the Admin Portal!";
+                header("Location: dashboard.php");
+                exit();
+            }
         }
-    } else {
-        $error = "User not found.";
-    }
 
-    $stmt -> close();
+    } else {
+        $error = "Invalid password.";
+    }
+} else {
+    $error = "User not found.";
 }
+
+$stmt->close();
 
 // //     // -------------------------
 // //     // Step 1: Try to fetch user locally (Employee/Supplier)
@@ -149,7 +150,7 @@ $stmt = $connection->prepare(
 //     } else {
 //         $error = "Invalid username or password.";
 //     }
-  
+}
 
 
 if (isset($_SESSION['popupMessage'])) {

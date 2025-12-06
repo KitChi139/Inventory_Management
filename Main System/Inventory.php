@@ -13,9 +13,9 @@ if (isset($_POST['fetch_product']) && $_POST['fetch_product'] == 1) {
         SELECT 
         p.ProductName AS product_name,
         p.ProductID AS product_id,
-        p.CategoryID AS category_ID,
+        p.CategoryID AS category_id,
         c.Category_Name AS category, 
-        p.UnitID as unit_ID,
+        p.UnitID as unit_id,
         u.UnitName AS unit
         FROM products p
         JOIN categories c ON p.CategoryID = c.CategoryID
@@ -50,6 +50,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
       $product    = trim($_POST['product'] ?? '');
       $category   = trim($_POST['category'] ?? '');
+      $dosage     = trim($_POST['dosage'] ?? '');
+      $brandname  = trim($_POST['brandname'] ?? '');
       $catid      = trim($_POST['category_id'] ?? '');
       $unit       = trim($_POST['unit'] ?? '');
       $unitId       = trim($_POST['unit_id'] ?? '');
@@ -75,7 +77,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           throw new Exception("Stock quantities must be non-negative.");
       }
       $conn->begin_transaction();
+      $stmt = $conn->prepare("SELECT ProductID FROM products WHERE BrandName = ?");
+      $stmt->bind_param("s", $brandname);
+      $stmt->execute();
+      $stmt->store_result();
 
+      if ($stmt->num_rows > 0) {
+          $stmt->close();
+          throw new Exception("Brand name already exists — cannot add duplicate brand.");
+      }
+      $stmt->close();
       if ($catid !== '') {
         $categoryId = (int)$catid;
     } else {
@@ -114,10 +125,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       }
 
       $stmt = $conn->prepare("
-        INSERT INTO products (ProductName, CategoryID, UnitID, Price, Min_stock, Max_stock)
-        VALUES (?, ?, ?, ?, ?, ?)
+          INSERT INTO products (ProductName, CategoryID, UnitID, Price, Min_stock, Max_stock, Dosage, BrandName)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       ");
-      $stmt->bind_param('siidii', $product, $categoryId, $unitId, $price, $minquantity, $maxquantity);
+      $stmt->bind_param('siidisss', $product, $categoryId, $unitId, $price, $minquantity, $maxquantity, $dosage, $brandname);
       $stmt->execute();
       $stmt->close();
       $conn->commit();
@@ -134,13 +145,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $price      = trim($_POST['price'] ?? '');
     $minquantity = (int)($_POST['minquantity'] ?? 0);
     $maxquantity = (int)($_POST['maxquantity'] ?? 0);
+    $dosage     = trim($_POST['dosage'] ?? '');
+    $brandname  = trim($_POST['brandname'] ?? '');
 
     if ($productID <= 0 || $product === '') {
         throw new Exception("Invalid input for Update.");
     }
 
     $conn->begin_transaction();
-
+   
     if (!$categoryId && $category !== '') {
         $stmt = $conn->prepare("SELECT CategoryID FROM categories WHERE Category_Name = ?");
         $stmt->bind_param("s", $category);
@@ -179,21 +192,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $stmt = $conn->prepare("
         UPDATE products 
-        SET ProductName = ?, CategoryID = ?, UnitID = ?, Price = ?, Min_stock = ?, Max_stock = ?
+        SET 
+            ProductName = ?, 
+            CategoryID = ?, 
+            UnitID = ?, 
+            Price = ?, 
+            Min_stock = ?, 
+            Max_stock = ?, 
+            Dosage = ?, 
+            BrandName = ?
         WHERE ProductID = ?
     ");
 
     $stmt->bind_param(
-        "siidiii",
+        "siidiissi",
         $product,
         $categoryId,
         $unitId,
         $price,
         $minquantity,
         $maxquantity,
+        $dosage,
+        $brandname,
         $productID
     );
-
     $stmt->execute();
     $rows = $stmt->affected_rows;
     $stmt->close();
@@ -235,6 +257,8 @@ try {
     p.ProductID,
     p.ProductName,
     i.SKU,
+    p.Dosage,
+    p.BrandName,
     IFNULL(SUM(i.Quantity),0) AS TotalQuantity,
     p.Price,
     p.Min_stock,
@@ -395,16 +419,6 @@ try {
 </aside>
 
 <main class="main">
-<<<<<<< HEAD
-
-
-  <!-- Heading Bar -->
- <div class="heading-bar">
-  <h1>Inventory</h1>
-
-
-</div>
-=======
   <div class="heading-bar">
     <h1>Inventory</h1>
     
@@ -417,7 +431,6 @@ try {
     </div>
   </div>
   </div>
->>>>>>> d68acbff0bf7cc8d9ae2f3de19d7deee889eb7d1
 
   <div class="alerts">
     <?php foreach ($_SESSION['flash'] as $f): ?>
@@ -468,7 +481,8 @@ try {
       <tr>
         <th><input type="checkbox" class="select-all" id="select-all"></th>
         <th>Product</th>
-        <th>SKU</th>
+        <th>Dosage</th>
+        <th>Brand Name</th>
         <th>Total Stock</th>
         <th>Unit</th>
         <th>Status</th>
@@ -486,7 +500,8 @@ try {
   </td>
 
   <td><?= htmlspecialchars($item['ProductName']) ?></td>
-  <td><?= htmlspecialchars($item['SKU']) ?></td>
+  <td><?= htmlspecialchars($item['Dosage'] ?? '-') ?></td>
+  <td><?= htmlspecialchars($item['BrandName'] ?? '-') ?></td> 
   <td><?= htmlspecialchars($item['TotalQuantity']) ?></td>
   <td><?= htmlspecialchars($item['UnitName'] ?? '-') ?></td>
   <td><?= htmlspecialchars($item['status']) ?></td>
@@ -503,6 +518,8 @@ try {
         <button class="menu-item edit-btn"
             data-productid="<?= (int)$item['ProductID'] ?>"
             data-product="<?= htmlspecialchars($item['ProductName']) ?>"
+            data-dosage="<?= htmlspecialchars($item['Dosage'] ?? '') ?>"
+            data-brandname="<?= htmlspecialchars($item['BrandName'] ?? '') ?>"
             data-categoryid="<?= htmlspecialchars($item['CategoryID'] ?? '') ?>"
             data-categoryname="<?= htmlspecialchars($item['Category_Name'] ?? '') ?>"
             data-unitid="<?= htmlspecialchars($item['UnitID'] ?? '') ?>"
@@ -559,6 +576,10 @@ try {
         <input type="hidden" name="product_id" id="product_id">
         <label>Product Name</label>
         <input type="text" name="product">
+        <label>Dosage</label>
+        <input type="text" name="dosage" placeholder="e.g., 500mg">
+        <label>Brand Name</label>
+        <input type="text" name="brandname" placeholder="e.g., Tylenol">
         <label>Category</label>
         <select id="category-select">
           <option value="">-- Select Category --</option>
@@ -601,6 +622,10 @@ try {
         <input type="hidden" name="product_id" id="edit-product_id">
         <label>Product Name</label>
         <input type="text" name="product" id="edit-product">
+        <label>Dosage</label>
+        <input type="text" name="dosage" id="edit-dosage" placeholder="e.g., 500mg">
+        <label>Brand Name</label>
+        <input type="text" name="brandname" id="edit-brandname" placeholder="e.g., Tylenol">
         <label>Category</label>
         <select id="edit-category-select">
           <option value="">-- Select Category --</option>
@@ -611,7 +636,6 @@ try {
             <option value="<?= $cat['CategoryID'] ?>"><?= htmlspecialchars($cat['Category_Name']) ?></option>
           <?php endwhile; ?>
         </select>
-        <input type="text" name="category" id="edit-category" placeholder="Or enter new category">
         <input type="hidden" name="category_id" id="edit-category_id">
         <label>Unit</label>
         <select id="edit-unit-select">
@@ -623,7 +647,6 @@ try {
             <option value="<?= $u['UnitID'] ?>"><?= htmlspecialchars($u['UnitName']) ?></option>
           <?php endwhile; ?>
         </select>
-        <input type="text" name="unit" id="edit-unit" placeholder="Or enter new unit">        
         <input type="hidden" name="unit_id" id="edit-unit_id">
         <label>Price</label>
         <input type="text" name="price" id="edit-price" placeholder="eg... 2.75">
@@ -746,6 +769,9 @@ $(document).on('keydown', function(e) {
     $("#edit-price").val($btn.data("price"));
     $("#edit-minquantity").val($btn.data("minquantity"));
     $("#edit-maxquantity").val($btn.data("maxquantity"));
+    $("#edit-dosage").val($btn.data("dosage") || '');
+    $("#edit-brandname").val($btn.data("brandname"));
+
 
     const catId = $btn.data("categoryid");
     const catName = $btn.data("categoryname");

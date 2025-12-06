@@ -58,35 +58,37 @@
                   $role = "Employee";
                   $status = "Active";
 
-                  $stmt = $connection->prepare("SELECT COUNT(*) FROM email WHERE email=?");
-                  $stmt->bind_param("s", $email);
-                  $stmt->execute();
-                  $stmt->bind_result($count);
-                  $stmt->fetch();
-                  $stmt->close();
+              $stmt = $connection->prepare("SELECT COUNT(*) FROM email WHERE email=?");
+              $stmt->bind_param("s", $email);
+              $stmt->execute();
+              $stmt->bind_result($count);
+              $stmt->fetch();
+              $stmt->close();
 
-                  if ($count > 0) {
-                      $_SESSION['error'] = "Email already exists.";
-                      header("Location: admin.php"); 
-                      exit(); 
-                  }
-                  $stmt1 = $connection->prepare("INSERT INTO email (email) VALUES (?)");
-                  $stmt1->bind_param("s", $email);
-                  $stmt1->execute();
-                  $EID = $connection->insert_id;
-                  $stmt1->close();
-                  $stmt = $connection->prepare("SELECT COUNT(*) FROM employee WHERE empNum = ?");
-                  $stmt->bind_param("s", $var2);
-                  $stmt->execute();
-                  $stmt->bind_result($empCount);
-                  $stmt->fetch();
-                  $stmt->close();
+              if ($count > 0) {
+                  $_SESSION['error'] = "Email already exists.";
+                  header("Location: admin.php"); 
+                  exit(); 
+              }
 
-                  if ($empCount > 0) {
-                      $_SESSION['error'] = "Employee Number already exists.";
-                      header("Location: admin.php");
-                      exit();
-                  }
+              $stmt1 = $connection->prepare("INSERT INTO email (email) VALUES (?)");
+              $stmt1->bind_param("s", $email);
+              $stmt1->execute();
+              $EID = $connection->insert_id;
+              $stmt1->close();
+
+                  $stmtEmp = $connection->prepare("SELECT COUNT(*) FROM employee WHERE empNum = ?");
+                    $stmtEmp->bind_param("s", $var2);
+                    $stmtEmp->execute();
+                    $stmtEmp->bind_result($empCount);
+                    $stmtEmp->fetch();
+                    $stmtEmp->close();
+
+                    if ($empCount > 0) {
+                        $_SESSION['error'] = "Employee Number already exists.";
+                        header("Location: admin.php");
+                        exit();
+                    }
                   $stmt2 = $connection->prepare("INSERT INTO employee (empNum, empName) VALUES (?, ?)");
                   $stmt2->bind_param("ss", $var2, $var1);
                   $stmt2->execute();
@@ -101,8 +103,9 @@
                   $RID = $ROWS['roleID'];
                   $stmt3->close();
 
+                  $hashedPass = password_hash($pass, PASSWORD_DEFAULT); 
                   $stmt4 = $connection->prepare("INSERT INTO users (username, password, roleID, status) VALUES (?, ?, ?, ?)");
-                  $stmt4->bind_param("ssis", $email, $pass, $RID, $status);
+                  $stmt4->bind_param("ssis", $email, $hashedPass, $RID, $status);
                   $stmt4->execute();
                   $UID = $connection->insert_id;
                   $stmt4->close();
@@ -123,18 +126,24 @@
                   $role = "Supplier";
                   $status = "Active";
 
-                  $stmt1 = $connection->prepare("INSERT INTO email (email) VALUES (?)");
-                  $stmt1->bind_param("s", $email);
-                  $stmt1->execute();
-                  $EID = $connection->insert_id;
-                  $stmt1->close();
-
                   $stmt = $connection->prepare("SELECT COUNT(*) FROM email WHERE email=?");
                   $stmt->bind_param("s", $email);
                   $stmt->execute();
                   $stmt->bind_result($count);
                   $stmt->fetch();
                   $stmt->close();
+
+                  if ($count > 0) {
+                      $_SESSION['error'] = "Email already exists.";
+                      header("Location: admin.php"); 
+                      exit(); 
+                  }
+
+                  $stmt1 = $connection->prepare("INSERT INTO email (email) VALUES (?)");
+                  $stmt1->bind_param("s", $email);
+                  $stmt1->execute();
+                  $EID = $connection->insert_id;
+                  $stmt1->close();
 
                   if ($count > 0) {
                       $_SESSION['error'] = "Email already exists.";
@@ -155,9 +164,9 @@
                   $ROWS = $ROW->fetch_assoc();
                   $RID = $ROWS['roleID'];
                   $stmt3->close();
-
+                  $hashedPass = password_hash($pass, PASSWORD_DEFAULT); 
                   $stmt4 = $connection->prepare("INSERT INTO users (username, password, roleID, status) VALUES (?, ?, ?, ?)");
-                  $stmt4->bind_param("ssis", $email, $pass, $RID, $status);
+                  $stmt4->bind_param("ssis", $email, $hashedPass, $RID, $status);
                   $stmt4->execute();
                   $UID = $connection->insert_id;
                   $stmt4->close();
@@ -199,14 +208,25 @@
     $contact = trim($_POST['editContact']);
     $email = trim($_POST['editEmail']);
     $role = trim($_POST['editRole']); 
+    $newPass = trim($_POST['editPassword'] ?? ''); 
 
     $errors = [];
     if (!$id) $errors[] = 'Invalid user ID.';
     if (!$name) $errors[] = 'Name is required.';
-    if (!$empNumber) $errors[] = 'Employee/Company Number is required.';
+    if (!$empNumber) {
+        if ($role === 'Supplier') {
+            $errors[] = 'Contact Person is required.';
+        } else {
+            $errors[] = 'Employee Number is required.';
+        }
+    }
     if (!$contact || !preg_match('/^\d{7,15}$/', $contact)) $errors[] = 'Contact number must be 7-15 digits.';
     if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'Invalid email format.';
 
+    
+    if ($newPass && strlen($newPass) < 6) {
+        $errors[] = 'Password must be at least 6 characters.';
+    }
     if (!empty($errors)) {
         $_SESSION['error'] = implode('<br>', $errors);
         header("Location: admin.php");
@@ -273,7 +293,14 @@
         $stmt->bind_param("si", $contact, $id);
         $stmt->execute();
         $stmt->close();
-
+        
+        if (!empty($newPass)) {
+            $hashedPass = password_hash($newPass, PASSWORD_DEFAULT);
+            $stmt = $connection->prepare("UPDATE users SET password=? WHERE userID=?");
+            $stmt->bind_param("si", $hashedPass, $id);
+            $stmt->execute();
+            $stmt->close();
+        }
         $connection->commit();
         $_SESSION['success'] = "Account updated successfully";
 
@@ -319,7 +346,7 @@ LEFT JOIN userinfo ui ON u.userID = ui.userID
 LEFT JOIN employee emp ON ui.empID = emp.empID
 LEFT JOIN suppliers s ON ui.SupplierID = s.SupplierID
 LEFT JOIN company com ON s.comID = com.comID
-WHERE ur.roleName != 'admin' AND ur.roleName != 'supplier'
+WHERE ur.roleName != 'admin'
 ORDER BY u.userID DESC
 ";
             $res = $connection->query($sql);
@@ -414,7 +441,6 @@ ORDER BY u.userID DESC
 .profile-info small {
     color: #666;
 }
-      /* Minimal styling for registration toggle inside modal to match registration.php look */
       .button-group { display:flex; gap:8px; margin-bottom:12px; }
       .button-group button { padding:8px 12px; border:1px solid #ccc; background:#fff; cursor:pointer; border-radius:6px; }
       .button-group button.active { background:#007bff; color:#fff; border-color:#007bff; }
@@ -590,10 +616,10 @@ ORDER BY u.userID DESC
             <input id="editFullName" name="editFullName" type="text" placeholder="Full Name">
           </div>
 
-          <div class="field">
-            <label class="field-label" for="editEmpNumber">Employee Number:</label>
-            <input id="editEmpNumber" name="editEmpNumber" type="text" placeholder="Employee Number">
-          </div>
+        <div class="field">
+          <label class="field-label" for="editEmpNumber">Employee Number:</label>
+          <input id="editEmpNumber" name="editEmpNumber" type="text" placeholder="Employee Number">
+        </div>
 
           <div class="field">
             <label class="field-label" for="editContact">Contact Number:</label>
@@ -605,8 +631,6 @@ ORDER BY u.userID DESC
             <input id="editEmail" name="editEmail" type="email" placeholder="Email Address">
           </div>
         </div>
-          </form>
-
         <div class="single-field">
           <label class="field-label" for="editRole">Role:</label>
           <select id="editRole">
@@ -615,6 +639,21 @@ ORDER BY u.userID DESC
             <option value="Supplier">Supplier</option>
           </select>
         </div>
+
+        <div class="field">
+          <label class="field-label" for="editPassword">New Password:</label>
+          <input id="editPassword" name="editPassword" type="password" placeholder="Enter new password">
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="editConfirmPassword">Confirm Password:</label>
+          <input id="editConfirmPassword" type="password" placeholder="Confirm new password">
+        </div>
+
+        </form>
+
+        
+
 
         <div class="modal-actions">
           <button class="cancel-btn" id="closeEditModal">Cancel</button>
@@ -762,7 +801,6 @@ ORDER BY u.userID DESC
         tr.querySelector('.cell-email').textContent = data.email;
         tr.querySelector('.cell-role').textContent = data.role;
 
-        // store additional data attributes for edit convenience
         tr.dataset.fullName = data.name;
         tr.dataset.empNumber = data.empNumber || '';
         tr.dataset.contact = data.contact || '';
@@ -795,21 +833,32 @@ ORDER BY u.userID DESC
       });
 
       accountsTbody.addEventListener('click', (e) => {
-    const tr = e.target.closest('tr');
-    if (!tr) return;
-    const userID = tr.dataset.id;
-    const actionsCell = tr.querySelector('td:last-child');
-    const statusCell = tr.querySelector('.cell-status');
+        const tr = e.target.closest('tr');
+        if (!tr) return;
+        const userID = tr.dataset.id;
+        const actionsCell = tr.querySelector('td:last-child');
+        const statusCell = tr.querySelector('.cell-status');
 
-    if (e.target.classList.contains('edit-btn')) {
-        editingRow = tr;
-        document.getElementById('editUserID').value = tr.dataset.id;
-        editFullName.value = tr.dataset.fullName || '';
-        editEmpNumber.value = tr.dataset.empNumber || '';
-        editContact.value = tr.dataset.contact || '';
-        editEmail.value = tr.dataset.email || '';
-        openModal(editModal);
-    }
+        if (e.target.classList.contains('edit-btn')) {
+            editingRow = tr;
+            document.getElementById('editUserID').value = tr.dataset.id;
+            editFullName.value = tr.dataset.fullName || '';
+            editContact.value = tr.dataset.contact || '';
+            editEmail.value = tr.dataset.email || '';
+            editEmpNumber.value = tr.dataset.empNumber || ''; 
+            editRole.value = tr.dataset.role || '';
+
+            const label = document.querySelector('label[for="editEmpNumber"]');
+            if (tr.dataset.role === 'Supplier') {
+                label.textContent = 'Contact Person:';
+                editEmpNumber.placeholder = 'Contact Person';
+            } else {
+                label.textContent = 'Employee Number:';
+                editEmpNumber.placeholder = 'Employee Number';
+            }
+
+            openModal(editModal);
+        }
 
     if (e.target.classList.contains('delete-btn')) {
         if (!confirm("Are you sure you want to deactivate this account?")) return;
@@ -861,7 +910,6 @@ ORDER BY u.userID DESC
         if (!editFullName.value.trim()) { alert('Please enter full name'); editFullName.focus(); return; }
         if (!editEmail.value.trim()) { alert('Please enter email'); editEmail.focus(); return; }
 
-        // update cells and dataset
         editingRow.dataset.fullName = editFullName.value.trim();
         editingRow.dataset.empNumber = editEmpNumber.value.trim();
         editingRow.dataset.contact = editContact.value.trim();
@@ -876,17 +924,15 @@ ORDER BY u.userID DESC
         closeModal(editModal);
       });
       editSaveBtn.addEventListener('click', () => {
-          const editForm = document.getElementById('editForm');
+          if (!editFullName.value.trim()) { alert('Please enter full name'); editFullName.focus(); return; }
+          if (!editEmail.value.trim()) { alert('Please enter email'); editEmail.focus(); return; }
 
-          if (!editFullName.value.trim()) { 
-              alert('Please enter full name'); 
-              editFullName.focus(); 
-              return; 
-          }
-          if (!editEmail.value.trim()) { 
-              alert('Please enter email'); 
-              editEmail.focus(); 
-              return; 
+          const newPass = document.getElementById('editPassword').value.trim();
+          const confirmPass = document.getElementById('editConfirmPassword').value.trim();
+
+          if (newPass || confirmPass) {
+              if (newPass.length < 6) { alert('Password must be at least 6 characters'); return; }
+              if (newPass !== confirmPass) { alert('Passwords do not match'); return; }
           }
 
           editForm.submit();
